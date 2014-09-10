@@ -1,0 +1,100 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{36268A24-7765-41C9-B1EE-F6105BE7E145}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>TetriNET2.Common</RootNamespace>
+    <AssemblyName>TetriNET2.Common</AssemblyName>
+    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="JetBrains.Annotations">
+      <HintPath>..\packages\JetBrains.Annotations.7.0\lib\net45\JetBrains.Annotations.dll</HintPath>
+    </Reference>
+    <Reference Include="NLog">
+      <HintPath>..\packages\NLog.3.1.0.0\lib\net45\NLog.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Xml.Linq" />
+    <Reference Include="System.Data.DataSetExtensions" />
+    <Reference Include="Microsoft.CSharp" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="ActionQueue\BlockingActionQueue.cs" />
+    <Compile Include="ActionQueue\IActionQueue.cs" />
+    <Compile Include="Attributes\GameRuleAttribute.cs" />
+    <Compile Include="Attributes\PieceAttribute.cs" />
+    <Compile Include="Attributes\SpecialAttribute.cs" />
+    <Compile Include="Contracts\ITetriNET.cs" />
+    <Compile Include="Contracts\ITetriNETAdmin.cs" />
+    <Compile Include="Contracts\ITetriNETAdminCallback.cs" />
+    <Compile Include="Contracts\ITetriNETCallback.cs" />
+    <Compile Include="DataContracts\Admin.cs" />
+    <Compile Include="DataContracts\BanEntry.cs" />
+    <Compile Include="DataContracts\Client.cs" />
+    <Compile Include="DataContracts\ClientRoles.cs" />
+    <Compile Include="DataContracts\ClientStates.cs" />
+    <Compile Include="DataContracts\ConnectResults.cs" />
+    <Compile Include="DataContracts\GameCreateResults.cs" />
+    <Compile Include="DataContracts\GameDescription.cs" />
+    <Compile Include="DataContracts\GameFinishedReasons.cs" />
+    <Compile Include="DataContracts\GameJoinResults.cs" />
+    <Compile Include="DataContracts\GameOptions.cs" />
+    <Compile Include="DataContracts\GameRoom.cs" />
+    <Compile Include="DataContracts\GameRoomStates.cs" />
+    <Compile Include="DataContracts\GameRules.cs" />
+    <Compile Include="DataContracts\GameStatistics.cs" />
+    <Compile Include="DataContracts\GameStatisticsByPlayer.cs" />
+    <Compile Include="DataContracts\LeaveReasons.cs" />
+    <Compile Include="DataContracts\PieceOccurancy.cs" />
+    <Compile Include="DataContracts\Pieces.cs" />
+    <Compile Include="DataContracts\SpecialOccurancy.cs" />
+    <Compile Include="DataContracts\Specials.cs" />
+    <Compile Include="DataContracts\Versioning.cs" />
+    <Compile Include="DataContracts\WinEntry.cs" />
+    <Compile Include="Helpers\EnumHelper.cs" />
+    <Compile Include="Helpers\MonadExtensions.cs" />
+    <Compile Include="Logger\ILog.cs" />
+    <Compile Include="Logger\Log.cs" />
+    <Compile Include="Logger\NLogger.cs" />
+    <Compile Include="Occurancy\IOccurancy.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Randomizer\IRandomizer.cs" />
+    <Compile Include="Randomizer\Randomizer.cs" />
+    <Compile Include="Randomizer\RangeRandom.cs" />
+  </ItemGroup>
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>
