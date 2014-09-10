@@ -14,6 +14,8 @@ namespace TetriNET2.Server
 
         public WaitRoom(int maxClients)
         {
+            if (maxClients <= 0)
+                throw new ArgumentOutOfRangeException("maxClients", "maxClients must be strictly positive");
             MaxClients = maxClients;
         }
 

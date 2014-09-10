@@ -93,6 +93,12 @@ namespace TetriNET2.Server
                 return false;
             }
 
+            if (_admins.ContainsValue(admin))
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "{0} already connected", admin.Name);
+                return false;
+            }
+
             if (_admins.ContainsKey(admin.Callback))
             {
                 Log.Default.WriteLine(LogLevels.Warning, "{0} already connected", admin.Name);

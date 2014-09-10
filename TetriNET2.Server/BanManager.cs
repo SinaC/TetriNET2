@@ -38,6 +38,16 @@ namespace TetriNET2.Server
             return _banList.ContainsKey(address);
         }
 
+        public string BannedReason(IPAddress address)
+        {
+            address = FixAddress(address);
+
+            BanEntry entry;
+            if (_banList.TryGetValue(address, out entry))
+                return entry.Reason;
+            return null;
+        }
+
         public void Ban(string name, IPAddress address, string reason)
         {
             address = FixAddress(address);

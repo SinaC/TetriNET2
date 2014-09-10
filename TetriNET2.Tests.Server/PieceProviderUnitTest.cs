@@ -12,7 +12,7 @@ using TetriNET2.Tests.Server.Mocking;
 namespace TetriNET2.Tests.Server
 {
     [TestClass]
-    public abstract class PieceProviderUnitTest
+    public abstract class AbstractPieceProviderUnitTest
     {
         protected abstract IPieceProvider CreatePieceProvider();
         
@@ -140,7 +140,7 @@ namespace TetriNET2.Tests.Server
     }
 
     [TestClass]
-    public class PieceBagUnitTest : PieceProviderUnitTest
+    public class PieceBagUnitTest : AbstractPieceProviderUnitTest
     {
         private const int HistorySize = 4;
 
