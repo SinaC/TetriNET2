@@ -9,7 +9,7 @@ using TetriNET2.Server.Interfaces;
 
 namespace TetriNET2.Server
 {
-    public class GameRoom : IGameRoom
+    public sealed class GameRoom : IGameRoom, IDisposable
     {
         private const int PiecesSendOnGameStarted = 5;
         private const int PiecesSendOnPlacePiece = 4;
@@ -646,5 +646,22 @@ namespace TetriNET2.Server
             }
             entry.Score += score;
         }
+
+        #region IDisposable
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _suddenDeathTimer.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        #endregion
     }
 }

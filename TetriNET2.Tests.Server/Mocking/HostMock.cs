@@ -5,7 +5,7 @@ using TetriNET2.Server.Interfaces;
 
 namespace TetriNET2.Tests.Server.Mocking
 {
-    public class HostMock : IHost
+    public sealed class HostMock : IHost
     {
         public HostMock(IClientManager clientManager, IGameRoomManager gameRoomManager, IAdminManager adminManager)
         {

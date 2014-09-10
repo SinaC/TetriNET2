@@ -50,6 +50,7 @@
     </Otherwise>
   </Choose>
   <ItemGroup>
+    <Compile Include="AdminManagerUnitTest.cs" />
     <Compile Include="ClientUnitTest.cs" />
     <Compile Include="Mocking\CountCallTetriNETAdminCallback.cs" />
     <Compile Include="Mocking\CountCallTetriNETCallback.cs" />

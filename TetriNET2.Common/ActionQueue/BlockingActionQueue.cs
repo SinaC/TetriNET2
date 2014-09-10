@@ -6,7 +6,7 @@ using TetriNET2.Common.Logger;
 
 namespace TetriNET2.Common.ActionQueue
 {
-    public class BlockingActionQueue : IActionQueue
+    public sealed class BlockingActionQueue : IActionQueue, IDisposable
     {
         private readonly BlockingCollection<Action> _gameActionBlockingCollection = new BlockingCollection<Action>(new ConcurrentQueue<Action>());
 
@@ -85,5 +85,25 @@ namespace TetriNET2.Common.ActionQueue
 
             Log.Default.WriteLine(LogLevels.Info, "GameActionsTask stopped");
         }
+
+
+        #region IDisposable
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _gameActionBlockingCollection.CompleteAdding();
+                _gameActionBlockingCollection.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+            //GC.SuppressFinalize(this);
+        }
+
+        #endregion
     }
 }

@@ -14,7 +14,7 @@ using TetriNET2.Server.Interfaces;
 
 namespace TetriNET2.Server
 {
-    public class Server : IServer
+    public sealed class Server : IServer, IDisposable
     {
         private const int HeartbeatDelay = 300; // in ms
         private const int TimeoutDelay = 500; // in ms
@@ -946,5 +946,22 @@ namespace TetriNET2.Server
             }
             return true;
         }
+
+        #region IDisposable
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _cancellationTokenSource.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        #endregion
     }
 }
