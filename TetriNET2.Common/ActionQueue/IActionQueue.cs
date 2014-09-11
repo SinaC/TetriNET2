@@ -11,6 +11,6 @@ namespace TetriNET2.Common.ActionQueue
         void Wait(int milliseconds); // Wait until stopped or timeout elapsed
 
         void Enqueue(Action action);
-        void Reset();
+        void Clear();
     }
 }

@@ -93,6 +93,7 @@ namespace TetriNET2.Tests.Server
             const string name = "admin1";
             IPAddress address = IPAddress.Any;
             ITetriNETAdminCallback callback = new CountCallTetriNETAdminCallback();
+
             IAdmin admin = CreateAdmin(name, address, callback);
 
             Assert.AreEqual(admin.Name, name);

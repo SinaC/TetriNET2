@@ -37,9 +37,10 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestConstructorsSetProperties()
+        public void TestConstructorSetProperties()
         {
             const int maxClients = 10;
+
             IWaitRoom waitRoom = CreateWaitRoom(maxClients);
 
             Assert.AreEqual(waitRoom.MaxClients, maxClients);

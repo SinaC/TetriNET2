@@ -91,6 +91,11 @@ namespace TetriNET2.Tests.Server.Mocking
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
+        public void OnGameLeft()
+        {
+            UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
+        }
+
         public void OnClientGameJoined(Guid clientId)
         {
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);

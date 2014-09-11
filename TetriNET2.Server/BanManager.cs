@@ -171,21 +171,6 @@ namespace TetriNET2.Server
         {
             try
             {
-                //using (XmlWriter writer = XmlWriter.Create(_banFilename))
-                //{
-                //    writer.WriteStartDocument();
-                //    writer.WriteStartElement("Entries");
-                //    foreach (KeyValuePair<IPAddress, BanEntry> kv in _banList)
-                //    {
-                //        writer.WriteStartElement("Entry");
-                //        writer.WriteElementString("Name", kv.Value.Name);
-                //        writer.WriteElementString("Address", kv.Value.Address.ToString());
-                //        writer.WriteElementString("Reason", kv.Value.Reason);
-                //        writer.WriteEndElement();
-                //    }
-                //    writer.WriteEndElement();
-                //    writer.WriteEndDocument();
-                //}
                 BanEntry[] entries;
                 lock(_banList)
                     entries = _banList.Select(x => x.Value).ToArray();

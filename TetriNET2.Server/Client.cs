@@ -177,6 +177,11 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnGameJoined(result, gameId, options));
         }
 
+        public void OnGameLeft()
+        {
+            ExceptionFreeAction(() => Callback.OnGameLeft());
+        }
+
         public void OnClientGameJoined(Guid clientId)
         {
             ExceptionFreeAction(() => Callback.OnClientGameJoined(clientId));

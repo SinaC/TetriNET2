@@ -37,9 +37,10 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestConstructorsSetProperties()
+        public void TestConstructorSetProperties()
         {
             const int maxAdmins = 10;
+
             IAdminManager adminManager = CreateAdminManager(maxAdmins);
 
             Assert.AreEqual(adminManager.MaxAdmins, maxAdmins);

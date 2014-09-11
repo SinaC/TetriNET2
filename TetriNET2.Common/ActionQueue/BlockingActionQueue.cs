@@ -18,7 +18,7 @@ namespace TetriNET2.Common.ActionQueue
         public void Start(CancellationTokenSource cancellationTokenSource)
         {
             _cancellationTokenSource = cancellationTokenSource;
-            _gameActionTask = Task.Factory.StartNew(GameActionsTask);
+            _gameActionTask = Task.Factory.StartNew(GameActionsTask, _cancellationTokenSource.Token);
         }
 
         public void Wait(int milliseconds)
@@ -31,7 +31,7 @@ namespace TetriNET2.Common.ActionQueue
             _gameActionBlockingCollection.Add(action);
         }
 
-        public void Reset()
+        public void Clear()
         {
             while (_gameActionBlockingCollection.Count > 0)
             {

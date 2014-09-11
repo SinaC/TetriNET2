@@ -59,6 +59,10 @@ namespace TetriNET2.Tests.Server.Mocking
         {
             throw new NotImplementedException();
         }
+        public void OnGameLeft()
+        {
+            throw new NotImplementedException();
+        }
         public void OnClientGameJoined(Guid clientId)
         {
             throw new NotImplementedException();

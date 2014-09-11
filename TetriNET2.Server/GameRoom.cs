@@ -18,7 +18,7 @@ namespace TetriNET2.Server
         private readonly List<IClient> _clients = new List<IClient>();
         private readonly object _lockObject = new object();
         private readonly IActionQueue _actionQueue = new BlockingActionQueue();
-        private readonly Dictionary<string, GameStatisticsByPlayer> _gameStatistics; // By player (cannot be stored in IPlayer because IPlayer is lost when a player is disconnected during a game)
+        private readonly Dictionary<string, GameStatisticsByPlayer> _gameStatistics; // By player (cannot be stored in IClient because IClient is lost when disconnected during a game)
         private readonly List<WinEntry> _winList;
         private readonly Timer _suddenDeathTimer;
 
@@ -38,7 +38,6 @@ namespace TetriNET2.Server
             if (options == null)
                 throw new ArgumentNullException("options");
 
-            _pieceProvider = factory.CreatePieceProvider();
             Id = Guid.NewGuid();
             Name = name;
             CreationTime = DateTime.Now;
@@ -49,6 +48,7 @@ namespace TetriNET2.Server
             Password = password;
             State = GameRoomStates.Created;
 
+            _pieceProvider = factory.CreatePieceProvider();
             _specialId = 0;
             _isSuddenDeathActive = false;
             _gameStatistics = new Dictionary<string, GameStatisticsByPlayer>();
@@ -110,6 +110,9 @@ namespace TetriNET2.Server
 
         public bool Join(IClient client, bool asSpectator)
         {
+            if (client == null)
+                throw new ArgumentNullException("client");
+
             if (client.IsPlayer && PlayerCount >= MaxPlayers)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Too many players");
@@ -144,10 +147,39 @@ namespace TetriNET2.Server
 
         public bool Leave(IClient client)
         {
-            bool removed = _clients.Remove(client);
-            throw new NotImplementedException();
-            // TODO: inform client and other client
+            if (client == null)
+                throw new ArgumentNullException("client");
 
+            bool removed = _clients.Remove(client);
+            if (removed)
+            {
+                // Change game
+                client.Game = null;
+                // Role and state will be changed by caller
+
+                // Inform client
+                client.OnGameLeft();
+
+                // Inform other clients in game
+                foreach (IClient target in Clients.Where(c => c != client))
+                    target.OnClientGameLeft(client.Id);
+
+                // If game was running and player was playing, check if only one player left
+                if ((State == GameRoomStates.GameStarted || State == GameRoomStates.GamePaused) && client.State == ClientStates.Playing)
+                {
+                    int playingCount = Players.Count(p => p.State == ClientStates.Playing);
+                    if (playingCount == 0 || playingCount == 1)
+                    {
+                        Log.Default.WriteLine(LogLevels.Info, "Game finished by forfeit no winner");
+                        State = GameRoomStates.GameFinished;
+                        GameStatistics statistics = PrepareGameStatistics();
+                        // Send game finished (no winner)
+                        foreach(IClient target in Clients.Where(c => c != client))
+                            target.OnGameFinished(GameFinishedReasons.NotEnoughPlayers, statistics);
+                        State = GameRoomStates.WaitStartGame;
+                    }
+                }
+            }
             return removed;
         }
 
@@ -169,9 +201,44 @@ namespace TetriNET2.Server
 
         public void Stop()
         {
-            // TODO: stop game, remove clients
+            // Disable sudden death
+            _isSuddenDeathActive = false;
             _suddenDeathTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            throw new NotImplementedException();
+
+            // If game was running, inform about game stop
+            if (State == GameRoomStates.GameStarted || State == GameRoomStates.GamePaused)
+            {
+                foreach(IClient client in Clients)
+                    client.OnGameFinished(GameFinishedReasons.Stopped, null);
+            }
+
+            // Remove clients from game
+            foreach (IClient client in Clients)
+            {
+                client.State = ClientStates.InWaitRoom; // TODO: this should be done by caller
+                client.Game = null;
+            }
+
+            // Clear clients
+            _clients.Clear();
+
+            // Clear win list
+            _winList.Clear();
+
+            // Clear game statistics
+            _gameStatistics.Clear();
+
+            // Clear action queue
+            _actionQueue.Clear();
+
+            // Reset piece
+            _pieceProvider.Reset();
+
+            // Reset special id
+            _specialId = 0;
+
+            // Change state
+            State = GameRoomStates.Created;
         }
 
         public void ChangeOptions(GameOptions options)
@@ -285,7 +352,7 @@ namespace TetriNET2.Server
             }
 
             // Reset action queue
-            _actionQueue.Reset();
+            _actionQueue.Clear();
 
             // Reset piece
             _pieceProvider.Reset();
@@ -343,7 +410,7 @@ namespace TetriNET2.Server
 
             GameStatistics statistics = PrepareGameStatistics();
 
-            // Send game started to players
+            // Send game finished to players
             foreach (IClient player in Players)
             {
                 player.State = ClientStates.InGameRoom;
@@ -631,6 +698,23 @@ namespace TetriNET2.Server
 
         #endregion
 
+        #region IDisposable
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _suddenDeathTimer.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        #endregion
+
         private void SuddenDeathCallback(object state)
         {
             if (State == GameRoomStates.GameStarted && _isSuddenDeathActive)
@@ -658,21 +742,5 @@ namespace TetriNET2.Server
             entry.Score += score;
         }
 
-        #region IDisposable
-
-        private void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _suddenDeathTimer.Dispose();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        #endregion
     }
 }

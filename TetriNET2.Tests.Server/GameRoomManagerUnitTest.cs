@@ -40,9 +40,10 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestConstructorsSetProperties()
+        public void TestConstructorSetProperties()
         {
             const int maxRooms = 10;
+
             IGameRoomManager gameRoomManager = CreateGameRoomManager(maxRooms);
 
             Assert.AreEqual(gameRoomManager.MaxRooms, maxRooms);

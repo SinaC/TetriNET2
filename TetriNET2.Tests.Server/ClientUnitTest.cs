@@ -95,6 +95,7 @@ namespace TetriNET2.Tests.Server
             IPAddress address = IPAddress.Parse("127.0.0.1");
             ITetriNETCallback callback = new CountCallTetriNETCallback();
             const string team = "Team1";
+
             IClient client = CreateClient(name, address, callback, team);
 
             Assert.AreEqual(client.Name, name);
