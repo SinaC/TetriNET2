@@ -22,7 +22,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestNonNullName()
+        public void TestNullName()
         {
             try
             {
@@ -37,7 +37,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestNonNullAddress()
+        public void TestNullAddress()
         {
             try
             {
@@ -52,7 +52,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestNonNullCallback()
+        public void TestNullCallback()
         {
             try
             {

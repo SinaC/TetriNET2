@@ -5,8 +5,6 @@ namespace TetriNET2.Server.Interfaces
 {
     public interface IGameRoomManager
     {
-        Guid Id { get; }
-
         int MaxRooms { get; }
         int RoomCount { get; }
         object LockObject { get; }

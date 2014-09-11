@@ -13,11 +13,13 @@ namespace TetriNET2.Server
 
         public GameRoomManager(int maxRooms)
         {
-            Id = Guid.NewGuid();
+            if (maxRooms <= 0)
+                throw new ArgumentOutOfRangeException("maxRooms", "maxRooms must be strictly positive");
+
             MaxRooms = maxRooms;
         }
 
-        public Guid Id { get; private set; }
+        #region IGameRoomManager
 
         public int MaxRooms { get; private set; }
 
@@ -96,5 +98,7 @@ namespace TetriNET2.Server
                 room.Value.Clear();
             _rooms.Clear();
         }
+
+        #endregion
     }
 }

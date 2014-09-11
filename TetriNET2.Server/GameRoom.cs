@@ -25,8 +25,19 @@ namespace TetriNET2.Server
         private int _specialId;
         private bool _isSuddenDeathActive;
 
-        public GameRoom(IFactory factory, string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
+        public GameRoom(IFactory factory, string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null)
         {
+            if (factory == null)
+                throw new ArgumentNullException("factory");
+            if (name == null)
+                throw new ArgumentNullException("name");
+            if (maxPlayers <= 0)
+                throw new ArgumentOutOfRangeException("maxPlayers", "maxPlayers must be strictly positive");
+            if (maxSpectators <= 0)
+                throw new ArgumentOutOfRangeException("maxSpectators", "maxSpectators must be strictly positive");
+            if (options == null)
+                throw new ArgumentNullException("options");
+
             _pieceProvider = factory.CreatePieceProvider();
             Id = Guid.NewGuid();
             Name = name;

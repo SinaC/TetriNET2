@@ -52,6 +52,7 @@
   <ItemGroup>
     <Compile Include="AdminManagerUnitTest.cs" />
     <Compile Include="BanManagerUnitTest.cs" />
+    <Compile Include="ClientManagerUnitTest.cs" />
     <Compile Include="ClientUnitTest.cs" />
     <Compile Include="GameRoomManagerUnitTest.cs" />
     <Compile Include="GameRoomUnitTest.cs" />

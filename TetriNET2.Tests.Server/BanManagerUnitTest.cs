@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
-using System.Text;
-using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TetriNET2.Common.Logger;
 using TetriNET2.Server;
@@ -15,12 +11,27 @@ namespace TetriNET2.Tests.Server
     [TestClass]
     public abstract class AbstractBanManagerUnitTest
     {
-        protected abstract IBanManager CreateBanManager();
+        protected abstract IBanManager CreateBanManager(string filename = @"d:\temp\banmanagerunittest.lst");
 
         [TestInitialize]
         public void Initialize()
         {
             Log.SetLogger(new LogMock());
+        }
+
+        [TestMethod]
+        public void TestNullFilename()
+        {
+            try
+            {
+                IBanManager banManager = CreateBanManager(null);
+
+                Assert.Fail("ArgumentNullException on name not raised");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual(ex.ParamName, "filename");
+            }
         }
 
         [TestMethod]
@@ -84,9 +95,9 @@ namespace TetriNET2.Tests.Server
     [TestClass]
     public class BanManagerUnitTest : AbstractBanManagerUnitTest
     {
-        protected override IBanManager CreateBanManager()
+        protected override IBanManager CreateBanManager(string filename = @"d:\temp\banmanagerunittest.lst")
         {
-            return new BanManager(@"d:\\temp\\banmanagerunittest.log");
+            return new BanManager(filename);
         }
     }
 }

@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Net;
+using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Server.Interfaces
 {
@@ -8,5 +10,6 @@ namespace TetriNET2.Server.Interfaces
         string BannedReason(IPAddress address);
         void Ban(string name, IPAddress address, string reason);
         void Unban(IPAddress address);
+        IEnumerable<BanEntry> Entries { get; }
     }
 }
