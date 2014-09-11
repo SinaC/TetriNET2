@@ -10,7 +10,6 @@ using TetriNET2.Common.Occurancy;
 using TetriNET2.Server;
 using TetriNET2.Server.Interfaces;
 using TetriNET2.Tests.Server.Mocking;
-using GameRoom = TetriNET2.Server.GameRoom;
 
 namespace TetriNET2.Tests.Server
 {
@@ -282,9 +281,9 @@ namespace TetriNET2.Tests.Server
                 throw new System.NotImplementedException();
             }
 
-            public IGameRoom CreateRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
+            public IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
             {
-                return new GameRoom(this, name, maxPlayers, maxSpectators, rule, options, password);
+                return new TetriNET2.Server.GameRoom(this, name, maxPlayers, maxSpectators, rule, options, password);
             }
 
             public IPieceProvider CreatePieceProvider()
@@ -304,7 +303,7 @@ namespace TetriNET2.Tests.Server
 
         protected override IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
         {
-            return new GameRoom(_factory, name, maxPlayers, maxSpectators, rule, options, password);
+            return new TetriNET2.Server.GameRoom(_factory, name, maxPlayers, maxSpectators, rule, options, password);
         }
     }
 }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -52,12 +51,13 @@ namespace TetriNET2.Server
         }
 
         private readonly string _banFilename;
-        private readonly Dictionary<IPAddress, BanEntry> _banList = new Dictionary<IPAddress, BanEntry>();
+        private Dictionary<IPAddress, BanEntry> _banList;
 
         public BanManager(string filename)
         {
             if (filename == null)
                 throw new ArgumentNullException("filename");
+            _banList = new Dictionary<IPAddress, BanEntry>();
             lock (_banList)
             {
                 _banFilename = filename;
@@ -150,11 +150,14 @@ namespace TetriNET2.Server
                 //        }
                 //    }
                 //}
-                XmlSerializer serializer = new XmlSerializer(typeof(BanEntry));
+                List<BanEntry> entries = new List<BanEntry>();
+                XmlSerializer serializer = new XmlSerializer(entries.GetType());
                 using (StreamReader sr = new StreamReader(_banFilename))
                 {
-                    //TODO: serializer.Deserialize(sr, kv.Value);
+                    entries = (List<BanEntry>)serializer.Deserialize(sr);
                 }
+                lock(_banList)
+                    _banList = entries.ToDictionary(x => x.Address, x => x);
             }
             catch(Exception ex)
             {
@@ -181,11 +184,13 @@ namespace TetriNET2.Server
                 //    writer.WriteEndElement();
                 //    writer.WriteEndDocument();
                 //}
-                XmlSerializer serializer = new XmlSerializer(typeof(BanEntry));
+                List<BanEntry> entries;
+                lock(_banList)
+                    entries = _banList.Select(x => x.Value).ToList();
+                XmlSerializer serializer = new XmlSerializer(entries.GetType());
                 using (StreamWriter wr = new StreamWriter(_banFilename, false))
                 {
-                    foreach(KeyValuePair<IPAddress, BanEntry> kv in _banList)
-                        serializer.Serialize(wr, kv.Value);
+                    serializer.Serialize(wr, entries);
                 }
             }
             catch (Exception ex)

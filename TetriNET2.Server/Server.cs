@@ -516,7 +516,7 @@ namespace TetriNET2.Server
                 {
                     GameOptions options = new GameOptions();
                     // TODO: fill options in function of rule
-                    IGameRoom game = _factory.CreateRoom(name, 6, 10, rule, options, password);
+                    IGameRoom game = _factory.CreateGameRoom(name, 6, 10, rule, options, password);
                     bool added = _gameRoomManager.Add(game);
                     if (!added)
                     {
