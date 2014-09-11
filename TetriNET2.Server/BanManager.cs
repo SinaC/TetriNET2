@@ -9,6 +9,8 @@ using System.Xml.Serialization;
 using TetriNET2.Common.Logger;
 using TetriNET2.Server.Interfaces;
 
+//http://stackoverflow.com/questions/279534/proper-way-to-implement-ixmlserializable
+//http://msdn.microsoft.com/en-us/library/system.xml.serialization.ixmlserializable.readxml.aspx
 namespace TetriNET2.Server
 {
     public sealed class BanManager : IBanManager
@@ -29,9 +31,10 @@ namespace TetriNET2.Server
                 Address = address;
                 Reason = reason;
             }
+
             public XmlSchema GetSchema()
             {
-                throw new NotImplementedException();
+                return null;
             }
 
             public void ReadXml(XmlReader reader)
@@ -40,6 +43,7 @@ namespace TetriNET2.Server
                 Reason = reader.GetAttribute("Reason");
                 string address = reader.GetAttribute("Address");
                 Address = address == null ? IPAddress.None : IPAddress.Parse(address);
+                reader.Read();
             }
 
             public void WriteXml(XmlWriter writer)
@@ -113,6 +117,16 @@ namespace TetriNET2.Server
             }
         }
 
+        public void Clear()
+        {
+            lock (_banList)
+            {
+                _banList.Clear();
+
+                Save();
+            }
+        }
+
         public IEnumerable<Common.DataContracts.BanEntry> Entries
         {
             get
@@ -132,29 +146,17 @@ namespace TetriNET2.Server
         {
             try
             {
-                //using(XmlReader reader = XmlReader.Create(_banFilename))
-                //{
-                //    while(reader.Read())
-                //    {
-                //        if (reader.NodeType == XmlNodeType.Element)
-                //        {
-                //            if (reader.Name == "Entry")
-                //            {
-                //            }
-                //        }
-                //        else if (reader.NodeType == XmlNodeType.EndElement)
-                //        {
-                //            if (reader.Name == "Entry")
-                //            {
-                //            }
-                //        }
-                //    }
-                //}
-                List<BanEntry> entries = new List<BanEntry>();
-                XmlSerializer serializer = new XmlSerializer(entries.GetType());
+                if (!File.Exists(_banFilename))
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Banned file {0} not found", _banFilename);
+                    return;
+                }
+
+                BanEntry[] entries;
+                XmlSerializer serializer = new XmlSerializer(typeof(BanEntry[]));
                 using (StreamReader sr = new StreamReader(_banFilename))
                 {
-                    entries = (List<BanEntry>)serializer.Deserialize(sr);
+                    entries = (BanEntry[])serializer.Deserialize(sr);
                 }
                 lock(_banList)
                     _banList = entries.ToDictionary(x => x.Address, x => x);
@@ -184,9 +186,9 @@ namespace TetriNET2.Server
                 //    writer.WriteEndElement();
                 //    writer.WriteEndDocument();
                 //}
-                List<BanEntry> entries;
+                BanEntry[] entries;
                 lock(_banList)
-                    entries = _banList.Select(x => x.Value).ToList();
+                    entries = _banList.Select(x => x.Value).ToArray();
                 XmlSerializer serializer = new XmlSerializer(entries.GetType());
                 using (StreamWriter wr = new StreamWriter(_banFilename, false))
                 {
