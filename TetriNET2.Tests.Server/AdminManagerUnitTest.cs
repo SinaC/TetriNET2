@@ -22,42 +22,6 @@ namespace TetriNET2.Tests.Server
             Log.Default.Logger = new LogMock();
         }
 
-        #region Constructor
-
-        [TestMethod]
-        public void TestConstructorStrictlyPositiveMaxAdmins()
-        {
-            try
-            {
-                IAdminManager adminManager = CreateAdminManager(0);
-                Assert.Fail("ArgumentOutOfRange exception not raised");
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                Assert.AreEqual("maxAdmins", ex.ParamName);
-            }
-        }
-
-        [TestMethod]
-        public void TestConstructorSetProperties()
-        {
-            const int maxAdmins = 10;
-
-            IAdminManager adminManager = CreateAdminManager(maxAdmins);
-
-            Assert.AreEqual(maxAdmins, adminManager.MaxAdmins);
-        }
-
-        [TestMethod]
-        public void TestConstructorLockObjectNotNull()
-        {
-            IAdminManager adminManager = CreateAdminManager(10);
-
-            Assert.IsNotNull(adminManager.LockObject);
-        }
-
-        #endregion
-
         #region Add
 
         [TestMethod]
@@ -380,5 +344,42 @@ namespace TetriNET2.Tests.Server
         {
             return new Admin(name, address == null ? IPAddress.Any : IPAddress.Parse(address), callback);
         }
+
+        #region Constructor
+
+        [TestMethod]
+        public void TestConstructorStrictlyPositiveMaxAdmins()
+        {
+            try
+            {
+                IAdminManager adminManager = CreateAdminManager(0);
+                Assert.Fail("ArgumentOutOfRange exception not raised");
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                Assert.AreEqual("maxAdmins", ex.ParamName);
+            }
+        }
+
+        [TestMethod]
+        public void TestConstructorSetProperties()
+        {
+            const int maxAdmins = 10;
+
+            IAdminManager adminManager = CreateAdminManager(maxAdmins);
+
+            Assert.AreEqual(maxAdmins, adminManager.MaxAdmins);
+        }
+
+        [TestMethod]
+        public void TestConstructorLockObjectNotNull()
+        {
+            IAdminManager adminManager = CreateAdminManager(10);
+
+            Assert.IsNotNull(adminManager.LockObject);
+        }
+
+        #endregion
+
     }
 }

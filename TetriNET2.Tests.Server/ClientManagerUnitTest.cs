@@ -24,42 +24,6 @@ namespace TetriNET2.Tests.Server
             Log.Default.Logger = new LogMock();
         }
 
-        #region Constructor
-
-        [TestMethod]
-        public void TestConstructorStrictlyPositiveMaxClients()
-        {
-            try
-            {
-                IClientManager clientManager = CreateClientManager(0);
-                Assert.Fail("ArgumentOutOfRange exception not raised");
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                Assert.AreEqual(ex.ParamName, "maxClients");
-            }
-        }
-
-        [TestMethod]
-        public void TestConstructorSetProperties()
-        {
-            const int maxClients = 10;
-
-            IClientManager clientManager = CreateClientManager(maxClients);
-
-            Assert.AreEqual(clientManager.MaxClients, maxClients);
-        }
-
-        [TestMethod]
-        public void TestConstructorLockObjectNotNull()
-        {
-            IClientManager clientManager = CreateClientManager(10);
-
-            Assert.IsNotNull(clientManager.LockObject);
-        }
-
-        #endregion
-
         #region Add
 
         [TestMethod]
@@ -414,5 +378,42 @@ namespace TetriNET2.Tests.Server
         {
             return new Client(name, address, callback, team);
         }
+
+        #region Constructor
+
+        [TestMethod]
+        public void TestConstructorStrictlyPositiveMaxClients()
+        {
+            try
+            {
+                IClientManager clientManager = CreateClientManager(0);
+                Assert.Fail("ArgumentOutOfRange exception not raised");
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                Assert.AreEqual(ex.ParamName, "maxClients");
+            }
+        }
+
+        [TestMethod]
+        public void TestConstructorSetProperties()
+        {
+            const int maxClients = 10;
+
+            IClientManager clientManager = CreateClientManager(maxClients);
+
+            Assert.AreEqual(clientManager.MaxClients, maxClients);
+        }
+
+        [TestMethod]
+        public void TestConstructorLockObjectNotNull()
+        {
+            IClientManager clientManager = CreateClientManager(10);
+
+            Assert.IsNotNull(clientManager.LockObject);
+        }
+
+        #endregion
+
     }
 }

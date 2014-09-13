@@ -16,20 +16,1284 @@ namespace TetriNET2.Tests.Server
     [TestClass]
     public abstract class AbstractGameRoomUnitTest
     {
-        protected LogMock Logger;
         protected PieceProviderMock PieceProvider;
-        protected ActionQueueMock ActionQueue;
 
         protected abstract IClient CreateClient(string name, ITetriNETCallback callback);
         protected abstract IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators);
         protected abstract IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null);
-        protected abstract IGameRoom CreateGameRoom(IActionQueue actionQueue, IPieceProvider pieceProvider, string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null);
 
         [TestInitialize]
         public void Initialize()
         {
-            Logger = new LogMock();
-            Log.Default.Logger = Logger;
+            Log.Default.Logger = new LogMock();
+        }
+
+        #region Join
+
+        [TestMethod]
+        public void TestJoinPlayerNoMaxPlayers()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
+
+            bool success = game.Join(client, false);
+
+            Assert.IsTrue(success);
+            Assert.AreEqual(1, game.PlayerCount);
+            Assert.AreEqual(0, game.SpectatorCount);
+            Assert.AreEqual(1, game.Players.Count());
+            Assert.AreEqual(0, game.Spectators.Count());
+        }
+
+        [TestMethod]
+        public void TestJoinSpectatorNoMaxSpectators()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
+
+            bool success = game.Join(client, true);
+
+            Assert.IsTrue(success);
+            Assert.AreEqual(0, game.PlayerCount);
+            Assert.AreEqual(1, game.SpectatorCount);
+            Assert.AreEqual(0, game.Players.Count());
+            Assert.AreEqual(1, game.Spectators.Count());
+        }
+
+        [TestMethod]
+        public void TestJoinPlayerMaxPlayers()
+        {
+            IGameRoom game = CreateGameRoom("game1", 1, 10);
+            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
+            IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
+            game.Join(client1, false);
+
+            bool success = game.Join(client2, false);
+
+            Assert.IsFalse(success);
+            Assert.AreEqual(1, game.PlayerCount);
+            Assert.AreEqual(0, game.SpectatorCount);
+            Assert.AreEqual(1, game.Players.Count());
+            Assert.AreEqual(0, game.Spectators.Count());
+        }
+
+        [TestMethod]
+        public void TestJoinSpectatorMaxSpectators()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 1);
+            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
+            IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
+            game.Join(client1, true);
+
+            bool success = game.Join(client2, true);
+
+            Assert.IsFalse(success);
+            Assert.AreEqual(0, game.PlayerCount);
+            Assert.AreEqual(1, game.SpectatorCount);
+            Assert.AreEqual(0, game.Players.Count());
+            Assert.AreEqual(1, game.Spectators.Count());
+        }
+
+        [TestMethod]
+        public void TestJoinSameClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, true);
+
+            bool success = game.Join(client1, false);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestJoinPlayerModifyPlayerProperties()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
+            
+            game.Join(client, false);
+
+            Assert.AreEqual(ClientStates.WaitInGameRoom, client.State);
+            Assert.AreEqual(ClientRoles.Player, client.Roles);
+            Assert.AreEqual(game, client.Game);
+        }
+
+        [TestMethod]
+        public void TestJoinSpectatorModifySpectatorProperties()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
+
+            game.Join(client, true);
+
+            Assert.AreEqual(ClientStates.WaitInGameRoom, client.State);
+            Assert.AreEqual(ClientRoles.Spectator, client.Roles);
+            Assert.AreEqual(game, client.Game);
+        }
+
+        [TestMethod]
+        public void TestJoinPlayerCallbackCalled()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback = new CountCallTetriNETCallback();
+            IClient client = CreateClient("client1", callback);
+
+            game.Join(client, false);
+
+            Assert.AreEqual(1, callback.GetCallCount("OnGameJoined"));
+        }
+
+        [TestMethod]
+        public void TestJoinSpectatorCallbackCalled()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback = new CountCallTetriNETCallback();
+            IClient client = CreateClient("client1", callback);
+
+            game.Join(client, true);
+
+            Assert.AreEqual(1, callback.GetCallCount("OnGameJoined"));
+        }
+
+        [TestMethod]
+        public void TestJoinPlayerOtherClientsInformed()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client1, true);
+            game.Join(client2, false);
+
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, false);
+
+            Assert.AreEqual(2, callback1.GetCallCount("OnClientGameJoined"));
+            Assert.AreEqual(1, callback2.GetCallCount("OnClientGameJoined"));
+            Assert.AreEqual(0, callback3.GetCallCount("OnClientGameJoined"));
+        }
+
+        [TestMethod]
+        public void TestJoinSpectatorOtherClientsInformed()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client1, true);
+            game.Join(client2, false);
+
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, true);
+
+            Assert.AreEqual(2, callback1.GetCallCount("OnClientGameJoined"));
+            Assert.AreEqual(1, callback2.GetCallCount("OnClientGameJoined"));
+            Assert.AreEqual(0, callback3.GetCallCount("OnClientGameJoined"));
+        }
+
+        #endregion
+
+        #region Leave
+
+        [TestMethod]
+        public void TestLeaveNullClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+
+            try
+            {
+                game.Leave(null);
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch(ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestMethod]
+        public void TestLeaveNonExistingClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
+            game.Join(client1, false);
+
+            IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
+            bool success = game.Leave(client2);
+
+            Assert.IsFalse(success);
+            Assert.AreEqual(1, game.ClientCount);
+        }
+
+        [TestMethod]
+        public void TestLeaveExistingClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
+            IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
+            game.Join(client1, false);
+            game.Join(client2, true);
+
+            bool success = game.Leave(client1);
+
+            Assert.IsTrue(success);
+            Assert.AreEqual(1, game.ClientCount);
+            Assert.AreEqual(0, game.PlayerCount);
+            Assert.AreEqual(1, game.SpectatorCount);
+            Assert.AreEqual(client2, game.Clients.First());
+        }
+
+        [TestMethod]
+        public void TestLeavePlayerModifyPlayerProperties()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
+            game.Join(client, false);
+
+            game.Leave(client);
+
+            Assert.AreEqual(ClientStates.Connected, client.State);
+            Assert.AreEqual(ClientRoles.NoRole, client.Roles);
+            Assert.IsNull(client.Game);
+        }
+
+        [TestMethod]
+        public void TestLeaveSpectatorModifySpectatorProperties()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
+            game.Join(client, true);
+
+            game.Leave(client);
+
+            Assert.AreEqual(ClientStates.Connected, client.State);
+            Assert.AreEqual(ClientRoles.NoRole, client.Roles);
+            Assert.IsNull(client.Game);
+        }
+
+        [TestMethod]
+        public void TestLeaveClientCallbackCalled()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client = CreateClient("client1", callback1);
+            game.Join(client, true);
+
+            game.Leave(client);
+
+            Assert.AreEqual(1, callback1.GetCallCount("OnGameLeft"));
+        }
+
+        [TestMethod]
+        public void TestLeaveClientOtherClientsInformed()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, true);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, true);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, false);
+
+            game.Leave(client1);
+
+            Assert.AreEqual(1, callback2.GetCallCount("OnClientGameLeft"));
+            Assert.AreEqual(1, callback3.GetCallCount("OnClientGameLeft"));
+        }
+
+        #endregion
+
+        #region Clear
+
+        [TestMethod]
+        public void TestClearNoClients()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+
+            game.Clear();
+
+            Assert.AreEqual(0, game.ClientCount);
+        }
+
+        [TestMethod]
+        public void TestClearMultipleClients()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Join(CreateClient("client1", new CountCallTetriNETCallback()), true);
+            game.Join(CreateClient("client2", new CountCallTetriNETCallback()), true);
+            game.Join(CreateClient("client3", new CountCallTetriNETCallback()), true);
+
+            game.Clear();
+
+            Assert.AreEqual(0, game.ClientCount);
+        }
+
+        #endregion
+
+        #region Start/Stop
+
+        [TestMethod]
+        public void TestStartChangeState()
+        {
+            IGameRoom game = CreateGameRoom("game1", 10, 5);
+
+            game.Start(new CancellationTokenSource());
+
+            Assert.AreEqual(GameRoomStates.WaitStartGame, game.State);
+        }
+
+        [TestMethod]
+        public void TestStartOnlyIfCreated()
+        {
+            IGameRoom game = CreateGameRoom("game1", 10, 5);
+            game.Start(new CancellationTokenSource());
+
+            bool success = game.Start(new CancellationTokenSource());
+
+            Assert.AreEqual(GameRoomStates.WaitStartGame, game.State);
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestStopOnlyIfStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 10, 5);
+
+            bool success = game.Stop();
+
+            Assert.AreEqual(GameRoomStates.Created, game.State);
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestStopClientsRemovedAndStatusChanged()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, true);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, true);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, false);
+            game.Start(new CancellationTokenSource());
+
+            game.Stop();
+
+            Assert.AreEqual(GameRoomStates.Created, game.State);
+            Assert.AreEqual(0, game.ClientCount);
+            Assert.IsNull(client1.Game);
+            Assert.IsNull(client2.Game);
+            Assert.IsNull(client3.Game);
+            Assert.AreEqual(ClientStates.Connected, client1.State);
+            Assert.AreEqual(ClientStates.Connected,client2.State);
+            Assert.AreEqual(ClientStates.Connected,client3.State);
+        }
+
+        [TestMethod]
+        public void TestStopCallbackCalled()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, true);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, true);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, false);
+            game.Start(new CancellationTokenSource());
+
+            game.Stop();
+
+            Assert.AreEqual(game.State, GameRoomStates.Created);
+            Assert.AreEqual(1,callback1.GetCallCount("OnGameLeft"));
+            Assert.AreEqual(1,callback2.GetCallCount("OnGameLeft"));
+            Assert.AreEqual(1,callback3.GetCallCount("OnGameLeft"));
+        }
+
+        #endregion
+
+        #region ChangeOptions
+        [TestMethod]
+        public void TestChangeOptionsFailedIfNotWaitingGameStart()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+
+            GameOptions newOptions = new GameOptions();
+            bool success = game.ChangeOptions(newOptions);
+
+            Assert.AreEqual(originalOptions, game.Options);
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestChangeOptionsOkWhenWaitingGameStart()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            game.Start(new CancellationTokenSource());
+
+            GameOptions newOptions = new GameOptions();
+            game.ChangeOptions(newOptions);
+
+            Assert.AreEqual(newOptions, game.Options);
+        }
+
+        [TestMethod]
+        public void TestChangeOptionsClientsInformed()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, true);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, true);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, false);
+            game.Start(new CancellationTokenSource());
+
+            GameOptions newOptions = new GameOptions();
+            game.ChangeOptions(newOptions);
+
+            Assert.AreEqual(1, callback1.GetCallCount("OnGameOptionsChanged"));
+            Assert.AreEqual(1, callback2.GetCallCount("OnGameOptionsChanged"));
+            Assert.AreEqual(1, callback3.GetCallCount("OnGameOptionsChanged"));
+        }
+
+        #endregion
+
+        #region ResetWinList
+
+        [TestMethod]
+        public void TestResetWinListClientsInformed()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, true);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, true);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, false);
+            game.Start(new CancellationTokenSource());
+
+            game.ResetWinList();
+
+            Assert.AreEqual(1, callback1.GetCallCount("OnWinListModified"));
+            Assert.AreEqual(1, callback2.GetCallCount("OnWinListModified"));
+            Assert.AreEqual(1, callback3.GetCallCount("OnWinListModified"));
+        }
+
+        [TestMethod]
+        public void TestResetWinListFailedIfNotWaitingGameStart()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, true);
+
+            bool success = game.ResetWinList();
+
+            Assert.AreEqual(0, callback1.GetCallCount("OnWinListModified"));
+            Assert.IsFalse(success);
+        }
+            
+        #endregion
+
+        #region PlacePiece
+
+        [TestMethod]
+        public void TestPlacePieceExceptionIfNullClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+
+            try
+            {
+                game.PlacePiece(null, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestMethod]
+        public void TestPlacePieceFailedIfClientNotInGame()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.PlacePiece(client2, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestPlacePieceFailedIfGameNotStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, true);
+            game.Start(new CancellationTokenSource());
+
+            bool success = game.PlacePiece(client1, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestPlacePieceFailedIfClientNotPlaying()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+            client1.State = ClientStates.GameLost; // simulate game loss
+
+            bool success = game.PlacePiece(client1, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestPlacePieceOkIfGameStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.PlacePiece(client1, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
+
+            Assert.IsTrue(success);
+        }
+
+        #endregion
+
+        #region ModifyGrid
+
+        [TestMethod]
+        public void TestModifyGridExceptionIfNullClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+
+            try
+            {
+                game.ModifyGrid(null, null);
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestMethod]
+        public void TestModifyGridFailedIfClientNotInGame()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.ModifyGrid(client2, null);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestModifyGridFailedIfGameNotStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, true);
+            game.Start(new CancellationTokenSource());
+
+            bool success = game.ModifyGrid(client1, null);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestModifyGridFailedIfClientNotPlaying()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+            client1.State = ClientStates.GameLost; // simulate game loss
+
+            bool success = game.ModifyGrid(client1, null);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestModifyGridOkIfGameStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.ModifyGrid(client1, null);
+
+            Assert.IsTrue(success);
+        }
+
+        #endregion
+
+        #region UseSpecial
+
+        [TestMethod]
+        public void TestUseSpecialExceptionIfNullClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+
+            try
+            {
+                game.UseSpecial(null, null, Specials.BlockBomb);
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestMethod]
+        public void TestUseSpecialExceptionIfNullTarget()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+
+            try
+            {
+                game.UseSpecial(client1, null, Specials.BlockBomb);
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual("target", ex.ParamName);
+            }
+        }
+
+        [TestMethod]
+        public void TestUseSpecialFailedIfClientNotInGame()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.UseSpecial(client2, client1, Specials.BlockBomb);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestUseSpecialFailedIfTargetNotInGame()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.UseSpecial(client1, client2, Specials.BlockBomb);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestUseSpecialFailedIfGameNotStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            game.Start(new CancellationTokenSource());
+
+            bool success = game.UseSpecial(client1, client2, Specials.AddLines);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestUseSpecialFailedIfClientNotPlaying()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+            client1.State = ClientStates.GameLost; // simulate game loss
+
+            bool success = game.UseSpecial(client1, client2, Specials.AddLines);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestUseSpecialFailedIfTargetNotPlaying()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+            client2.State = ClientStates.GameLost; // simulate game loss
+
+            bool success = game.UseSpecial(client1, client2, Specials.AddLines);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestUseSpecialOkIfGameStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.UseSpecial(client1, client2, Specials.AddLines);
+
+            Assert.IsTrue(success);
+        }
+
+        #endregion
+
+        #region ClearLines
+
+        [TestMethod]
+        public void TestClearLinesExceptionIfNullClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+
+            try
+            {
+                game.ClearLines(null, 4);
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestMethod]
+        public void TestClearLinesFailedIfClientNotInGame()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.ClearLines(client2, 4);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestClearLinesFailedIfGameNotStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, true);
+            game.Start(new CancellationTokenSource());
+
+            bool success = game.ClearLines(client1, 4);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestClearLinesFailedIfClientNotPlaying()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+            client1.State = ClientStates.GameLost; // simulate game loss
+
+            bool success = game.ClearLines(client1, 4);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestClearLinesOkIfGameStartedAndClassicMultiplayerRules()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.Options.ClassicStyleMultiplayerRules = true;
+            game.StartGame();
+
+            bool success = game.ClearLines(client1, 4);
+
+            Assert.IsTrue(success);
+        }
+
+        #endregion
+
+        #region GameLost
+
+        [TestMethod]
+        public void TestGameLostExceptionIfNullClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+
+            try
+            {
+                game.GameLost(null);
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestMethod]
+        public void TestGameLostFailedIfClientNotInGame()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+
+            bool success = game.GameLost(client1);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestGameLostFailedIfClientNotPlaying()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+            client1.State = ClientStates.GameLost; // simulate game loss
+
+            bool success = game.ClearLines(client1, 4);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestGameLostOkIfGameStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.Options.ClassicStyleMultiplayerRules = true;
+            game.StartGame();
+
+            bool success = game.GameLost(client1);
+
+            Assert.IsTrue(success);
+        }
+
+        #endregion
+
+        #region FinishContinuousSpecial
+
+        [TestMethod]
+        public void TestFinishContinuousSpecialExceptionIfNullClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+
+            try
+            {
+                game.FinishContinuousSpecial(null, Specials.Darkness);
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestMethod]
+        public void TestFinishContinuousSpecialFailedIfClientNotInGame()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.FinishContinuousSpecial(client2, Specials.Darkness);
+
+            Assert.IsFalse(success);
+        }
+
+        [TestMethod]
+        public void TestFinishContinuousSpecialOkIfGameStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.Options.ClassicStyleMultiplayerRules = true;
+            game.StartGame();
+
+            bool success = game.FinishContinuousSpecial(client1, Specials.Darkness);
+
+            Assert.IsTrue(success);
+        }
+
+        #endregion
+
+        #region EarnAchievement
+
+        [TestMethod]
+        public void TestEarnAchievementSpecialExceptionIfNullClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+
+            try
+            {
+                game.EarnAchievement(null, 5, "achievement");
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestMethod]
+        public void TestEarnAchievementSpecialFailedIfClientNotInGame()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.EarnAchievement(client2, 5, "achievement");
+
+            Assert.IsFalse(success);
+        }
+        
+        [TestMethod]
+        public void TestEarnAchievement()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, true);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            bool success = game.EarnAchievement(client1, 5, "achievement");
+
+            Assert.IsTrue(success);
+        }
+
+        #endregion
+
+        #region StartGame    TODO
+
+        // TODO
+
+        #endregion
+
+        #region StopGame    TODO
+
+        // TODO
+
+        #endregion
+
+        #region PauseGame
+
+        [TestMethod]
+        public void TestPauseGameFailedIfGameNotStarted()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, true);
+            game.Start(new CancellationTokenSource());
+
+            game.PauseGame();
+
+            Assert.AreEqual(GameRoomStates.WaitStartGame, game.State);
+            Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
+            Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
+            Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
+        }
+
+        [TestMethod]
+        public void TestPauseGameStatusUpdatedAndCallbacksCalled()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, true);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            game.PauseGame();
+
+            Assert.AreEqual(GameRoomStates.GamePaused, game.State);
+            Assert.AreEqual(1, callback1.GetCallCount("OnGamePaused"));
+            Assert.AreEqual(1, callback2.GetCallCount("OnGamePaused"));
+            Assert.AreEqual(1, callback3.GetCallCount("OnGamePaused"));
+        }
+
+        #endregion
+
+        #region ResumeGame
+
+        [TestMethod]
+        public void TestResumeGameFailedIfGameNotStarted()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, true);
+            game.Start(new CancellationTokenSource());
+
+            game.ResumeGame();
+
+            Assert.AreEqual(GameRoomStates.WaitStartGame, game.State);
+            Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
+            Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
+            Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
+        }
+
+        [TestMethod]
+        public void TestResumeGameFailedIfGameNotPaused()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, true);
+            game.Start(new CancellationTokenSource());
+
+            game.ResumeGame();
+
+            Assert.AreEqual(GameRoomStates.WaitStartGame, game.State);
+            Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
+            Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
+            Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
+        }
+
+        [TestMethod]
+        public void TestResumeGameStatusUpdatedAndCallbacksCalled()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, true);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+            game.PauseGame();
+
+            game.ResumeGame();
+
+            Assert.AreEqual(GameRoomStates.GameStarted, game.State);
+            Assert.AreEqual(1, callback1.GetCallCount("OnGameResumed"));
+            Assert.AreEqual(1, callback2.GetCallCount("OnGameResumed"));
+            Assert.AreEqual(1, callback3.GetCallCount("OnGameResumed"));
+        }
+
+        #endregion
+
+        // TODO: 
+        //  StartGame, StopGame
+        //  game started + join/leave/stop/game lost
+        //  reset win list after a few win
+    }
+
+    [TestClass]
+    public class GameRoomUnitTest : AbstractGameRoomUnitTest
+    {
+        protected ActionQueueMock ActionQueue;
+
+        protected override IClient CreateClient(string name, ITetriNETCallback callback)
+        {
+            return new Client(name, IPAddress.Any, callback);
+        }
+
+        protected override IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators)
+        {
+            return CreateGameRoom(name, maxPlayers, maxSpectators, GameRules.Classic, new GameOptions());
+        }
+
+        protected override IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null)
+        {
+            return CreateGameRoom(new ActionQueueMock(), new PieceProviderMock(), name, maxPlayers, maxSpectators, rule, options, password);
+        }
+
+        protected IGameRoom CreateGameRoom(IActionQueue actionQueue, IPieceProvider pieceProvider, string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null)
+        {
+            ActionQueue = actionQueue as ActionQueueMock;
+            PieceProvider = pieceProvider as PieceProviderMock;
+
+            return new GameRoom(actionQueue, pieceProvider, name, maxPlayers, maxSpectators, rule, options, password);
         }
 
         #region Constructor
@@ -157,585 +1421,7 @@ namespace TetriNET2.Tests.Server
 
         #endregion
 
-        #region Join
-
-        [TestMethod]
-        public void TestJoinPlayerNoMaxPlayers()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
-
-            bool joined = game.Join(client, false);
-
-            Assert.IsTrue(joined);
-            Assert.AreEqual(1, game.PlayerCount);
-            Assert.AreEqual(0, game.SpectatorCount);
-            Assert.AreEqual(1, game.Players.Count());
-            Assert.AreEqual(0, game.Spectators.Count());
-        }
-
-        [TestMethod]
-        public void TestJoinSpectatorNoMaxSpectators()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
-
-            bool joined = game.Join(client, true);
-
-            Assert.IsTrue(joined);
-            Assert.AreEqual(0, game.PlayerCount);
-            Assert.AreEqual(1, game.SpectatorCount);
-            Assert.AreEqual(0, game.Players.Count());
-            Assert.AreEqual(1, game.Spectators.Count());
-        }
-
-        [TestMethod]
-        public void TestJoinPlayerMaxPlayers()
-        {
-            IGameRoom game = CreateGameRoom("game1", 1, 10);
-            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
-            IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
-            game.Join(client1, false);
-
-            bool joined = game.Join(client2, false);
-
-            Assert.IsFalse(joined);
-            Assert.AreEqual(1, game.PlayerCount);
-            Assert.AreEqual(0, game.SpectatorCount);
-            Assert.AreEqual(1, game.Players.Count());
-            Assert.AreEqual(0, game.Spectators.Count());
-        }
-
-        [TestMethod]
-        public void TestJoinSpectatorMaxSpectators()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 1);
-            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
-            IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
-            game.Join(client1, true);
-
-            bool joined = game.Join(client2, true);
-
-            Assert.IsFalse(joined);
-            Assert.AreEqual(0, game.PlayerCount);
-            Assert.AreEqual(1, game.SpectatorCount);
-            Assert.AreEqual(0, game.Players.Count());
-            Assert.AreEqual(1, game.Spectators.Count());
-        }
-
-        [TestMethod]
-        public void TestJoinSameClient()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
-
-            bool joined = game.Join(client1, false);
-
-            Assert.IsFalse(joined);
-        }
-
-        [TestMethod]
-        public void TestJoinPlayerModifyPlayerProperties()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
-            
-            game.Join(client, false);
-
-            Assert.AreEqual(ClientStates.WaitInGameRoom, client.State);
-            Assert.AreEqual(ClientRoles.Player, client.Roles);
-            Assert.AreEqual(game, client.Game);
-        }
-
-        [TestMethod]
-        public void TestJoinSpectatorModifySpectatorProperties()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
-
-            game.Join(client, true);
-
-            Assert.AreEqual(ClientStates.WaitInGameRoom, client.State);
-            Assert.AreEqual(ClientRoles.Spectator, client.Roles);
-            Assert.AreEqual(game, client.Game);
-        }
-
-        [TestMethod]
-        public void TestJoinPlayerCallbackCalled()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback = new CountCallTetriNETCallback();
-            IClient client = CreateClient("client1", callback);
-
-            game.Join(client, false);
-
-            Assert.AreEqual(1, callback.GetCallCount("OnGameJoined"));
-        }
-
-        [TestMethod]
-        public void TestJoinSpectatorCallbackCalled()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback = new CountCallTetriNETCallback();
-            IClient client = CreateClient("client1", callback);
-
-            game.Join(client, true);
-
-            Assert.AreEqual(1, callback.GetCallCount("OnGameJoined"));
-        }
-
-        [TestMethod]
-        public void TestJoinPlayerOtherClientsInformed()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client1, true);
-            game.Join(client2, false);
-
-            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
-            IClient client3 = CreateClient("client3", callback3);
-            game.Join(client3, false);
-
-            Assert.AreEqual(2, callback1.GetCallCount("OnClientGameJoined"));
-            Assert.AreEqual(1, callback2.GetCallCount("OnClientGameJoined"));
-            Assert.AreEqual(0, callback3.GetCallCount("OnClientGameJoined"));
-        }
-
-        [TestMethod]
-        public void TestJoinSpectatorOtherClientsInformed()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client1, true);
-            game.Join(client2, false);
-
-            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
-            IClient client3 = CreateClient("client3", callback3);
-            game.Join(client3, true);
-
-            Assert.AreEqual(2, callback1.GetCallCount("OnClientGameJoined"));
-            Assert.AreEqual(1, callback2.GetCallCount("OnClientGameJoined"));
-            Assert.AreEqual(0, callback3.GetCallCount("OnClientGameJoined"));
-        }
-
-        #endregion
-
-        #region Leave
-
-        [TestMethod]
-        public void TestLeaveNullClient()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-
-            try
-            {
-                game.Leave(null);
-
-                Assert.Fail("Exception not thrown");
-            }
-            catch(ArgumentNullException ex)
-            {
-                Assert.AreEqual("client", ex.ParamName);
-            }
-        }
-
-        [TestMethod]
-        public void TestLeaveNonExistingClient()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
-            game.Join(client1, false);
-
-            IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
-            bool left = game.Leave(client2);
-
-            Assert.IsFalse(left);
-            Assert.AreEqual(1, game.ClientCount);
-        }
-
-        [TestMethod]
-        public void TestLeaveExistingClient()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
-            IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
-            game.Join(client1, false);
-            game.Join(client2, true);
-
-            bool left = game.Leave(client1);
-
-            Assert.IsTrue(left);
-            Assert.AreEqual(1, game.ClientCount);
-            Assert.AreEqual(0, game.PlayerCount);
-            Assert.AreEqual(1, game.SpectatorCount);
-            Assert.AreEqual(client2, game.Clients.First());
-        }
-
-        [TestMethod]
-        public void TestLeavePlayerModifyPlayerProperties()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
-            game.Join(client, false);
-
-            game.Leave(client);
-
-            Assert.AreEqual(ClientStates.Connected, client.State);
-            Assert.AreEqual(ClientRoles.NoRole, client.Roles);
-            Assert.IsNull(client.Game);
-        }
-
-        [TestMethod]
-        public void TestLeaveSpectatorModifySpectatorProperties()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
-            game.Join(client, true);
-
-            game.Leave(client);
-
-            Assert.AreEqual(ClientStates.Connected, client.State);
-            Assert.AreEqual(ClientRoles.NoRole, client.Roles);
-            Assert.IsNull(client.Game);
-        }
-
-        [TestMethod]
-        public void TestLeaveClientCallbackCalled()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client = CreateClient("client1", callback1);
-            game.Join(client, true);
-
-            game.Leave(client);
-
-            Assert.AreEqual(1, callback1.GetCallCount("OnGameLeft"));
-        }
-
-        [TestMethod]
-        public void TestLeaveClientOtherClientsInformed()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client2, true);
-            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
-            IClient client3 = CreateClient("client3", callback3);
-            game.Join(client3, false);
-
-            game.Leave(client1);
-
-            Assert.AreEqual(1, callback2.GetCallCount("OnClientGameLeft"));
-            Assert.AreEqual(1, callback3.GetCallCount("OnClientGameLeft"));
-        }
-
-        #endregion
-
-        #region Clear
-
-        [TestMethod]
-        public void TestClearNoClients()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-
-            game.Clear();
-
-            Assert.AreEqual(0, game.ClientCount);
-        }
-
-        [TestMethod]
-        public void TestClearMultipleClients()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            game.Join(CreateClient("client1", new CountCallTetriNETCallback()), true);
-            game.Join(CreateClient("client2", new CountCallTetriNETCallback()), true);
-            game.Join(CreateClient("client3", new CountCallTetriNETCallback()), true);
-
-            game.Clear();
-
-            Assert.AreEqual(0, game.ClientCount);
-        }
-
-        #endregion
-
-        #region Start/Stop
-
-        [TestMethod]
-        public void TestStartChangeState()
-        {
-            IGameRoom game = CreateGameRoom("game1", 10, 5);
-
-            game.Start(new CancellationTokenSource());
-
-            Assert.AreEqual(GameRoomStates.WaitStartGame, game.State);
-        }
-
-        [TestMethod]
-        public void TestStartOnlyIfCreated()
-        {
-            IGameRoom game = CreateGameRoom("game1", 10, 5);
-            game.Start(new CancellationTokenSource());
-            Logger.Clear();
-
-            game.Start(new CancellationTokenSource());
-
-            Assert.AreEqual(GameRoomStates.WaitStartGame, game.State);
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-        }
-
-        [TestMethod]
-        public void TestStopOnlyIfStarted()
-        {
-            IGameRoom game = CreateGameRoom("game1", 10, 5);
-            Logger.Clear();
-
-            game.Stop();
-
-            Assert.AreEqual(GameRoomStates.Created, game.State);
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-        }
-
-        [TestMethod]
-        public void TestStopClientsRemovedAndStatusChanged()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client2, true);
-            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
-            IClient client3 = CreateClient("client3", callback3);
-            game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
-
-            game.Stop();
-
-            Assert.AreEqual(GameRoomStates.Created, game.State);
-            Assert.AreEqual(0, game.ClientCount);
-            Assert.IsNull(client1.Game);
-            Assert.IsNull(client2.Game);
-            Assert.IsNull(client3.Game);
-            Assert.AreEqual(ClientStates.Connected, client1.State);
-            Assert.AreEqual(ClientStates.Connected,client2.State);
-            Assert.AreEqual(ClientStates.Connected,client3.State);
-        }
-
-        [TestMethod]
-        public void TestStopCallbackCalled()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client2, true);
-            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
-            IClient client3 = CreateClient("client3", callback3);
-            game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
-
-            game.Stop();
-
-            Assert.AreEqual(game.State, GameRoomStates.Created);
-            Assert.AreEqual(1,callback1.GetCallCount("OnGameLeft"));
-            Assert.AreEqual(1,callback2.GetCallCount("OnGameLeft"));
-            Assert.AreEqual(1,callback3.GetCallCount("OnGameLeft"));
-        }
-
-        #endregion
-
-        #region ChangeOptions
-        [TestMethod]
-        public void TestChangeOptionsFailedIfNotWaitingGameStart()
-        {
-            GameOptions originalOptions = new GameOptions();
-            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
-            Logger.Clear();
-
-            GameOptions newOptions = new GameOptions();
-            game.ChangeOptions(newOptions);
-
-            Assert.AreEqual(originalOptions, game.Options);
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-        }
-
-        [TestMethod]
-        public void TestChangeOptionsOkWhenWaitingGameStart()
-        {
-            GameOptions originalOptions = new GameOptions();
-            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
-            game.Start(new CancellationTokenSource());
-
-            GameOptions newOptions = new GameOptions();
-            game.ChangeOptions(newOptions);
-
-            Assert.AreEqual(newOptions, game.Options);
-        }
-
-        [TestMethod]
-        public void TestChangeOptionsClientsInformed()
-        {
-            GameOptions originalOptions = new GameOptions();
-            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client2, true);
-            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
-            IClient client3 = CreateClient("client3", callback3);
-            game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
-
-            GameOptions newOptions = new GameOptions();
-            game.ChangeOptions(newOptions);
-
-            Assert.AreEqual(1, callback1.GetCallCount("OnGameOptionsChanged"));
-            Assert.AreEqual(1, callback2.GetCallCount("OnGameOptionsChanged"));
-            Assert.AreEqual(1, callback3.GetCallCount("OnGameOptionsChanged"));
-        }
-
-        #endregion
-
-        #region ResetWinList
-
-        [TestMethod]
-        public void TestResetWinListClientsInformed()
-        {
-            GameOptions originalOptions = new GameOptions();
-            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client2, true);
-            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
-            IClient client3 = CreateClient("client3", callback3);
-            game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
-
-            game.ResetWinList();
-
-            Assert.AreEqual(1, callback1.GetCallCount("OnWinListModified"));
-            Assert.AreEqual(1, callback2.GetCallCount("OnWinListModified"));
-            Assert.AreEqual(1, callback3.GetCallCount("OnWinListModified"));
-        }
-
-        [TestMethod]
-        public void TestResetWinListFailedIfNotWaitingGameStart()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
-            Logger.Clear();
-
-            game.ResetWinList();
-
-            Assert.AreEqual(0, callback1.GetCallCount("OnWinListModified"));
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-        }
-            
-        #endregion
-
         #region PlacePiece
-
-        [TestMethod]
-        public void TestPlacePieceExceptionIfNullClient()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-
-            try
-            {
-                game.PlacePiece(null, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
-
-                Assert.Fail("Exception not thrown");
-            }
-            catch (ArgumentNullException ex)
-            {
-                Assert.AreEqual("client", ex.ParamName);
-            }
-        }
-
-        [TestMethod]
-        public void TestPlacePieceFailedIfClientNotInGame()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            Logger.Clear();
-
-            game.PlacePiece(client1, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestPlacePieceFailedIfGameNotStarted()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
-            game.Start(new CancellationTokenSource());
-            Logger.Clear();
-            
-            game.PlacePiece(client1, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestPlacePieceFailedIfClientNotPlaying()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.StartGame();
-            client1.State = ClientStates.GameLost; // simulate game loss
-
-            game.PlacePiece(client1, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestPlacePieceActionEnqueuedIfGameStarted()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.StartGame();
-
-            game.PlacePiece(client1, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
-
-            Assert.AreEqual(1, ActionQueue.ActionCount);
-        }
 
         [TestMethod]
         public void TestPlacePieceActionCallbacksCalled()
@@ -771,87 +1457,6 @@ namespace TetriNET2.Tests.Server
         #region ModifyGrid
 
         [TestMethod]
-        public void TestModifyGridExceptionIfNullClient()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-
-            try
-            {
-                game.ModifyGrid(null, null);
-
-                Assert.Fail("Exception not thrown");
-            }
-            catch (ArgumentNullException ex)
-            {
-                Assert.AreEqual("client", ex.ParamName);
-            }
-        }
-
-        [TestMethod]
-        public void TestModifyGridFailedIfClientNotInGame()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            Logger.Clear();
-
-            game.ModifyGrid(client1, null);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestModifyGridFailedIfGameNotStarted()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
-            game.Start(new CancellationTokenSource());
-            Logger.Clear();
-
-            game.ModifyGrid(client1, null);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestModifyGridFailedIfClientNotPlaying()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.StartGame();
-            client1.State = ClientStates.GameLost; // simulate game loss
-
-            game.ModifyGrid(client1, null);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestModifyGridActionEnqueuedIfGameStarted()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.StartGame();
-
-            game.ModifyGrid(client1, null);
-
-            Assert.AreEqual(1, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
         public void TestModifyGridActionCallbacksCalled()
         {
             GameOptions originalOptions = new GameOptions();
@@ -880,156 +1485,7 @@ namespace TetriNET2.Tests.Server
         #endregion
 
         #region UseSpecial
-
-        [TestMethod]
-        public void TestUseSpecialExceptionIfNullClient()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-
-            try
-            {
-                game.UseSpecial(null, null, Specials.BlockBomb);
-
-                Assert.Fail("Exception not thrown");
-            }
-            catch (ArgumentNullException ex)
-            {
-                Assert.AreEqual("client", ex.ParamName);
-            }
-        }
-
-        [TestMethod]
-        public void TestUseSpecialExceptionIfNullTarget()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-
-            try
-            {
-                game.UseSpecial(client1, null, Specials.BlockBomb);
-
-                Assert.Fail("Exception not thrown");
-            }
-            catch (ArgumentNullException ex)
-            {
-                Assert.AreEqual("target", ex.ParamName);
-            }
-        }
-
-        [TestMethod]
-        public void TestUseSpecialFailedIfClientNotInGame()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            Logger.Clear();
-
-            game.UseSpecial(client1, client2, Specials.BlockBomb);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestUseSpecialFailedIfTargetNotInGame()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            Logger.Clear();
-
-            game.UseSpecial(client1, client2, Specials.BlockBomb);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestUseSpecialFailedIfGameNotStarted()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client2, false);
-            game.Start(new CancellationTokenSource());
-            Logger.Clear();
-
-            game.UseSpecial(client1, client2, Specials.AddLines);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestUseSpecialFailedIfClientNotPlaying()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client2, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.StartGame();
-            client1.State = ClientStates.GameLost; // simulate game loss
-
-            game.UseSpecial(client1, client2, Specials.AddLines);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestUseSpecialFailedIfTargetNotPlaying()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client2, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.StartGame();
-            client2.State = ClientStates.GameLost; // simulate game loss
-
-            game.UseSpecial(client1, client2, Specials.AddLines);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestUseSpecialActionEnqueuedIfGameStarted()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
-            IClient client2 = CreateClient("client2", callback2);
-            game.Join(client2, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.StartGame();
-
-            game.UseSpecial(client1, client2, Specials.AddLines);
-
-            Assert.AreEqual(1, ActionQueue.ActionCount);
-        }
-
+        
         [TestMethod]
         public void TestUseSpecialActionCallbacksCalled()
         {
@@ -1090,107 +1546,6 @@ namespace TetriNET2.Tests.Server
         #region ClearLines
 
         [TestMethod]
-        public void TestClearLinesExceptionIfNullClient()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-
-            try
-            {
-                game.ClearLines(null, 4);
-
-                Assert.Fail("Exception not thrown");
-            }
-            catch (ArgumentNullException ex)
-            {
-                Assert.AreEqual("client", ex.ParamName);
-            }
-        }
-
-        [TestMethod]
-        public void TestClearLinesFailedIfClientNotInGame()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            Logger.Clear();
-
-            game.ClearLines(client1, 4);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestClearLinesFailedIfGameNotStarted()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
-            game.Start(new CancellationTokenSource());
-            Logger.Clear();
-
-            game.ClearLines(client1, 4);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestClearLinesFailedIfClientNotPlaying()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.StartGame();
-            client1.State = ClientStates.GameLost; // simulate game loss
-
-            game.ClearLines(client1, 4);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestClearLinesActionNotEnqueuedIfClassicMultiplayerRulesNotSet()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.Options.ClassicStyleMultiplayerRules = false;
-            game.StartGame();
-            Logger.Clear();
-
-            game.ClearLines(client1, 4);
-
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-            Assert.IsNull(Logger.LastLogLine);
-        }
-
-        [TestMethod]
-        public void TestClearLinesActionEnqueuedIfGameStartedAndClassicMultiplayerRules()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.Options.ClassicStyleMultiplayerRules = true;
-            game.StartGame();
-
-            game.ClearLines(client1, 4);
-
-            Assert.AreEqual(1, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
         public void TestClearLinesActionCallbacksCalled()
         {
             GameOptions originalOptions = new GameOptions();
@@ -1216,43 +1571,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, callback3.GetCallCount("OnGridModified"));
         }
 
-        #endregion
-
-        #region GameLost
-
         [TestMethod]
-        public void TestGameLostExceptionIfNullClient()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-
-            try
-            {
-                game.GameLost(null);
-
-                Assert.Fail("Exception not thrown");
-            }
-            catch (ArgumentNullException ex)
-            {
-                Assert.AreEqual("client", ex.ParamName);
-            }
-        }
-
-        [TestMethod]
-        public void TestGameLostFailedIfClientNotInGame()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            Logger.Clear();
-
-            game.GameLost(client1);
-
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
-            Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestGameLostFailedIfClientNotPlaying()
+        public void TestClearLinesActionNotEnqueuedIfClassicMultiplayerRulesNotSet()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
@@ -1260,64 +1580,74 @@ namespace TetriNET2.Tests.Server
             game.Join(client1, false);
             game.Start(new CancellationTokenSource());
             game.Options.ResetToDefault(); // needed for reset statistics
+            game.Options.ClassicStyleMultiplayerRules = false;
             game.StartGame();
-            client1.State = ClientStates.GameLost; // simulate game loss
 
-            game.ClearLines(client1, 4);
+            bool success = game.ClearLines(client1, 4);
 
-            Assert.AreEqual(LogLevels.Warning, Logger.LastLogLevel);
+            Assert.IsTrue(success);
             Assert.AreEqual(0, ActionQueue.ActionCount);
-        }
-
-        [TestMethod]
-        public void TestGameLostActionEnqueuedIfGameStarted()
-        {
-            IGameRoom game = CreateGameRoom("game1", 5, 10);
-            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
-            IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
-            game.Options.ResetToDefault(); // needed for reset statistics
-            game.Options.ClassicStyleMultiplayerRules = true;
-            game.StartGame();
-
-            game.GameLost(client1);
-
-            Assert.AreEqual(1, ActionQueue.ActionCount);
         }
 
         #endregion
 
-        // TODO: 
-        //  FinishContinuousSpecial, EarnAchievement, StartGame, StopGame, PauseGame, ResumeGame
-        //  game started + join/leave/stop/game lost
-        //  reset win list after a few win
-    }
+        #region FinishContinuousSpecial
 
-    [TestClass]
-    public class GameRoomUnitTest : AbstractGameRoomUnitTest
-    {
-        protected override IClient CreateClient(string name, ITetriNETCallback callback)
+        [TestMethod]
+        public void TestFinishContinuousSpecialActionCallbacksCalled()
         {
-            return new Client(name, IPAddress.Any, callback);
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, true);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            game.FinishContinuousSpecial(client1, Specials.Darkness);
+            ActionQueue.DequeueAndExecuteFirstAction();
+
+            Assert.AreEqual(0, callback1.GetCallCount("OnContinuousSpecialFinished"));
+            Assert.AreEqual(1, callback2.GetCallCount("OnContinuousSpecialFinished"));
+            Assert.AreEqual(1, callback3.GetCallCount("OnContinuousSpecialFinished"));
         }
 
-        protected override IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators)
+        #endregion
+
+        #region EarnAchievement
+
+        [TestMethod]
+        public void TestEarnAchievementCallbacksCalled()
         {
-            return CreateGameRoom(name, maxPlayers, maxSpectators, GameRules.Classic, new GameOptions());
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, true);
+            game.Start(new CancellationTokenSource());
+            game.Options.ResetToDefault(); // needed for reset statistics
+            game.StartGame();
+
+            game.EarnAchievement(client1, 5, "achievement");
+
+            Assert.AreEqual(0, callback1.GetCallCount("OnAchievementEarned"));
+            Assert.AreEqual(1, callback2.GetCallCount("OnAchievementEarned"));
+            Assert.AreEqual(1, callback3.GetCallCount("OnAchievementEarned"));
         }
 
-        protected override IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null)
-        {
-            return CreateGameRoom(new ActionQueueMock(), new PieceProviderMock(), name, maxPlayers, maxSpectators, rule, options, password);
-        }
-
-        protected override IGameRoom CreateGameRoom(IActionQueue actionQueue, IPieceProvider pieceProvider, string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null)
-        {
-            ActionQueue = actionQueue as ActionQueueMock;
-            PieceProvider = pieceProvider as PieceProviderMock;
-
-            return new GameRoom(actionQueue, pieceProvider, name, maxPlayers, maxSpectators, rule, options, password);
-        }
+        #endregion
     }
 }

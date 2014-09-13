@@ -23,73 +23,6 @@ namespace TetriNET2.Tests.Server
             Log.Default.Logger = new LogMock();
         }
 
-        #region Constructor
-
-        [TestMethod]
-        public void TestConstructorNullName()
-        {
-            try
-            {
-                IClient client = CreateClient(null, IPAddress.Parse("127.0.0.1"), new CountCallTetriNETCallback());
-
-                Assert.Fail("ArgumentNullException on name not raised");
-            }
-            catch (ArgumentNullException ex)
-            {
-                Assert.AreEqual(ex.ParamName, "name");
-            }
-        }
-
-        [TestMethod]
-        public void TestConstructorNullAddress()
-        {
-            try
-            {
-                IClient client = CreateClient("Client1", null, new CountCallTetriNETCallback());
-
-                Assert.Fail("ArgumentNullException on name not raised");
-            }
-            catch (ArgumentNullException ex)
-            {
-                Assert.AreEqual(ex.ParamName, "address");
-            }
-        }
-
-        [TestMethod]
-        public void TestConstructorNullCallback()
-        {
-            try
-            {
-                IClient client = CreateClient("Client1", IPAddress.Parse("127.0.0.1"), null);
-
-                Assert.Fail("ArgumentNullException on callback not raised");
-            }
-            catch (ArgumentNullException ex)
-            {
-                Assert.AreEqual(ex.ParamName, "callback");
-            }
-        }
-
-        [TestMethod]
-        public void TestConstructorSetProperties()
-        {
-            const string name = "Client1";
-            IPAddress address = IPAddress.Parse("127.0.0.1");
-            ITetriNETCallback callback = new CountCallTetriNETCallback();
-            const string team = "Team1";
-
-            IClient client = CreateClient(name, address, callback, team);
-
-            Assert.AreEqual(client.Name, name);
-            Assert.AreEqual(client.Address, address);
-            Assert.AreEqual(client.Callback, callback);
-            Assert.AreEqual(client.Team, team);
-            Assert.AreNotEqual(client.ConnectTime, default(DateTime));
-            Assert.IsFalse(client.Id.Equals(default(Guid)));
-        }
-
-        #endregion
-
         #region Exception
 
         [TestMethod]
@@ -179,5 +112,72 @@ namespace TetriNET2.Tests.Server
         {
             return new Client(name, address, callback, team);
         }
+
+        #region Constructor
+
+        [TestMethod]
+        public void TestConstructorNullName()
+        {
+            try
+            {
+                IClient client = CreateClient(null, IPAddress.Parse("127.0.0.1"), new CountCallTetriNETCallback());
+
+                Assert.Fail("ArgumentNullException on name not raised");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual(ex.ParamName, "name");
+            }
+        }
+
+        [TestMethod]
+        public void TestConstructorNullAddress()
+        {
+            try
+            {
+                IClient client = CreateClient("Client1", null, new CountCallTetriNETCallback());
+
+                Assert.Fail("ArgumentNullException on name not raised");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual(ex.ParamName, "address");
+            }
+        }
+
+        [TestMethod]
+        public void TestConstructorNullCallback()
+        {
+            try
+            {
+                IClient client = CreateClient("Client1", IPAddress.Parse("127.0.0.1"), null);
+
+                Assert.Fail("ArgumentNullException on callback not raised");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual(ex.ParamName, "callback");
+            }
+        }
+
+        [TestMethod]
+        public void TestConstructorSetProperties()
+        {
+            const string name = "Client1";
+            IPAddress address = IPAddress.Parse("127.0.0.1");
+            ITetriNETCallback callback = new CountCallTetriNETCallback();
+            const string team = "Team1";
+
+            IClient client = CreateClient(name, address, callback, team);
+
+            Assert.AreEqual(client.Name, name);
+            Assert.AreEqual(client.Address, address);
+            Assert.AreEqual(client.Callback, callback);
+            Assert.AreEqual(client.Team, team);
+            Assert.AreNotEqual(client.ConnectTime, default(DateTime));
+            Assert.IsFalse(client.Id.Equals(default(Guid)));
+        }
+
+        #endregion
     }
 }

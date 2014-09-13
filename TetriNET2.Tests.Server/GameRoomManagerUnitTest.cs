@@ -23,42 +23,6 @@ namespace TetriNET2.Tests.Server
             Log.Default.Logger = new LogMock();
         }
 
-        #region Constructor
-
-        [TestMethod]
-        public void TestConstructorStrictlyPositiveMaxRooms()
-        {
-            try
-            {
-                IGameRoomManager gameRoomManager = CreateGameRoomManager(0);
-                Assert.Fail("ArgumentOutOfRange exception not raised");
-            }
-            catch (ArgumentOutOfRangeException ex)
-            {
-                Assert.AreEqual(ex.ParamName, "maxRooms");
-            }
-        }
-
-        [TestMethod]
-        public void TestConstructorSetProperties()
-        {
-            const int maxRooms = 10;
-
-            IGameRoomManager gameRoomManager = CreateGameRoomManager(maxRooms);
-
-            Assert.AreEqual(gameRoomManager.MaxRooms, maxRooms);
-        }
-
-        [TestMethod]
-        public void TestConstructorLockObjectNotNull()
-        {
-            IGameRoomManager gameRoomManager = CreateGameRoomManager(10);
-
-            Assert.IsNotNull(gameRoomManager.LockObject);
-        }
-
-        #endregion
-
         #region Add
 
         [TestMethod]
@@ -288,5 +252,42 @@ namespace TetriNET2.Tests.Server
         {
             return new GameRoom(new ActionQueueMock(), new PieceProviderMock(), name, maxPlayers, maxSpectators, rule, options, password);
         }
+
+
+        #region Constructor
+
+        [TestMethod]
+        public void TestConstructorStrictlyPositiveMaxRooms()
+        {
+            try
+            {
+                IGameRoomManager gameRoomManager = CreateGameRoomManager(0);
+                Assert.Fail("ArgumentOutOfRange exception not raised");
+            }
+            catch (ArgumentOutOfRangeException ex)
+            {
+                Assert.AreEqual(ex.ParamName, "maxRooms");
+            }
+        }
+
+        [TestMethod]
+        public void TestConstructorSetProperties()
+        {
+            const int maxRooms = 10;
+
+            IGameRoomManager gameRoomManager = CreateGameRoomManager(maxRooms);
+
+            Assert.AreEqual(gameRoomManager.MaxRooms, maxRooms);
+        }
+
+        [TestMethod]
+        public void TestConstructorLockObjectNotNull()
+        {
+            IGameRoomManager gameRoomManager = CreateGameRoomManager(10);
+
+            Assert.IsNotNull(gameRoomManager.LockObject);
+        }
+
+        #endregion
     }
 }

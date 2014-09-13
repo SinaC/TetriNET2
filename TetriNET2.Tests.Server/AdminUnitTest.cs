@@ -21,6 +21,42 @@ namespace TetriNET2.Tests.Server
             Log.Default.Logger = new LogMock();
         }
 
+        #region Exception
+
+        [TestMethod]
+        public void TestExceptionFreeAction()
+        {
+            IAdmin admin = CreateAdmin("admin1", IPAddress.Any, new RaiseExceptionTetriNETAdminCallback());
+
+            admin.OnDisconnected();
+
+            Assert.IsTrue(true, "No exception occured");
+        }
+
+        [TestMethod]
+        public void TestConnectionLostCalledOnException()
+        {
+            bool called = false;
+            IAdmin admin = CreateAdmin("admin1", IPAddress.Any, new RaiseExceptionTetriNETAdminCallback());
+            admin.ConnectionLost += entity => called = true;
+
+            admin.OnDisconnected();
+
+            Assert.IsTrue(called);
+        }
+
+        #endregion
+
+    }
+
+    [TestClass]
+    public class AdminUnitTest : AbstractAdminUnitTest
+    {
+        protected override IAdmin CreateAdmin(string name, IPAddress address, ITetriNETAdminCallback callback)
+        {
+            return new Admin(name, address, callback);
+        }
+
         #region Constructor
 
         [TestMethod]
@@ -86,40 +122,5 @@ namespace TetriNET2.Tests.Server
 
         #endregion
 
-        #region Exception
-
-        [TestMethod]
-        public void TestExceptionFreeAction()
-        {
-            IAdmin admin = CreateAdmin("admin1", IPAddress.Any, new RaiseExceptionTetriNETAdminCallback());
-
-            admin.OnDisconnected();
-
-            Assert.IsTrue(true, "No exception occured");
-        }
-
-        [TestMethod]
-        public void TestConnectionLostCalledOnException()
-        {
-            bool called = false;
-            IAdmin admin = CreateAdmin("admin1", IPAddress.Any, new RaiseExceptionTetriNETAdminCallback());
-            admin.ConnectionLost += entity => called = true;
-
-            admin.OnDisconnected();
-
-            Assert.IsTrue(called);
-        }
-
-        #endregion
-
-    }
-
-    [TestClass]
-    public class AdminUnitTest : AbstractAdminUnitTest
-    {
-        protected override IAdmin CreateAdmin(string name, IPAddress address, ITetriNETAdminCallback callback)
-        {
-            return new Admin(name, address, callback);
-        }
     }
 }

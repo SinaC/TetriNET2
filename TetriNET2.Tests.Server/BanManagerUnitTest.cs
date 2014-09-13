@@ -24,25 +24,6 @@ namespace TetriNET2.Tests.Server
             Log.Default.Logger = new LogMock();
         }
 
-        #region Constructor
-
-        [TestMethod]
-        public void TestConstructorNullFilename()
-        {
-            try
-            {
-                IBanManager banManager = CreateBanManager(null);
-
-                Assert.Fail("ArgumentNullException on name not raised");
-            }
-            catch (ArgumentNullException ex)
-            {
-                Assert.AreEqual(ex.ParamName, "filename");
-            }
-        }
-
-        #endregion
-
         #region IsBanned
 
         [TestMethod]
@@ -174,5 +155,25 @@ namespace TetriNET2.Tests.Server
         {
             return new BanManager(filename);
         }
+
+        #region Constructor
+
+        [TestMethod]
+        public void TestConstructorNullFilename()
+        {
+            try
+            {
+                IBanManager banManager = CreateBanManager(null);
+
+                Assert.Fail("ArgumentNullException on name not raised");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual(ex.ParamName, "filename");
+            }
+        }
+
+        #endregion
+
     }
 }

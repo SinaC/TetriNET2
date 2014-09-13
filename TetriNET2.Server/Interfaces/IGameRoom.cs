@@ -32,23 +32,23 @@ namespace TetriNET2.Server.Interfaces
         bool Leave(IClient client);
         void Clear();
 
-        void Start(CancellationTokenSource cancellationTokenSource);
-        void Stop();
+        bool Start(CancellationTokenSource cancellationTokenSource);
+        bool Stop();
 
-        void ChangeOptions(GameOptions options);
-        void ResetWinList();
+        bool ChangeOptions(GameOptions options);
+        bool ResetWinList();
 
-        void PlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid);
-        void ModifyGrid(IClient client, byte[] grid);
-        void UseSpecial(IClient client, IClient target, Specials special);
-        void ClearLines(IClient client, int count);
-        void GameLost(IClient client);
-        void FinishContinuousSpecial(IClient client, Specials special);
-        void EarnAchievement(IClient client, int achievementId, string achievementTitle);
+        bool PlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid);
+        bool ModifyGrid(IClient client, byte[] grid);
+        bool UseSpecial(IClient client, IClient target, Specials special);
+        bool ClearLines(IClient client, int count);
+        bool GameLost(IClient client);
+        bool FinishContinuousSpecial(IClient client, Specials special);
+        bool EarnAchievement(IClient client, int achievementId, string achievementTitle);
 
-        void StartGame();
-        void StopGame();
-        void PauseGame();
-        void ResumeGame();
+        bool StartGame();
+        bool StopGame();
+        bool PauseGame();
+        bool ResumeGame();
     }
 }

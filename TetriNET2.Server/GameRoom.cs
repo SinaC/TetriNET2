@@ -201,24 +201,25 @@ namespace TetriNET2.Server
             _clients.Clear();
         }
 
-        public void Start(CancellationTokenSource cancellationTokenSource)
+        public bool Start(CancellationTokenSource cancellationTokenSource)
         {
             if (State != GameRoomStates.Created)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Game {0} task already started", Name);
-                return;
+                return false;
             }
-
+            //
             State = GameRoomStates.WaitStartGame;
             _actionQueue.Start(cancellationTokenSource);
+            return true;
         }
 
-        public void Stop()
+        public bool Stop()
         {
             if (State == GameRoomStates.Created)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Game {0} task not yet started", Name);
-                return;
+                return false;
             }
             // Disable sudden death
             _isSuddenDeathActive = false;
@@ -259,85 +260,93 @@ namespace TetriNET2.Server
 
             // Change state
             State = GameRoomStates.Created;
+            return true;
         }
 
-        public void ChangeOptions(GameOptions options)
+        public bool ChangeOptions(GameOptions options)
         {
             if (State != GameRoomStates.WaitStartGame)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, game {0} is started", Name);
-                return;
+                return false;
             }
+            //
             Options = options;
             // Inform clients
             foreach(IClient client in Clients)
                 client.OnGameOptionsChanged(options);
 
             Log.Default.WriteLine(LogLevels.Info, "Game options changed");
+            return true;
         }
 
-        public void ResetWinList()
+        public bool ResetWinList()
         {
             if (State != GameRoomStates.WaitStartGame)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, game {0} is started", Name);
-                return;
+                return false;
             }
+            //
             _winList.Clear();
             // Inform clients
             foreach(IClient client in Clients)
                 client.OnWinListModified(_winList);
 
             Log.Default.WriteLine(LogLevels.Info, "Win list resetted");
+            return true;
         }
 
-        public void PlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
+        public bool PlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
         {
             if (client == null)
                 throw new ArgumentNullException("client");
             if (State != GameRoomStates.GameStarted)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot place piece, game {0} is not started", Name);
-                return;
+                return false;
             }
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot place piece, client {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
-                return;
+                return false;
             }
             if (client.State != ClientStates.Playing)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot place piece, client {0} is not playing", client.Name);
-                return;
+                return false;
             }
             //
             _actionQueue.Enqueue(() => PlacePieceAction(client, pieceIndex, highestIndex, piece, orientation, posX, posY, grid));
+            //
+            return true;
         }
 
-        public void ModifyGrid(IClient client, byte[] grid)
+        public bool ModifyGrid(IClient client, byte[] grid)
         {
             if (client == null)
                 throw new ArgumentNullException("client");
             if (State != GameRoomStates.GameStarted)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot modify grid, game {0} is not started", Name);
-                return;
+                return false;
             }
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot modify grid, client {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
-                return;
+                return false;
             }
             if (client.State != ClientStates.Playing)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot modify grid, client {0} is not playing", client.Name);
-                return;
+                return false;
             }
             //
             _actionQueue.Enqueue(() => ModifyGridAction(client, grid));
+            return true;
         }
 
-        public void UseSpecial(IClient client, IClient target, Specials special)
+        public bool UseSpecial(IClient client, IClient target, Specials special)
         {
             if (client == null)
                 throw new ArgumentNullException("client");
@@ -346,50 +355,51 @@ namespace TetriNET2.Server
             if (State != GameRoomStates.GameStarted)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot use special, game {0} is not started", Name);
-                return;
+                return false;
             }
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot use special, client {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
-                return;
+                return false;
             }
             if (target.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot use special, target {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
-                return;
+                return false;
             }
             if (client.State != ClientStates.Playing)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot use special, client {0} is not playing", client.Name);
-                return;
+                return false;
             }
             if (target.State != ClientStates.Playing)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot use special, target {0} is not playing", target.Name);
-                return;
+                return false;
             }
             //
             _actionQueue.Enqueue(() => UseSpecialAction(client, target, special));
+            return true;
         }
 
-        public void ClearLines(IClient client, int count)
+        public bool ClearLines(IClient client, int count)
         {
             if (client == null)
                 throw new ArgumentNullException("client");
             if (State != GameRoomStates.GameStarted)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot send lines, game {0} is not started", Name);
-                return;
+                return false;
             }
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot clear lines, client {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
-                return;
+                return false;
             }
             if (client.State != ClientStates.Playing)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot clear lines, client {0} is not playing", client.Name);
-                return;
+                return false;
             }
             //
             UpdateStatistics(client.Name, count);
@@ -401,67 +411,71 @@ namespace TetriNET2.Server
                     addLines = 4;
                 _actionQueue.Enqueue(() => SendLinesAction(client, addLines));
             }
+            return true;
         }
 
-        public void GameLost(IClient client)
+        public bool GameLost(IClient client)
         {
             if (client == null)
                 throw new ArgumentNullException("client");
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot lose game, client {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
-                return;
+                return false;
             } 
             if (client.State != ClientStates.Playing)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot lose game, client {0} is not playing", client.Name);
-                return;
+                return false;
             }
             //
             _actionQueue.Enqueue(() => GameLostAction(client));
+            return true;
         }
 
-        public void FinishContinuousSpecial(IClient client, Specials special)
+        public bool FinishContinuousSpecial(IClient client, Specials special)
         {
             if (client == null)
                 throw new ArgumentNullException("client");
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot finish continuous special, client {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
-                return;
+                return false;
             }
             //
             _actionQueue.Enqueue(() => FinishContinuousSpecialAction(client, special)); // Must be handled even if game is not started
+            return true;
         }
 
-        public void EarnAchievement(IClient client, int achievementId, string achievementTitle)
+        public bool EarnAchievement(IClient client, int achievementId, string achievementTitle)
         {
             if (client == null)
                 throw new ArgumentNullException("client");
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot earn achievement grid, client {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
-                return;
+                return false;
             }
             //
             Log.Default.WriteLine(LogLevels.Info, "EarnAchievement:{0} {1} {2}", client.Name, achievementId, achievementTitle);
 
             foreach (IClient target in Clients.Where(x => x != client))
                 target.OnAchievementEarned(client.Id, achievementId, achievementTitle);
+            return true;
         }
 
-        public void StartGame()
+        public bool StartGame()
         {
             if (State != GameRoomStates.WaitStartGame)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Game {0} already started", Name);
-                return;
+                return false;
             }
 
             if (PlayerCount <= 0)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Game {0} cannot be started, no players", Name);
-                return;
+                return false;
             }
 
             // Reset action queue
@@ -508,16 +522,18 @@ namespace TetriNET2.Server
             State = GameRoomStates.GameStarted;
 
             Log.Default.WriteLine(LogLevels.Info, "Game started");
+
+            return true;
         }
 
-        public void StopGame()
+        public bool StopGame()
         {
             Log.Default.WriteLine(LogLevels.Info, "Stopping game");
 
             if (State != GameRoomStates.GameStarted && State == GameRoomStates.GamePaused)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Cannot stop game");
-                return;
+                return false;
             }
             State = GameRoomStates.GameFinished;
 
@@ -536,16 +552,17 @@ namespace TetriNET2.Server
             State = GameRoomStates.WaitStartGame;
 
             Log.Default.WriteLine(LogLevels.Info, "Game stopped");
+            return true;
         }
 
-        public void PauseGame()
+        public bool PauseGame()
         {
             Log.Default.WriteLine(LogLevels.Info, "Pausing game");
 
             if (State != GameRoomStates.GameStarted)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Cannot pause game");
-                return;
+                return false;
             }
             State = GameRoomStates.GamePaused;
 
@@ -554,15 +571,16 @@ namespace TetriNET2.Server
                 client.OnGamePaused();
 
             Log.Default.WriteLine(LogLevels.Info, "Game paused");
+            return true;
         }
 
-        public void ResumeGame()
+        public bool ResumeGame()
         {
             Log.Default.WriteLine(LogLevels.Info, "Resuming game");
             if (State != GameRoomStates.GamePaused)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Cannot resume game");
-                return;
+                return false;
             }
             State = GameRoomStates.GameStarted;
 
@@ -571,6 +589,7 @@ namespace TetriNET2.Server
                 client.OnGameResumed();
 
             Log.Default.WriteLine(LogLevels.Info, "Game resumed");
+            return true;
         }
 
         #endregion
