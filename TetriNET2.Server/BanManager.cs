@@ -127,11 +127,11 @@ namespace TetriNET2.Server
             }
         }
 
-        public IEnumerable<Common.DataContracts.BanEntry> Entries
+        public IEnumerable<Common.DataContracts.BanEntryData> Entries
         {
             get
             {
-                return _banList.Values.Select(x => new Common.DataContracts.BanEntry
+                return _banList.Values.Select(x => new Common.DataContracts.BanEntryData
                     {
                         Name = x.Name,
                         Address = x.Address.ToString(),

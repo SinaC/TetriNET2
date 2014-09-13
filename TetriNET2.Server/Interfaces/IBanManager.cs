@@ -12,6 +12,6 @@ namespace TetriNET2.Server.Interfaces
         void Unban(IPAddress address);
         void Clear();
 
-        IEnumerable<BanEntry> Entries { get; }
+        IEnumerable<BanEntryData> Entries { get; }
     }
 }

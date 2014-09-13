@@ -26,13 +26,12 @@ namespace TetriNET2.Server
         private readonly IBanManager _banManager;
         private readonly IClientManager _clientManager;
         private readonly IAdminManager _adminManager;
-        private readonly IWaitRoom _waitRoom;
         private readonly IGameRoomManager _gameRoomManager;
 
         private CancellationTokenSource _cancellationTokenSource;
         private Task _timeoutTask;
 
-        public Server(IFactory factory, IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IWaitRoom waitRoom, IGameRoomManager gameRoomManager)
+        public Server(IFactory factory, IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
         {
             if (factory == null)
                 throw new ArgumentNullException("factory");
@@ -42,8 +41,6 @@ namespace TetriNET2.Server
                 throw new ArgumentNullException("clientManager");
             if (adminManager == null)
                 throw new ArgumentNullException("adminManager");
-            if (waitRoom == null)
-                throw new ArgumentNullException("waitRoom");
             if (gameRoomManager == null)
                 throw new ArgumentNullException("gameRoomManager");
 
@@ -51,7 +48,6 @@ namespace TetriNET2.Server
             _banManager = banManager;
             _clientManager = clientManager;
             _adminManager = adminManager;
-            _waitRoom = waitRoom;
             _gameRoomManager = gameRoomManager;
 
             State = ServerStates.Waiting;
@@ -256,7 +252,6 @@ namespace TetriNET2.Server
             // Clear clients, games, wait, admins
             _clientManager.Clear();
             _gameRoomManager.Clear();
-            _waitRoom.Clear();
             _adminManager.Clear();
 
             //
@@ -333,41 +328,31 @@ namespace TetriNET2.Server
                         }
                         else
                         {
-                            bool joined = _waitRoom.Join(client);
-                            if (!joined)
-                            {
-                                result = ConnectResults.FailedInternalError;
-                                _clientManager.Remove(client); // remove player from client manager
-                                Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it cannot join wait room", name, address == null ? "???" : address.ToString());
-                            }
-                            else
-                            {
-                                // Build game room list
-                                List<GameDescription> games;
-                                lock (_gameRoomManager.LockObject)
-                                    games = _gameRoomManager.Rooms.Select(r => new GameDescription
-                                        {
-                                            Id = r.Id,
-                                            Name = r.Name,
-                                            Players = r.Players.Select(p => p.Name).ToList(),
-                                        }).ToList();
-                                // Handle connection lost
-                                client.ConnectionLost += OnClientConnectLost;
-                                // Inform client about connection succeed
-                                client.OnConnected(result, Version, client.Id, games);
-                                // Client is alive
-                                client.ResetTimeout();
-                                // Send message to clients
-                                lock (_clientManager.LockObject)
-                                    foreach (IClient target in _clientManager.Clients)
-                                        target.OnClientConnected(client.Id, client.Name, client.Team);
-                                // Send message to admin
-                                lock (_adminManager.LockObject)
-                                    foreach (IAdmin target in _adminManager.Admins)
-                                        target.OnClientConnected(client.Id, client.Name, client.Team);
-                                //
-                                Log.Default.WriteLine(LogLevels.Info, "Connect {0}[{1}] succeed", name, address == null ? "???" : address.ToString());
-                            }
+                            // Build game room list
+                            List<GameDescription> games;
+                            lock (_gameRoomManager.LockObject)
+                                games = _gameRoomManager.Rooms.Select(r => new GameDescription
+                                    {
+                                        Id = r.Id,
+                                        Name = r.Name,
+                                        Players = r.Players.Select(p => p.Name).ToList(),
+                                    }).ToList();
+                            // Handle connection lost
+                            client.ConnectionLost += OnClientConnectLost;
+                            // Inform client about connection succeed
+                            client.OnConnected(result, Version, client.Id, games);
+                            // Client is alive
+                            client.ResetTimeout();
+                            // Send message to clients
+                            lock (_clientManager.LockObject)
+                                foreach (IClient target in _clientManager.Clients)
+                                    target.OnClientConnected(client.Id, client.Name, client.Team);
+                            // Send message to admin
+                            lock (_adminManager.LockObject)
+                                foreach (IAdmin target in _adminManager.Admins)
+                                    target.OnClientConnected(client.Id, client.Name, client.Team);
+                            //
+                            Log.Default.WriteLine(LogLevels.Info, "Connect {0}[{1}] succeed", name, address == null ? "???" : address.ToString());
                         }
                     }
                 }
@@ -445,8 +430,6 @@ namespace TetriNET2.Server
             {
                 lock (game.LockObject)
                 {
-                    // Remove client from wait room
-                    _waitRoom.Leave(client);
                     // Add client in game
                     bool joined = game.Join(client, asSpectator);
                     if (!joined)
@@ -479,8 +462,6 @@ namespace TetriNET2.Server
             {
                 lock (game.LockObject)
                 {
-                    // Remove client from wait room
-                    _waitRoom.Leave(client);
                     // Add client in game
                     bool joined = game.Join(client, asSpectator);
                     if (!joined)
@@ -550,8 +531,6 @@ namespace TetriNET2.Server
                         // Start room
                         game.Start(_cancellationTokenSource);
 
-                        // Remove client from wait room
-                        _waitRoom.Leave(client);
                         // Add client in game
                         bool joined = game.Join(client, asSpectator);
                         if (!joined)

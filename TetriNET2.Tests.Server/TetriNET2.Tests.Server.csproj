@@ -56,17 +56,18 @@
     <Compile Include="ClientUnitTest.cs" />
     <Compile Include="GameRoomManagerUnitTest.cs" />
     <Compile Include="GameRoomUnitTest.cs" />
+    <Compile Include="Mocking\ActionQueueMock.cs" />
     <Compile Include="Mocking\CountCallTetriNETAdminCallback.cs" />
     <Compile Include="Mocking\CountCallTetriNETCallback.cs" />
     <Compile Include="Mocking\HostMock.cs" />
     <Compile Include="AdminUnitTest.cs" />
     <Compile Include="Mocking\LogMock.cs" />
+    <Compile Include="Mocking\PieceProviderMock.cs" />
     <Compile Include="Mocking\RaiseExceptionTetriNETAdminCallback.cs" />
     <Compile Include="Mocking\RaiseExceptionTetriNETCallback.cs" />
     <Compile Include="PieceProviderUnitTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerUnitTest.cs" />
-    <Compile Include="WaitRoomUnitTest.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TetriNET2.Common\TetriNET2.Common.csproj">

@@ -15,6 +15,7 @@ namespace TetriNET2.Server.Interfaces
 
         int MaxPlayers { get; }
         int MaxSpectators { get; }
+        int ClientCount { get; }
         int PlayerCount { get; }
         int SpectatorCount { get; }
         object LockObject { get; }

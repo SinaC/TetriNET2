@@ -17,7 +17,7 @@ namespace TetriNET2.Server
         private readonly IPieceProvider _pieceProvider;
         private readonly List<IClient> _clients = new List<IClient>();
         private readonly object _lockObject = new object();
-        private readonly IActionQueue _actionQueue = new BlockingActionQueue();
+        private readonly IActionQueue _actionQueue;
         private readonly Dictionary<string, GameStatisticsByPlayer> _gameStatistics; // By player (cannot be stored in IClient because IClient is lost when disconnected during a game)
         private readonly List<WinEntry> _winList;
         private readonly Timer _suddenDeathTimer;
@@ -25,10 +25,12 @@ namespace TetriNET2.Server
         private int _specialId;
         private bool _isSuddenDeathActive;
 
-        public GameRoom(IFactory factory, string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null)
+        public GameRoom(IActionQueue actionQueue, IPieceProvider pieceProvider, string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null)
         {
-            if (factory == null)
-                throw new ArgumentNullException("factory");
+            if (actionQueue == null)
+                throw new ArgumentNullException("actionQueue");
+            if (pieceProvider == null)
+                throw new ArgumentNullException("pieceProvider");
             if (name == null)
                 throw new ArgumentNullException("name");
             if (maxPlayers <= 0)
@@ -39,6 +41,8 @@ namespace TetriNET2.Server
                 throw new ArgumentNullException("options");
 
             Id = Guid.NewGuid();
+            _actionQueue = actionQueue;
+            _pieceProvider = pieceProvider;
             Name = name;
             CreationTime = DateTime.Now;
             MaxPlayers = maxPlayers;
@@ -48,7 +52,6 @@ namespace TetriNET2.Server
             Password = password;
             State = GameRoomStates.Created;
 
-            _pieceProvider = factory.CreatePieceProvider();
             _specialId = 0;
             _isSuddenDeathActive = false;
             _gameStatistics = new Dictionary<string, GameStatisticsByPlayer>();
@@ -71,6 +74,11 @@ namespace TetriNET2.Server
         public int MaxPlayers { get; private set; }
 
         public int MaxSpectators { get; private set; }
+
+        public int ClientCount
+        {
+            get { return _clients.Count; }
+        }
 
         public int PlayerCount
         {
@@ -113,14 +121,19 @@ namespace TetriNET2.Server
             if (client == null)
                 throw new ArgumentNullException("client");
 
-            if (client.IsPlayer && PlayerCount >= MaxPlayers)
+            if (!asSpectator && PlayerCount >= MaxPlayers)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Too many players");
+                Log.Default.WriteLine(LogLevels.Warning, "Too many players in game room {0}", Name);
                 return false;
             }
-            if (client.IsSpectator && SpectatorCount >= MaxSpectators)
+            if (asSpectator && SpectatorCount >= MaxSpectators)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Too many spectators");
+                Log.Default.WriteLine(LogLevels.Warning, "Too many spectators in game room {0}", Name);
+                return false;
+            }
+            if (Clients.Any(x => x == client))
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Client already in game room {0}", Name);
                 return false;
             }
 
@@ -133,7 +146,7 @@ namespace TetriNET2.Server
                 client.Roles |= ClientRoles.Spectator;
             else
                 client.Roles |= ClientRoles.Player;
-            client.State = ClientStates.InGameRoom;
+            client.State = ClientStates.WaitInGameRoom;
             client.Game = this;
 
             // Inform client
@@ -151,36 +164,36 @@ namespace TetriNET2.Server
                 throw new ArgumentNullException("client");
 
             bool removed = _clients.Remove(client);
-            if (removed)
+            if (!removed)
+                return false;
+            // Change role, state and game
+            client.Roles &= ~(ClientRoles.Player | ClientRoles.Spectator); // remove player+spectator
+            client.State = ClientStates.Connected;
+            client.Game = null;
+
+            // Inform client
+            client.OnGameLeft();
+
+            // Inform other clients in game
+            foreach (IClient target in Clients.Where(c => c != client))
+                target.OnClientGameLeft(client.Id);
+
+            // If game was running and player was playing, check if only one player left
+            if ((State == GameRoomStates.GameStarted || State == GameRoomStates.GamePaused) && client.State == ClientStates.Playing)
             {
-                // Change game
-                client.Game = null;
-                // Role and state will be changed by caller
-
-                // Inform client
-                client.OnGameLeft();
-
-                // Inform other clients in game
-                foreach (IClient target in Clients.Where(c => c != client))
-                    target.OnClientGameLeft(client.Id);
-
-                // If game was running and player was playing, check if only one player left
-                if ((State == GameRoomStates.GameStarted || State == GameRoomStates.GamePaused) && client.State == ClientStates.Playing)
+                int playingCount = Players.Count(p => p.State == ClientStates.Playing);
+                if (playingCount == 0 || playingCount == 1)
                 {
-                    int playingCount = Players.Count(p => p.State == ClientStates.Playing);
-                    if (playingCount == 0 || playingCount == 1)
-                    {
-                        Log.Default.WriteLine(LogLevels.Info, "Game finished by forfeit no winner");
-                        State = GameRoomStates.GameFinished;
-                        GameStatistics statistics = PrepareGameStatistics();
-                        // Send game finished (no winner)
-                        foreach(IClient target in Clients.Where(c => c != client))
-                            target.OnGameFinished(GameFinishedReasons.NotEnoughPlayers, statistics);
-                        State = GameRoomStates.WaitStartGame;
-                    }
+                    Log.Default.WriteLine(LogLevels.Info, "Game finished by forfeit no winner");
+                    State = GameRoomStates.GameFinished;
+                    GameStatistics statistics = PrepareGameStatistics();
+                    // Send game finished (no winner)
+                    foreach(IClient target in Clients.Where(c => c != client))
+                        target.OnGameFinished(GameFinishedReasons.NotEnoughPlayers, statistics);
+                    State = GameRoomStates.WaitStartGame;
                 }
             }
-            return removed;
+            return true;
         }
 
         public void Clear()
@@ -196,11 +209,17 @@ namespace TetriNET2.Server
                 return;
             }
 
+            State = GameRoomStates.WaitStartGame;
             _actionQueue.Start(cancellationTokenSource);
         }
 
         public void Stop()
         {
+            if (State == GameRoomStates.Created)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Game {0} task not yet started", Name);
+                return;
+            }
             // Disable sudden death
             _isSuddenDeathActive = false;
             _suddenDeathTimer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -215,8 +234,9 @@ namespace TetriNET2.Server
             // Remove clients from game
             foreach (IClient client in Clients)
             {
-                client.State = ClientStates.InWaitRoom; // TODO: this should be done by caller
+                client.State = ClientStates.Connected;
                 client.Game = null;
+                client.OnGameLeft();
             }
 
             // Clear clients
@@ -413,7 +433,7 @@ namespace TetriNET2.Server
             // Send game finished to players
             foreach (IClient player in Players)
             {
-                player.State = ClientStates.InGameRoom;
+                player.State = ClientStates.WaitInGameRoom;
                 player.OnGameFinished(GameFinishedReasons.Stopped, statistics);
             }
             // Send game finished to spectators
@@ -661,7 +681,7 @@ namespace TetriNET2.Server
                 State = GameRoomStates.GameFinished;
                 // Game won
                 IClient winner = Players.Single(p => p.State == ClientStates.Playing);
-                winner.State = ClientStates.InWaitRoom;
+                winner.State = ClientStates.WaitInGameRoom;
                 Log.Default.WriteLine(LogLevels.Info, "Winner: {0}[{1}]", winner.Name, winner.Id);
 
                 // Update win list

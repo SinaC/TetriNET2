@@ -72,10 +72,8 @@
     <Compile Include="Interfaces\IHost.cs" />
     <Compile Include="Interfaces\IPieceProvider.cs" />
     <Compile Include="Interfaces\IServer.cs" />
-    <Compile Include="Interfaces\IWaitRoom.cs" />
     <Compile Include="PieceBag.cs" />
     <Compile Include="Server.cs" />
-    <Compile Include="WaitRoom.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

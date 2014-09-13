@@ -115,27 +115,27 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => OnPrivateMessageReceived(adminId, message));
         }
 
-        public void OnAdminListReceived(List<Common.DataContracts.Admin> admins)
+        public void OnAdminListReceived(List<Common.DataContracts.AdminData> admins)
         {
             ExceptionFreeAction(() => Callback.OnAdminListReceived(admins));
         }
 
-        public void OnClientListReceived(List<Common.DataContracts.Client> clients)
+        public void OnClientListReceived(List<Common.DataContracts.ClientData> clients)
         {
             ExceptionFreeAction(() => Callback.OnClientListReceived(clients));
         }
 
-        public void OnClientListInRoomReceived(Guid roomId, List<Common.DataContracts.Client> clients)
+        public void OnClientListInRoomReceived(Guid roomId, List<Common.DataContracts.ClientData> clients)
         {
             ExceptionFreeAction(() => Callback.OnClientListInRoomReceived(roomId, clients));
         }
 
-        public void OnRoomListReceived(List<Common.DataContracts.GameRoom> rooms)
+        public void OnRoomListReceived(List<Common.DataContracts.GameRoomData> rooms)
         {
             ExceptionFreeAction(() => Callback.OnRoomListReceived(rooms));
         }
 
-        public void OnBannedListReceived(List<BanEntry> entries)
+        public void OnBannedListReceived(List<BanEntryData> entries)
         {
             ExceptionFreeAction(() => Callback.OnBannedListReceived(entries));
         }

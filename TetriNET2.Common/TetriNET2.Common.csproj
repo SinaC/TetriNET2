@@ -55,9 +55,9 @@
     <Compile Include="Contracts\ITetriNETAdmin.cs" />
     <Compile Include="Contracts\ITetriNETAdminCallback.cs" />
     <Compile Include="Contracts\ITetriNETCallback.cs" />
-    <Compile Include="DataContracts\Admin.cs" />
-    <Compile Include="DataContracts\BanEntry.cs" />
-    <Compile Include="DataContracts\Client.cs" />
+    <Compile Include="DataContracts\AdminData.cs" />
+    <Compile Include="DataContracts\BanEntryData.cs" />
+    <Compile Include="DataContracts\ClientData.cs" />
     <Compile Include="DataContracts\ClientRoles.cs" />
     <Compile Include="DataContracts\ClientStates.cs" />
     <Compile Include="DataContracts\ConnectResults.cs" />
@@ -66,7 +66,7 @@
     <Compile Include="DataContracts\GameFinishedReasons.cs" />
     <Compile Include="DataContracts\GameJoinResults.cs" />
     <Compile Include="DataContracts\GameOptions.cs" />
-    <Compile Include="DataContracts\GameRoom.cs" />
+    <Compile Include="DataContracts\GameRoomData.cs" />
     <Compile Include="DataContracts\GameRoomStates.cs" />
     <Compile Include="DataContracts\GameRules.cs" />
     <Compile Include="DataContracts\GameStatistics.cs" />

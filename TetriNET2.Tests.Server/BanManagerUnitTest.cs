@@ -19,8 +19,10 @@ namespace TetriNET2.Tests.Server
         [TestInitialize]
         public void Initialize()
         {
-            Log.SetLogger(new LogMock());
+            Log.Default.Logger = new LogMock();
         }
+
+        #region Constructor
 
         [TestMethod]
         public void TestNullFilename()
@@ -36,6 +38,10 @@ namespace TetriNET2.Tests.Server
                 Assert.AreEqual(ex.ParamName, "filename");
             }
         }
+
+        #endregion
+
+        #region IsBanned
 
         [TestMethod]
         public void TestIsBannedFalseWhenNoBannedPlayers()
@@ -74,6 +80,10 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(isBanned);
         }
 
+        #endregion
+
+        #region BannedReason
+
         [TestMethod]
         public void TestBannedReasonOnBannedPlayers()
         {
@@ -99,6 +109,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsNull(bannedReason);
         }
 
+        #endregion
+
         [TestMethod]
         public void TestEntries()
         {
@@ -107,7 +119,7 @@ namespace TetriNET2.Tests.Server
             banManager.Ban("player1", IPAddress.Parse("127.0.0.1"), "spam");
             banManager.Ban("player2", IPAddress.Parse("127.0.0.2"), "spam");
 
-            List<BanEntry> entries = banManager.Entries.ToList();
+            List<BanEntryData> entries = banManager.Entries.ToList();
 
             Assert.IsNotNull(entries);
             Assert.AreEqual(entries.Count, 2);
@@ -121,7 +133,7 @@ namespace TetriNET2.Tests.Server
             banManager.Ban("player1", IPAddress.Parse("127.0.0.1"), "spam");
             banManager.Ban("player2", IPAddress.Parse("127.0.0.1"), "spam");
 
-            List<BanEntry> entries = banManager.Entries.ToList();
+            List<BanEntryData> entries = banManager.Entries.ToList();
 
             Assert.AreEqual(entries.Count, 1);
         }
@@ -134,7 +146,7 @@ namespace TetriNET2.Tests.Server
             banManager.Ban("player2", IPAddress.Parse("127.0.0.2"), "spam");
             banManager.Clear();
 
-            List<BanEntry> entries = banManager.Entries.ToList();
+            List<BanEntryData> entries = banManager.Entries.ToList();
 
             Assert.AreEqual(entries.Count, 0);
         }
@@ -147,7 +159,7 @@ namespace TetriNET2.Tests.Server
             banManager.Ban("player2", IPAddress.Parse("127.0.0.2"), "spam");
 
             IBanManager banManager2 = CreateBanManager();
-            List<BanEntry> entries = banManager2.Entries.ToList();
+            List<BanEntryData> entries = banManager2.Entries.ToList();
 
             Assert.AreEqual(entries.Count, banManager.Entries.Count());
         }

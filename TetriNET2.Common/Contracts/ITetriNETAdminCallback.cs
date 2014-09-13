@@ -23,10 +23,10 @@ namespace TetriNET2.Common.Contracts
         void OnBroadcastMessageReceived(Guid clientId, string message);
         void OnPrivateMessageReceived(Guid adminId, string message);
 
-        void OnAdminListReceived(List<Admin> admins);
-        void OnClientListReceived(List<Client> clients);
-        void OnClientListInRoomReceived(Guid roomId, List<Client> clients);
-        void OnRoomListReceived(List<GameRoom> rooms);
-        void OnBannedListReceived(List<BanEntry> entries);
+        void OnAdminListReceived(List<AdminData> admins);
+        void OnClientListReceived(List<ClientData> clients);
+        void OnClientListInRoomReceived(Guid roomId, List<ClientData> clients);
+        void OnRoomListReceived(List<GameRoomData> rooms);
+        void OnBannedListReceived(List<BanEntryData> entries);
     }
 }

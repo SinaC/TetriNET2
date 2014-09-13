@@ -28,7 +28,7 @@ namespace TetriNET2.Server
             Callback = callback;
             ConnectTime = DateTime.Now;
 
-            State = ClientStates.InWaitRoom;
+            State = ClientStates.Connected;
             Roles = ClientRoles.NoRole;
 
             Team = team;

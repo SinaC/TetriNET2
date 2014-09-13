@@ -19,8 +19,10 @@ namespace TetriNET2.Tests.Server
         [TestInitialize]
         public void Initialize()
         {
-            Log.SetLogger(new LogMock());
+            Log.Default.Logger = new LogMock();
         }
+
+        #region Constructor
 
         [TestMethod]
         public void TestStrictlyPositiveMaxClients()
@@ -53,6 +55,10 @@ namespace TetriNET2.Tests.Server
 
             Assert.IsNotNull(clientManager.LockObject);
         }
+
+        #endregion
+
+        #region Add
 
         [TestMethod]
         public void TestAddNullClient()
@@ -143,6 +149,10 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(clientManager.Clients.Count(), 1);
         }
 
+        #endregion
+
+        #region Remove
+
         [TestMethod]
         public void TestRemoveExistingClient()
         {
@@ -192,6 +202,10 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(clientManager.Clients.Count(), 1);
         }
 
+        #endregion
+        
+        #region Clear
+
         [TestMethod]
         public void TestClearNoClients()
         {
@@ -214,6 +228,10 @@ namespace TetriNET2.Tests.Server
 
             Assert.AreEqual(clientManager.ClientCount, 0);
         }
+
+#endregion
+
+        #region Contains
 
         [TestMethod]
         public void TestContainsExistingClient()
@@ -242,6 +260,10 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(containsOnName);
             Assert.IsFalse(containsOnCallback);
         }
+
+#endregion
+        
+        #region Indexers
 
         [TestMethod]
         public void TestGuidIndexerFindExistingClient()
@@ -374,6 +396,8 @@ namespace TetriNET2.Tests.Server
 
             Assert.IsNull(searched);
         }
+
+        #endregion
     }
 
     [TestClass]

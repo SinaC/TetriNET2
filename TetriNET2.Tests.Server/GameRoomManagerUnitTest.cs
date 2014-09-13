@@ -1,12 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Common.Logger;
-using TetriNET2.Common.Occurancy;
 using TetriNET2.Server;
 using TetriNET2.Server.Interfaces;
 using TetriNET2.Tests.Server.Mocking;
@@ -22,8 +18,10 @@ namespace TetriNET2.Tests.Server
         [TestInitialize]
         public void Initialize()
         {
-            Log.SetLogger(new LogMock());
+            Log.Default.Logger = new LogMock();
         }
+
+        #region Constructor
 
         [TestMethod]
         public void TestStrictlyPositiveMaxRooms()
@@ -56,6 +54,10 @@ namespace TetriNET2.Tests.Server
 
             Assert.IsNotNull(gameRoomManager.LockObject);
         }
+
+        #endregion
+
+        #region Add
 
         [TestMethod]
         public void TestAddNullAdmin()
@@ -119,6 +121,10 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(gameRoomManager.Rooms.Count(), 1);
         }
 
+        #endregion
+
+        #region Remove
+
         [TestMethod]
         public void TestRemoveExistingRoom()
         {
@@ -168,6 +174,10 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(gameRoomManager.Rooms.Count(), 1);
         }
 
+        #endregion
+
+        #region Clear
+
         [TestMethod]
         public void TestClearNoRooms()
         {
@@ -190,6 +200,10 @@ namespace TetriNET2.Tests.Server
 
             Assert.AreEqual(gameRoomManager.RoomCount, 0);
         }
+
+        #endregion
+
+        #region Indexers
 
         [TestMethod]
         public void TestGuidIndexerFindExistingRoom()
@@ -256,47 +270,13 @@ namespace TetriNET2.Tests.Server
 
             Assert.IsNull(searched);
         }
+
+        #endregion
     }
 
     [TestClass]
     public class GameRoomManagerUnitTest : AbstractGameRoomManagerUnitTest
     {
-        private class Factory : IFactory
-        {
-            // Always get first available
-            private Pieces PseudoRandom(IEnumerable<IOccurancy<Pieces>> occurancies, IEnumerable<Pieces> history)
-            {
-                var available = (occurancies as IList<IOccurancy<Pieces>> ?? occurancies.ToList()).Where(x => !history.Contains(x.Value)).ToList();
-                if (available.Any())
-                {
-                    Pieces piece = available[0].Value;
-                    return piece;
-                }
-                return Pieces.Invalid;
-            }
-
-            #region IFactory
-
-            public IClient CreateClient(string name, string team, IPAddress address, ITetriNETCallback callback)
-            {
-                throw new System.NotImplementedException();
-            }
-
-            public IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
-            {
-                return new TetriNET2.Server.GameRoom(this, name, maxPlayers, maxSpectators, rule, options, password);
-            }
-
-            public IPieceProvider CreatePieceProvider()
-            {
-                return new PieceBag(PseudoRandom, 4);
-            }
-
-            #endregion
-        }
-
-        private readonly IFactory _factory = new Factory();
-
         protected override IGameRoomManager CreateGameRoomManager(int maxRooms)
         {
             return new GameRoomManager(maxRooms);
@@ -304,7 +284,7 @@ namespace TetriNET2.Tests.Server
 
         protected override IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
         {
-            return new TetriNET2.Server.GameRoom(_factory, name, maxPlayers, maxSpectators, rule, options, password);
+            return new GameRoom(new ActionQueueMock(), new PieceProviderMock(), name, maxPlayers, maxSpectators, rule, options, password);
         }
     }
 }

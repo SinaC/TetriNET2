@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace TetriNET2.Common.DataContracts
 {
     [DataContract]
-    public class Client
+    public class ClientData
     {
         [DataMember]
         public Guid Id { get; set; }

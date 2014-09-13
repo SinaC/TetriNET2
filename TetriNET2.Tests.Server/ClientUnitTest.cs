@@ -18,8 +18,10 @@ namespace TetriNET2.Tests.Server
         [TestInitialize]
         public void Initialize()
         {
-            Log.SetLogger(new LogMock());
+            Log.Default.Logger = new LogMock();
         }
+
+        #region Constructor
 
         [TestMethod]
         public void TestNullName()
@@ -67,6 +69,28 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
+        public void TestConstructorSetProperties()
+        {
+            const string name = "Client1";
+            IPAddress address = IPAddress.Parse("127.0.0.1");
+            ITetriNETCallback callback = new CountCallTetriNETCallback();
+            const string team = "Team1";
+
+            IClient client = CreateClient(name, address, callback, team);
+
+            Assert.AreEqual(client.Name, name);
+            Assert.AreEqual(client.Address, address);
+            Assert.AreEqual(client.Callback, callback);
+            Assert.AreEqual(client.Team, team);
+            Assert.AreNotEqual(client.ConnectTime, default(DateTime));
+            Assert.IsFalse(client.Id.Equals(default(Guid)));
+        }
+
+        #endregion
+
+        #region Exception
+
+        [TestMethod]
         public void TestExceptionFreeAction()
         {
             IClient client = CreateClient("Client1", IPAddress.Parse("127.0.0.1"), new RaiseExceptionTetriNETCallback());
@@ -88,23 +112,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(called);
         }
 
-        [TestMethod]
-        public void TestConstructorSetProperties()
-        {
-            const string name = "Client1";
-            IPAddress address = IPAddress.Parse("127.0.0.1");
-            ITetriNETCallback callback = new CountCallTetriNETCallback();
-            const string team = "Team1";
+        #endregion
 
-            IClient client = CreateClient(name, address, callback, team);
-
-            Assert.AreEqual(client.Name, name);
-            Assert.AreEqual(client.Address, address);
-            Assert.AreEqual(client.Callback, callback);
-            Assert.AreEqual(client.Team, team);
-            Assert.AreNotEqual(client.ConnectTime, default(DateTime));
-            Assert.IsFalse(client.Id.Equals(default(Guid)));
-        }
+        #region Timeout
 
         [TestMethod]
         public void TestLastActionToClientUpdate()
@@ -156,6 +166,8 @@ namespace TetriNET2.Tests.Server
 
             Assert.AreEqual(lastActionToClient, client.LastActionToClient);
         }
+
+        #endregion
     }
 
     [TestClass]

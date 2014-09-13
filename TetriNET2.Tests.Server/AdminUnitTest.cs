@@ -17,8 +17,10 @@ namespace TetriNET2.Tests.Server
         [TestInitialize]
         public void Initialize()
         {
-            Log.SetLogger(new LogMock());
+            Log.Default.Logger = new LogMock();
         }
+
+        #region Constructor
 
         [TestMethod]
         public void TestNullName()
@@ -66,6 +68,26 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
+        public void TestConstructorSetProperties()
+        {
+            const string name = "admin1";
+            IPAddress address = IPAddress.Any;
+            ITetriNETAdminCallback callback = new CountCallTetriNETAdminCallback();
+
+            IAdmin admin = CreateAdmin(name, address, callback);
+
+            Assert.AreEqual(admin.Name, name);
+            Assert.AreEqual(admin.Address, address);
+            Assert.AreEqual(admin.Callback, callback);
+            Assert.AreNotEqual(admin.ConnectTime, default(DateTime));
+            Assert.IsFalse(admin.Id.Equals(default(Guid)));
+        }
+
+        #endregion
+
+        #region Exception
+
+        [TestMethod]
         public void TestExceptionFreeAction()
         {
             IAdmin admin = CreateAdmin("admin1", IPAddress.Any, new RaiseExceptionTetriNETAdminCallback());
@@ -87,21 +109,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(called);
         }
 
-        [TestMethod]
-        public void TestConstructorSetProperties()
-        {
-            const string name = "admin1";
-            IPAddress address = IPAddress.Any;
-            ITetriNETAdminCallback callback = new CountCallTetriNETAdminCallback();
+        #endregion
 
-            IAdmin admin = CreateAdmin(name, address, callback);
-
-            Assert.AreEqual(admin.Name, name);
-            Assert.AreEqual(admin.Address, address);
-            Assert.AreEqual(admin.Callback, callback);
-            Assert.AreNotEqual(admin.ConnectTime, default(DateTime));
-            Assert.IsFalse(admin.Id.Equals(default(Guid)));
-        }
     }
 
     [TestClass]

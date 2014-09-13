@@ -19,8 +19,10 @@ namespace TetriNET2.Tests.Server
         [TestInitialize]
         public void Initialize()
         {
-            Log.SetLogger(new LogMock());
+            Log.Default.Logger = new LogMock();
         }
+
+        #region Constructor
 
         [TestMethod]
         public void TestStrictlyPositiveMaxAdmins()
@@ -53,6 +55,10 @@ namespace TetriNET2.Tests.Server
 
             Assert.IsNotNull(adminManager.LockObject);
         }
+
+        #endregion
+
+        #region Add
 
         [TestMethod]
         public void TestAddNullAdmin()
@@ -143,6 +149,10 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(adminManager.Admins.Count(), 1);
         }
 
+        #endregion
+
+        #region Remove
+
         [TestMethod]
         public void TestRemoveExistingAdmin()
         {
@@ -192,6 +202,10 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(adminManager.Admins.Count(), 1);
         }
 
+        #endregion
+
+        #region Clear
+
         [TestMethod]
         public void TestClearNoAdmins()
         {
@@ -214,6 +228,10 @@ namespace TetriNET2.Tests.Server
 
             Assert.AreEqual(adminManager.AdminCount, 0);
         }
+
+        #endregion
+
+        #region Indexers
 
         [TestMethod]
         public void TestGuidIndexerFindExistingAdmin()
@@ -346,6 +364,8 @@ namespace TetriNET2.Tests.Server
 
             Assert.IsNull(searched);
         }
+
+        #endregion
     }
 
     [TestClass]

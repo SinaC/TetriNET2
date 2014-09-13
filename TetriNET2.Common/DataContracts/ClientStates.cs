@@ -7,19 +7,19 @@ namespace TetriNET2.Common.DataContracts
     public enum ClientStates
     {
         [EnumMember]
-        [Description("In wait room")]
-        InWaitRoom, // -> InGameRoom
+        [Description("Connected")]
+        Connected, // -> WaitInGameRoom
 
         [EnumMember]
-        [Description("In game room")]
-        InGameRoom, // -> InWaitRoom | Playing
+        [Description("Wait in game room")]
+        WaitInGameRoom, // -> Connected | Playing
 
         [EnumMember]
         [Description("Playing")]
-        Playing,    // -> InWaitRoom | GameLost
+        Playing,    // -> Connected | GameLost
 
         [EnumMember]
         [Description("Game lost")]
-        GameLost,   // -> InWaitRoom | InGameRoom
+        GameLost,   // -> Connected | WaitInGameRoom
     }
 }

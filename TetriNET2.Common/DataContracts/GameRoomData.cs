@@ -1,10 +1,11 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Runtime.Serialization;
 
 namespace TetriNET2.Common.DataContracts
 {
     [DataContract]
-    public class Admin
+    public class GameRoomData
     {
         [DataMember]
         public Guid Id { get; set; }
@@ -13,9 +14,9 @@ namespace TetriNET2.Common.DataContracts
         public string Name { get; set; }
 
         [DataMember]
-        public DateTime ConnectTime { get; set; }
+        public List<ClientData> Clients { get; set; }
 
         [DataMember]
-        public string Address { get; set; }
+        public GameRules Rules { get; set; }
     }
 }
