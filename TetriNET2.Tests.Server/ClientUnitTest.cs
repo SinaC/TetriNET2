@@ -10,6 +10,8 @@ using TetriNET2.Tests.Server.Mocking;
 
 namespace TetriNET2.Tests.Server
 {
+    // TODO: invert parameters in Assert.AreEqual and Assert.AreNotEqual
+
     [TestClass]
     public abstract class AbstractClientUnitTest
     {
@@ -24,7 +26,7 @@ namespace TetriNET2.Tests.Server
         #region Constructor
 
         [TestMethod]
-        public void TestNullName()
+        public void TestConstructorNullName()
         {
             try
             {
@@ -39,7 +41,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestNullAddress()
+        public void TestConstructorNullAddress()
         {
             try
             {
@@ -54,7 +56,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestNullCallback()
+        public void TestConstructorNullCallback()
         {
             try
             {

@@ -11,6 +11,8 @@ using TetriNET2.Tests.Server.Mocking;
 
 namespace TetriNET2.Tests.Server
 {
+    // TODO: invert parameters in Assert.AreEqual and Assert.AreNotEqual
+
     [TestClass]
     public abstract class AbstractBanManagerUnitTest
     {
@@ -25,7 +27,7 @@ namespace TetriNET2.Tests.Server
         #region Constructor
 
         [TestMethod]
-        public void TestNullFilename()
+        public void TestConstructorNullFilename()
         {
             try
             {

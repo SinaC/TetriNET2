@@ -10,6 +10,8 @@ using TetriNET2.Tests.Server.Mocking;
 
 namespace TetriNET2.Tests.Server
 {
+    // TODO: invert parameters in Assert.AreEqual and Assert.AreNotEqual
+
     [TestClass]
     public abstract class AbstractClientManagerUnitTest
     {
@@ -25,7 +27,7 @@ namespace TetriNET2.Tests.Server
         #region Constructor
 
         [TestMethod]
-        public void TestStrictlyPositiveMaxClients()
+        public void TestConstructorStrictlyPositiveMaxClients()
         {
             try
             {
@@ -49,7 +51,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestLockObjectNotNull()
+        public void TestConstructorLockObjectNotNull()
         {
             IClientManager clientManager = CreateClientManager(10);
 
@@ -266,7 +268,7 @@ namespace TetriNET2.Tests.Server
         #region Indexers
 
         [TestMethod]
-        public void TestGuidIndexerFindExistingClient()
+        public void TestIndexerGuidFindExistingClient()
         {
             IClient client1 = CreateClient("client1", IPAddress.Any, new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", IPAddress.Any, new CountCallTetriNETCallback());
@@ -283,7 +285,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestGuidIndexerFindNonExistingClient()
+        public void TestIndexerGuidFindNonExistingClient()
         {
             IClient client1 = CreateClient("client1", IPAddress.Any, new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", IPAddress.Any, new CountCallTetriNETCallback());
@@ -299,7 +301,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestNameIndexerFindExistingClient()
+        public void TestIndexerNameFindExistingClient()
         {
             IClient client1 = CreateClient("client1", IPAddress.Any, new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", IPAddress.Any, new CountCallTetriNETCallback());
@@ -316,7 +318,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestNameIndexerFindNonExistingClient()
+        public void TestIndexerNameFindNonExistingClient()
         {
             IClient client1 = CreateClient("client1", IPAddress.Any, new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", IPAddress.Any, new CountCallTetriNETCallback());
@@ -332,7 +334,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestCallbackIndexerFindExistingClient()
+        public void TestIndexerCallbackFindExistingClient()
         {
             IClient client1 = CreateClient("client1", IPAddress.Any, new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", IPAddress.Any, new CountCallTetriNETCallback());
@@ -349,7 +351,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestCallbackIndexerFindNonExistingClient()
+        public void TestIndexerCallbackFindNonExistingClient()
         {
             IClient client1 = CreateClient("client1", IPAddress.Any, new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", IPAddress.Any, new CountCallTetriNETCallback());
@@ -365,7 +367,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestAddressIndexerFindExistingClient()
+        public void TestIndexerAddressFindExistingClient()
         {
             IClient client1 = CreateClient("client1", IPAddress.Parse("127.0.0.1"), new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", IPAddress.Parse("127.0.0.2"), new CountCallTetriNETCallback());
@@ -382,7 +384,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestAddressIndexerFindNonExistingClient()
+        public void TestIndexerAddressFindNonExistingClient()
         {
             IClient client1 = CreateClient("client1", IPAddress.Any, new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", IPAddress.Any, new CountCallTetriNETCallback());

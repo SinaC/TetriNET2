@@ -9,6 +9,8 @@ using TetriNET2.Tests.Server.Mocking;
 
 namespace TetriNET2.Tests.Server
 {
+    // TODO: invert parameters in Assert.AreEqual and Assert.AreNotEqual
+
     [TestClass]
     public abstract class AbstractGameRoomManagerUnitTest
     {
@@ -24,7 +26,7 @@ namespace TetriNET2.Tests.Server
         #region Constructor
 
         [TestMethod]
-        public void TestStrictlyPositiveMaxRooms()
+        public void TestConstructorStrictlyPositiveMaxRooms()
         {
             try
             {
@@ -48,7 +50,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestLockObjectNotNull()
+        public void TestConstructorLockObjectNotNull()
         {
             IGameRoomManager gameRoomManager = CreateGameRoomManager(10);
 
@@ -206,7 +208,7 @@ namespace TetriNET2.Tests.Server
         #region Indexers
 
         [TestMethod]
-        public void TestGuidIndexerFindExistingRoom()
+        public void TestIndexerGuidFindExistingRoom()
         {
             IGameRoom room1 = CreateGameRoom("room1", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGameRoom room2 = CreateGameRoom("room2", 5, 5, GameRules.Custom, new GameOptions(), null);
@@ -223,7 +225,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestGuidIndexerFindNonExistingAdmin()
+        public void TestIndexerGuidFindNonExistingAdmin()
         {
             IGameRoom room1 = CreateGameRoom("room1", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGameRoom room2 = CreateGameRoom("room2", 5, 5, GameRules.Custom, new GameOptions(), null);
@@ -239,7 +241,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestNameIndexerFindExistingRoom()
+        public void TestIndexerNameFindExistingRoom()
         {
             IGameRoom room1 = CreateGameRoom("room1", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGameRoom room2 = CreateGameRoom("room2", 5, 5, GameRules.Custom, new GameOptions(), null);
@@ -256,7 +258,7 @@ namespace TetriNET2.Tests.Server
         }
 
         [TestMethod]
-        public void TestNameIndexerFindNonExistingAdmin()
+        public void TestIndexerNameFindNonExistingAdmin()
         {
             IGameRoom room1 = CreateGameRoom("room1", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGameRoom room2 = CreateGameRoom("room2", 5, 5, GameRules.Custom, new GameOptions(), null);

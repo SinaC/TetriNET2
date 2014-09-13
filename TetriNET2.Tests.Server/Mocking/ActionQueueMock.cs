@@ -7,7 +7,7 @@ namespace TetriNET2.Tests.Server.Mocking
 {
     public class ActionQueueMock : IActionQueue
     {
-        private readonly List<Action> _actions = new List<Action>();
+        private readonly Queue<Action> _actions = new Queue<Action>();
 
         public int ActionCount { get { return _actions.Count; } }
 
@@ -23,12 +23,18 @@ namespace TetriNET2.Tests.Server.Mocking
 
         public void Enqueue(Action action)
         {
-            _actions.Add(action);
+            _actions.Enqueue(action);
         }
 
         public void Clear()
         {
             _actions.Clear();
+        }
+
+        public void DequeueAndExecuteFirstAction()
+        {
+            Action action = _actions.Dequeue();
+            action();
         }
     }
 }
