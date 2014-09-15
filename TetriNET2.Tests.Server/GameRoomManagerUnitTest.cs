@@ -9,8 +9,6 @@ using TetriNET2.Tests.Server.Mocking;
 
 namespace TetriNET2.Tests.Server
 {
-    // TODO: invert parameters in Assert.AreEqual and Assert.AreNotEqual
-
     [TestClass]
     public abstract class AbstractGameRoomManagerUnitTest
     {
@@ -38,11 +36,11 @@ namespace TetriNET2.Tests.Server
             }
             catch (ArgumentNullException ex)
             {
-                Assert.AreEqual(ex.ParamName, "room");
+                Assert.AreEqual("room", ex.ParamName);
             }
 
-            Assert.AreEqual(gameRoomManager.RoomCount, 0);
-            Assert.AreEqual(gameRoomManager.Rooms.Count(), 0);
+            Assert.AreEqual(0, gameRoomManager.RoomCount);
+            Assert.AreEqual(0, gameRoomManager.Rooms.Count());
         }
 
         [TestMethod]
@@ -55,8 +53,8 @@ namespace TetriNET2.Tests.Server
 
             Assert.IsTrue(inserted1);
             Assert.IsTrue(inserted2);
-            Assert.AreEqual(gameRoomManager.RoomCount, 2);
-            Assert.AreEqual(gameRoomManager.Rooms.Count(), 2);
+            Assert.AreEqual(2, gameRoomManager.RoomCount);
+            Assert.AreEqual(2, gameRoomManager.Rooms.Count());
             Assert.IsTrue(gameRoomManager.Rooms.Any(x => x.Name == "room1") && gameRoomManager.Rooms.Any(x => x.Name == "room2"));
         }
 
@@ -69,8 +67,8 @@ namespace TetriNET2.Tests.Server
             bool inserted = gameRoomManager.Add(CreateGameRoom("room2", 5, 5, GameRules.Custom, new GameOptions(), null));
 
             Assert.IsFalse(inserted);
-            Assert.AreEqual(gameRoomManager.RoomCount, 1);
-            Assert.IsTrue(gameRoomManager.Rooms.First().Name == "room1");
+            Assert.AreEqual(1, gameRoomManager.RoomCount);
+            Assert.AreEqual("room1", gameRoomManager.Rooms.First().Name);
         }
 
         [TestMethod]
@@ -83,8 +81,8 @@ namespace TetriNET2.Tests.Server
             bool inserted = gameRoomManager.Add(room1);
 
             Assert.IsFalse(inserted);
-            Assert.AreEqual(gameRoomManager.RoomCount, 1);
-            Assert.AreEqual(gameRoomManager.Rooms.Count(), 1);
+            Assert.AreEqual(1, gameRoomManager.RoomCount);
+            Assert.AreEqual(1, gameRoomManager.Rooms.Count());
         }
 
         #endregion
@@ -101,8 +99,8 @@ namespace TetriNET2.Tests.Server
             bool removed = gameRoomManager.Remove(room);
 
             Assert.IsTrue(removed);
-            Assert.AreEqual(gameRoomManager.RoomCount, 0);
-            Assert.AreEqual(gameRoomManager.Rooms.Count(), 0);
+            Assert.AreEqual(0, gameRoomManager.RoomCount);
+            Assert.AreEqual(0, gameRoomManager.Rooms.Count());
         }
 
         [TestMethod]
@@ -116,8 +114,8 @@ namespace TetriNET2.Tests.Server
             bool removed = gameRoomManager.Remove(room2);
 
             Assert.IsFalse(removed);
-            Assert.AreEqual(gameRoomManager.RoomCount, 1);
-            Assert.AreEqual(gameRoomManager.Rooms.Count(), 1);
+            Assert.AreEqual(1, gameRoomManager.RoomCount);
+            Assert.AreEqual(1, gameRoomManager.Rooms.Count());
         }
 
         [TestMethod]
@@ -133,11 +131,11 @@ namespace TetriNET2.Tests.Server
             }
             catch (ArgumentNullException ex)
             {
-                Assert.AreEqual(ex.ParamName, "room");
+                Assert.AreEqual("room", ex.ParamName);
             }
 
-            Assert.AreEqual(gameRoomManager.RoomCount, 1);
-            Assert.AreEqual(gameRoomManager.Rooms.Count(), 1);
+            Assert.AreEqual(1, gameRoomManager.RoomCount);
+            Assert.AreEqual(1, gameRoomManager.Rooms.Count());
         }
 
         #endregion
@@ -151,7 +149,7 @@ namespace TetriNET2.Tests.Server
 
             gameRoomManager.Clear();
 
-            Assert.AreEqual(gameRoomManager.RoomCount, 0);
+            Assert.AreEqual(0, gameRoomManager.RoomCount);
         }
 
         [TestMethod]
@@ -164,7 +162,7 @@ namespace TetriNET2.Tests.Server
 
             gameRoomManager.Clear();
 
-            Assert.AreEqual(gameRoomManager.RoomCount, 0);
+            Assert.AreEqual(0, gameRoomManager.RoomCount);
         }
 
         #endregion
@@ -185,7 +183,7 @@ namespace TetriNET2.Tests.Server
             IGameRoom searched = gameRoomManager[room2.Id];
 
             Assert.IsNotNull(searched);
-            Assert.AreEqual(searched, room2);
+            Assert.AreEqual(room2, searched);
         }
 
         [TestMethod]
@@ -218,7 +216,7 @@ namespace TetriNET2.Tests.Server
             IGameRoom searched = gameRoomManager[room2.Name];
 
             Assert.IsNotNull(searched);
-            Assert.AreEqual(searched, room2);
+            Assert.AreEqual(room2, searched);
         }
 
         [TestMethod]
@@ -266,7 +264,7 @@ namespace TetriNET2.Tests.Server
             }
             catch (ArgumentOutOfRangeException ex)
             {
-                Assert.AreEqual(ex.ParamName, "maxRooms");
+                Assert.AreEqual("maxRooms", ex.ParamName);
             }
         }
 
@@ -277,7 +275,7 @@ namespace TetriNET2.Tests.Server
 
             IGameRoomManager gameRoomManager = CreateGameRoomManager(maxRooms);
 
-            Assert.AreEqual(gameRoomManager.MaxRooms, maxRooms);
+            Assert.AreEqual(maxRooms, gameRoomManager.MaxRooms);
         }
 
         [TestMethod]

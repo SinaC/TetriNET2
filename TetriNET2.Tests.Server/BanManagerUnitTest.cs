@@ -11,8 +11,6 @@ using TetriNET2.Tests.Server.Mocking;
 
 namespace TetriNET2.Tests.Server
 {
-    // TODO: invert parameters in Assert.AreEqual and Assert.AreNotEqual
-
     [TestClass]
     public abstract class AbstractBanManagerUnitTest
     {
@@ -77,7 +75,7 @@ namespace TetriNET2.Tests.Server
 
             string bannedReason = banManager.BannedReason(IPAddress.Parse("127.0.0.1"));
 
-            Assert.AreEqual(bannedReason, reason);
+            Assert.AreEqual(reason, bannedReason);
         }
 
         [TestMethod]
@@ -105,7 +103,7 @@ namespace TetriNET2.Tests.Server
             List<BanEntryData> entries = banManager.Entries.ToList();
 
             Assert.IsNotNull(entries);
-            Assert.AreEqual(entries.Count, 2);
+            Assert.AreEqual(2, entries.Count);
         }
 
         [TestMethod]
@@ -118,7 +116,7 @@ namespace TetriNET2.Tests.Server
 
             List<BanEntryData> entries = banManager.Entries.ToList();
 
-            Assert.AreEqual(entries.Count, 1);
+            Assert.AreEqual(1, entries.Count);
         }
 
         [TestMethod]
@@ -131,7 +129,7 @@ namespace TetriNET2.Tests.Server
 
             List<BanEntryData> entries = banManager.Entries.ToList();
 
-            Assert.AreEqual(entries.Count, 0);
+            Assert.AreEqual(0, entries.Count);
         }
 
         [TestMethod]
@@ -144,7 +142,7 @@ namespace TetriNET2.Tests.Server
             IBanManager banManager2 = CreateBanManager();
             List<BanEntryData> entries = banManager2.Entries.ToList();
 
-            Assert.AreEqual(entries.Count, banManager.Entries.Count());
+            Assert.AreEqual(banManager.Entries.Count(), entries.Count);
         }
     }
 
@@ -169,7 +167,7 @@ namespace TetriNET2.Tests.Server
             }
             catch (ArgumentNullException ex)
             {
-                Assert.AreEqual(ex.ParamName, "filename");
+                Assert.AreEqual("filename", ex.ParamName);
             }
         }
 

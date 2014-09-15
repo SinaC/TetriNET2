@@ -24,6 +24,11 @@ namespace TetriNET2.Tests.Server.Mocking
             return value;
         }
 
+        public void Reset()
+        {
+            _callCount.Clear();
+        }
+
         #region ITetriNETAdminCallback
 
         public void OnConnected(ConnectResults result, Versioning serverVersion, Guid adminId)

@@ -166,6 +166,9 @@ namespace TetriNET2.Server
             bool removed = _clients.Remove(client);
             if (!removed)
                 return false;
+
+            bool wasPlaying = client.State == ClientStates.Playing;
+
             // Change role, state and game
             client.Roles &= ~(ClientRoles.Player | ClientRoles.Spectator); // remove player+spectator
             client.State = ClientStates.Connected;
@@ -179,7 +182,7 @@ namespace TetriNET2.Server
                 target.OnClientGameLeft(client.Id);
 
             // If game was running and player was playing, check if only one player left
-            if ((State == GameRoomStates.GameStarted || State == GameRoomStates.GamePaused) && client.State == ClientStates.Playing)
+            if ((State == GameRoomStates.GameStarted || State == GameRoomStates.GamePaused) && wasPlaying)
             {
                 int playingCount = Players.Count(p => p.State == ClientStates.Playing);
                 if (playingCount == 0 || playingCount == 1)
@@ -190,6 +193,12 @@ namespace TetriNET2.Server
                     // Send game finished (no winner)
                     foreach(IClient target in Clients.Where(c => c != client))
                         target.OnGameFinished(GameFinishedReasons.NotEnoughPlayers, statistics);
+                    // Reset last player if any
+                    if (playingCount == 1)
+                    {
+                        IClient last = Players.Single(p => p.State == ClientStates.Playing);
+                        last.State = ClientStates.WaitInGameRoom;
+                    }
                     State = GameRoomStates.WaitStartGame;
                 }
             }
@@ -530,7 +539,7 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Stopping game");
 
-            if (State != GameRoomStates.GameStarted && State == GameRoomStates.GamePaused)
+            if (State != GameRoomStates.GameStarted && State != GameRoomStates.GamePaused)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Cannot stop game");
                 return false;

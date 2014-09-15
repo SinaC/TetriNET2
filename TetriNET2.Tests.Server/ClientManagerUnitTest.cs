@@ -10,8 +10,6 @@ using TetriNET2.Tests.Server.Mocking;
 
 namespace TetriNET2.Tests.Server
 {
-    // TODO: invert parameters in Assert.AreEqual and Assert.AreNotEqual
-
     [TestClass]
     public abstract class AbstractClientManagerUnitTest
     {
@@ -39,11 +37,11 @@ namespace TetriNET2.Tests.Server
             }
             catch (ArgumentNullException ex)
             {
-                Assert.AreEqual(ex.ParamName, "client");
+                Assert.AreEqual("client", ex.ParamName);
             }
 
-            Assert.AreEqual(clientManager.ClientCount, 0);
-            Assert.AreEqual(clientManager.Clients.Count(), 0);
+            Assert.AreEqual(0, clientManager.ClientCount);
+            Assert.AreEqual(0, clientManager.Clients.Count());
         }
 
         [TestMethod]
@@ -56,8 +54,8 @@ namespace TetriNET2.Tests.Server
 
             Assert.IsTrue(inserted1);
             Assert.IsTrue(inserted2);
-            Assert.AreEqual(clientManager.ClientCount, 2);
-            Assert.AreEqual(clientManager.Clients.Count(), 2);
+            Assert.AreEqual(2, clientManager.ClientCount);
+            Assert.AreEqual(2, clientManager.Clients.Count());
             Assert.IsTrue(clientManager.Clients.Any(x => x.Name == "client1") && clientManager.Clients.Any(x => x.Name == "client2"));
         }
 
@@ -70,7 +68,7 @@ namespace TetriNET2.Tests.Server
             bool inserted = clientManager.Add(CreateClient("client2", IPAddress.Any, new CountCallTetriNETCallback()));
 
             Assert.IsFalse(inserted);
-            Assert.AreEqual(clientManager.ClientCount, 1);
+            Assert.AreEqual(1, clientManager.ClientCount);
             Assert.IsTrue(clientManager.Clients.First().Name == "client1");
         }
 
@@ -84,8 +82,8 @@ namespace TetriNET2.Tests.Server
             bool inserted = clientManager.Add(client1);
 
             Assert.IsFalse(inserted);
-            Assert.AreEqual(clientManager.ClientCount, 1);
-            Assert.AreEqual(clientManager.Clients.Count(), 1);
+            Assert.AreEqual(1, clientManager.ClientCount);
+            Assert.AreEqual(1, clientManager.Clients.Count());
         }
 
         [TestMethod]
@@ -97,8 +95,8 @@ namespace TetriNET2.Tests.Server
             bool inserted = clientManager.Add(CreateClient("client1", IPAddress.Any, new CountCallTetriNETCallback()));
 
             Assert.IsFalse(inserted);
-            Assert.AreEqual(clientManager.ClientCount, 1);
-            Assert.AreEqual(clientManager.Clients.Count(), 1);
+            Assert.AreEqual(1, clientManager.ClientCount);
+            Assert.AreEqual(1, clientManager.Clients.Count());
         }
 
         [TestMethod]
@@ -111,8 +109,8 @@ namespace TetriNET2.Tests.Server
             bool inserted = clientManager.Add(CreateClient("client2", IPAddress.Any, callback));
 
             Assert.IsFalse(inserted);
-            Assert.AreEqual(clientManager.ClientCount, 1);
-            Assert.AreEqual(clientManager.Clients.Count(), 1);
+            Assert.AreEqual(1, clientManager.ClientCount);
+            Assert.AreEqual(1, clientManager.Clients.Count());
         }
 
         #endregion
@@ -129,8 +127,8 @@ namespace TetriNET2.Tests.Server
             bool removed = clientManager.Remove(client);
 
             Assert.IsTrue(removed);
-            Assert.AreEqual(clientManager.ClientCount, 0);
-            Assert.AreEqual(clientManager.Clients.Count(), 0);
+            Assert.AreEqual(0, clientManager.ClientCount);
+            Assert.AreEqual(0, clientManager.Clients.Count());
         }
 
         [TestMethod]
@@ -144,8 +142,8 @@ namespace TetriNET2.Tests.Server
             bool removed = clientManager.Remove(client2);
 
             Assert.IsFalse(removed);
-            Assert.AreEqual(clientManager.ClientCount, 1);
-            Assert.AreEqual(clientManager.Clients.Count(), 1);
+            Assert.AreEqual(1, clientManager.ClientCount);
+            Assert.AreEqual(1, clientManager.Clients.Count());
         }
 
         [TestMethod]
@@ -161,11 +159,11 @@ namespace TetriNET2.Tests.Server
             }
             catch (ArgumentNullException ex)
             {
-                Assert.AreEqual(ex.ParamName, "client");
+                Assert.AreEqual("client", ex.ParamName);
             }
 
-            Assert.AreEqual(clientManager.ClientCount, 1);
-            Assert.AreEqual(clientManager.Clients.Count(), 1);
+            Assert.AreEqual(1, clientManager.ClientCount);
+            Assert.AreEqual(1, clientManager.Clients.Count());
         }
 
         #endregion
@@ -179,7 +177,7 @@ namespace TetriNET2.Tests.Server
 
             clientManager.Clear();
 
-            Assert.AreEqual(clientManager.ClientCount, 0);
+            Assert.AreEqual(0, clientManager.ClientCount);
         }
 
         [TestMethod]
@@ -192,7 +190,7 @@ namespace TetriNET2.Tests.Server
 
             clientManager.Clear();
 
-            Assert.AreEqual(clientManager.ClientCount, 0);
+            Assert.AreEqual(0, clientManager.ClientCount);
         }
 
 #endregion
@@ -245,7 +243,7 @@ namespace TetriNET2.Tests.Server
             IClient searched = clientManager[client2.Id];
 
             Assert.IsNotNull(searched);
-            Assert.AreEqual(searched, client2);
+            Assert.AreEqual(client2, searched);
         }
 
         [TestMethod]
@@ -278,7 +276,7 @@ namespace TetriNET2.Tests.Server
             IClient searched = clientManager[client2.Name];
 
             Assert.IsNotNull(searched);
-            Assert.AreEqual(searched, client2);
+            Assert.AreEqual(client2, searched);
         }
 
         [TestMethod]
@@ -311,7 +309,7 @@ namespace TetriNET2.Tests.Server
             IClient searched = clientManager[client2.Callback];
 
             Assert.IsNotNull(searched);
-            Assert.AreEqual(searched, client2);
+            Assert.AreEqual(client2, searched);
         }
 
         [TestMethod]
@@ -344,7 +342,7 @@ namespace TetriNET2.Tests.Server
             IClient searched = clientManager[client2.Address];
 
             Assert.IsNotNull(searched);
-            Assert.AreEqual(searched, client2);
+            Assert.AreEqual(client2, searched);
         }
 
         [TestMethod]
@@ -391,7 +389,7 @@ namespace TetriNET2.Tests.Server
             }
             catch (ArgumentOutOfRangeException ex)
             {
-                Assert.AreEqual(ex.ParamName, "maxClients");
+                Assert.AreEqual("maxClients", ex.ParamName);
             }
         }
 
@@ -402,7 +400,7 @@ namespace TetriNET2.Tests.Server
 
             IClientManager clientManager = CreateClientManager(maxClients);
 
-            Assert.AreEqual(clientManager.MaxClients, maxClients);
+            Assert.AreEqual(maxClients, clientManager.MaxClients);
         }
 
         [TestMethod]

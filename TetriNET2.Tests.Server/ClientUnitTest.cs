@@ -10,8 +10,6 @@ using TetriNET2.Tests.Server.Mocking;
 
 namespace TetriNET2.Tests.Server
 {
-    // TODO: invert parameters in Assert.AreEqual and Assert.AreNotEqual
-
     [TestClass]
     public abstract class AbstractClientUnitTest
     {
@@ -73,7 +71,7 @@ namespace TetriNET2.Tests.Server
             client.SetTimeout();
 
             Assert.AreNotEqual(lastActionFromClient, client.LastActionFromClient);
-            Assert.AreEqual(client.TimeoutCount, 1);
+            Assert.AreEqual(1, client.TimeoutCount);
         }
 
         [TestMethod]
@@ -87,7 +85,7 @@ namespace TetriNET2.Tests.Server
             client.ResetTimeout();
 
             Assert.AreNotEqual(lastActionFromClient, client.LastActionFromClient);
-            Assert.AreEqual(client.TimeoutCount, 0);
+            Assert.AreEqual(0, client.TimeoutCount);
         }
 
         [TestMethod]
@@ -126,7 +124,7 @@ namespace TetriNET2.Tests.Server
             }
             catch (ArgumentNullException ex)
             {
-                Assert.AreEqual(ex.ParamName, "name");
+                Assert.AreEqual("name", ex.ParamName);
             }
         }
 
@@ -141,7 +139,7 @@ namespace TetriNET2.Tests.Server
             }
             catch (ArgumentNullException ex)
             {
-                Assert.AreEqual(ex.ParamName, "address");
+                Assert.AreEqual("address", ex.ParamName);
             }
         }
 
@@ -156,7 +154,7 @@ namespace TetriNET2.Tests.Server
             }
             catch (ArgumentNullException ex)
             {
-                Assert.AreEqual(ex.ParamName, "callback");
+                Assert.AreEqual("callback", ex.ParamName);
             }
         }
 
@@ -170,11 +168,11 @@ namespace TetriNET2.Tests.Server
 
             IClient client = CreateClient(name, address, callback, team);
 
-            Assert.AreEqual(client.Name, name);
-            Assert.AreEqual(client.Address, address);
-            Assert.AreEqual(client.Callback, callback);
-            Assert.AreEqual(client.Team, team);
-            Assert.AreNotEqual(client.ConnectTime, default(DateTime));
+            Assert.AreEqual(name, client.Name);
+            Assert.AreEqual(address, client.Address);
+            Assert.AreEqual(callback, client.Callback);
+            Assert.AreEqual(team, client.Team);
+            Assert.AreNotEqual(default(DateTime), client.ConnectTime);
             Assert.IsFalse(client.Id.Equals(default(Guid)));
         }
 

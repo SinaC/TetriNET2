@@ -11,8 +11,6 @@ using TetriNET2.Tests.Server.Mocking;
 
 namespace TetriNET2.Tests.Server
 {
-    // TODO: invert parameters in Assert.AreEqual and Assert.AreNotEqual
-
     [TestClass]
     public abstract class AbstractPieceProviderUnitTest
     {
@@ -58,7 +56,7 @@ namespace TetriNET2.Tests.Server
 
             Pieces piece = pieceProvider[0];
 
-            Assert.AreEqual(piece, Pieces.TetriminoI);
+            Assert.AreEqual(Pieces.TetriminoI, piece);
         }
 
         [TestMethod]
@@ -92,10 +90,10 @@ namespace TetriNET2.Tests.Server
             Pieces piece3 = pieceProvider[2];
             Pieces piece4 = pieceProvider[3];
 
-            Assert.AreEqual(piece1, Pieces.TetriminoI);
-            Assert.AreEqual(piece2, Pieces.TetriminoJ);
-            Assert.AreEqual(piece3, Pieces.TetriminoL);
-            Assert.AreEqual(piece4, Pieces.TetriminoO);
+            Assert.AreEqual(Pieces.TetriminoI, piece1);
+            Assert.AreEqual(Pieces.TetriminoJ, piece2);
+            Assert.AreEqual(Pieces.TetriminoL, piece3);
+            Assert.AreEqual(Pieces.TetriminoO, piece4);
         }
 
         [TestMethod]
@@ -134,10 +132,10 @@ namespace TetriNET2.Tests.Server
             Pieces piece3 = pieceProvider[2];
             Pieces piece4 = pieceProvider[3];
 
-            Assert.AreEqual(piece1, Pieces.TetriminoI);
-            Assert.AreEqual(piece2, Pieces.TetriminoJ);
-            Assert.AreEqual(piece3, Pieces.TetriminoL);
-            Assert.AreEqual(piece4, Pieces.TetriminoO);
+            Assert.AreEqual(Pieces.TetriminoI, piece1);
+            Assert.AreEqual(Pieces.TetriminoJ, piece2);
+            Assert.AreEqual(Pieces.TetriminoL, piece3);
+            Assert.AreEqual(Pieces.TetriminoO, piece4);
         }
     }
 
@@ -195,7 +193,7 @@ namespace TetriNET2.Tests.Server
             Pieces piece4 = pieceProvider[3];
             Pieces piece5 = pieceProvider[4];
 
-            Assert.AreEqual(piece5, Pieces.Invalid);
+            Assert.AreEqual(Pieces.Invalid, piece5);
         }
     }
 }
