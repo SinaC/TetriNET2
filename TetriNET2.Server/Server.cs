@@ -89,66 +89,66 @@ namespace TetriNET2.Server
             // ------
             // Client
             // Connect/disconnect/keep alive
-            host.ClientConnect += OnClientConnect;
-            host.ClientDisconnect += OnClientDisconnect;
-            host.ClientHeartbeat += OnClientHeartbeat;
+            host.HostClientConnect += OnClientConnect;
+            host.HostClientDisconnect += OnClientDisconnect;
+            host.HostClientHeartbeat += OnClientHeartbeat;
 
             // Wait+Game room
-            host.ClientSendPrivateMessage += OnClientSendPrivateMessage;
-            host.ClientSendBroadcastMessage += OnClientSendBroadcastMessage;
-            host.ClientChangeTeam += OnClientChangeTeam;
+            host.HostClientSendPrivateMessage += OnClientSendPrivateMessage;
+            host.HostClientSendBroadcastMessage += OnClientSendBroadcastMessage;
+            host.HostClientChangeTeam += OnClientChangeTeam;
 
             // Wait room
-            host.ClientJoinGame += OnClientJoinGame;
-            host.ClientJoinRandomGame += OnClientJoinRandomGame;
-            host.ClientCreateAndJoinGame += OnClientCreateAndJoinGame;
+            host.HostClientJoinGame += OnClientJoinGame;
+            host.HostClientJoinRandomGame += OnClientJoinRandomGame;
+            host.HostClientCreateAndJoinGame += OnClientCreateAndJoinGame;
 
             // Game room as game master (player or spectator)
-            host.ClientStartGame += OnClientStartGame;
-            host.ClientStopGame += OnClientStopGame;
-            host.ClientPauseGame += OnClientPauseGame;
-            host.ClientResumeGame += OnClientResumeGame;
-            host.ClientChangeOptions += OnClientChangeOptions;
-            host.ClientVoteKick += OnClientVoteKick;
-            host.ClientVoteKickAnswer += OnClientVoteKickAnswer;
-            host.ClientResetWinList += OnClientResetWinList;
+            host.HostClientStartGame += OnClientStartGame;
+            host.HostClientStopGame += OnClientStopGame;
+            host.HostClientPauseGame += OnClientPauseGame;
+            host.HostClientResumeGame += OnClientResumeGame;
+            host.HostClientChangeOptions += OnClientChangeOptions;
+            host.HostClientVoteKick += OnClientVoteKick;
+            host.HostClientVoteKickAnswer += OnClientVoteKickAnswer;
+            host.HostClientResetWinList += OnClientResetWinList;
 
             // Game room as player or spectator
-            host.ClientLeaveGame += OnClientLeaveGame;
+            host.HostClientLeaveGame += OnClientLeaveGame;
 
             // Game room as player
-            host.ClientPlacePiece += OnClientPlacePiece;
-            host.ClientModifyGrid += OnClientModifyGrid;
-            host.ClientUseSpecial += OnClientUseSpecial;
-            host.ClientClearLines += OnClientClearLines;
-            host.ClientGameLost += OnClientGameLost;
-            host.ClientFinishContinuousSpecial += OnClientFinishContinuousSpecial;
-            host.ClientEarnAchievement += OnClientEarnAchievement;
+            host.HostClientPlacePiece += OnClientPlacePiece;
+            host.HostClientModifyGrid += OnClientModifyGrid;
+            host.HostClientUseSpecial += OnClientUseSpecial;
+            host.HostClientClearLines += OnClientClearLines;
+            host.HostClientGameLost += OnClientGameLost;
+            host.HostClientFinishContinuousSpecial += OnClientFinishContinuousSpecial;
+            host.HostClientEarnAchievement += OnClientEarnAchievement;
 
             // ------
             // Admin
             // Connect/Disconnect
-            host.AdminConnect += OnAdminConnect;
-            host.AdminDisconnect += OnAdminDisconnect;
+            host.HostAdminConnect += OnAdminConnect;
+            host.HostAdminDisconnect += OnAdminDisconnect;
 
             // Messaging
-            host.AdminSendPrivateAdminMessage += OnAdminSendPrivateAdminMessage;
-            host.AdminSendPrivateMessage += OnAdminSendPrivateMessage;
-            host.AdminSendBroadcastMessage += OnAdminSendBroadcastMessage;
+            host.HostAdminSendPrivateAdminMessage += OnAdminSendPrivateAdminMessage;
+            host.HostAdminSendPrivateMessage += OnAdminSendPrivateMessage;
+            host.HostAdminSendBroadcastMessage += OnAdminSendBroadcastMessage;
 
             // Monitoring
-            host.AdminGetAdminList += OnAdminGetAdminList;
-            host.AdminGetClientList += OnAdminGetClientList;
-            host.AdminGetClientListInRoom += OnAdminGetClientListInRoom;
-            host.AdminGetRoomList += OnAdminGetRoomList;
-            host.AdminGetBannedList += OnAdminGetBannedList;
+            host.HostAdminGetAdminList += OnAdminGetAdminList;
+            host.HostAdminGetClientList += OnAdminGetClientList;
+            host.HostAdminGetClientListInRoom += OnAdminGetClientListInRoom;
+            host.HostAdminGetRoomList += OnAdminGetRoomList;
+            host.HostAdminGetBannedList += OnAdminGetBannedList;
 
             // Kick/Ban
-            host.AdminKick += OnAdminKick;
-            host.AdminBan += OnAdminBan;
+            host.HostAdminKick += OnAdminKick;
+            host.HostAdminBan += OnAdminBan;
 
             // Server commands
-            host.AdminRestartServer += OnAdminRestartServer;
+            host.HostAdminRestartServer += OnAdminRestartServer;
 
             Debug.Assert(CheckEvents(host), "Every host events must be handled");
 
@@ -179,7 +179,7 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Error, "Cannot start server until a version has been specified");
                 return;
             }
-            if (_hosts.Count != 0)
+            if (_hosts.Count == 0)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot start server without any host");
                 return;
@@ -267,16 +267,41 @@ namespace TetriNET2.Server
             OnClientLeft(client, LeaveReasons.ConnectionLost);
         }
 
-        private void OnClientLeft(IClient client, LeaveReasons reason)
+        private void OnAdminConnectLost(IAdmin admin)
         {
-            throw new NotImplementedException();
-            // TODO: 
-            //  remove from client manager, wait room, game room, host
-            //  if playing, check if game can continue without player
-            //  inform other clients, players/spectators, admins
+            OnAdminLeft(admin, LeaveReasons.ConnectionLost);
         }
 
-        private void OnAdminLeft(IClient client, LeaveReasons reason)
+
+        private void OnClientLeft(IClient client, LeaveReasons reason)
+        {
+            // Remove from game room
+            IGameRoom game = client.Game;
+            if (game != null)
+            {
+                lock(game.LockObject)
+                    game.Leave(client);
+            }
+
+            // Remove from client manager
+            lock(_clientManager.LockObject)
+                _clientManager.Remove(client);
+
+            // Inform client
+            client.OnDisconnected();
+
+            // Inform clients and admins
+            foreach(IClient target in _clientManager.Clients) // no need to check on client, already removed from collection
+                target.OnClientDisconnected(client.Id, reason);
+            foreach(IAdmin admin in _adminManager.Admins)
+                admin.OnClientDisconnected(client.Id, reason);
+
+            // Hosts
+            foreach (IHost host in _hosts)
+                host.RemoveClient(client);
+        }
+
+        private void OnAdminLeft(IAdmin admin, LeaveReasons reason)
         {
             throw new NotImplementedException();
             // TODO: remove from admin manager, inform other admin
@@ -351,6 +376,9 @@ namespace TetriNET2.Server
                             lock (_adminManager.LockObject)
                                 foreach (IAdmin target in _adminManager.Admins)
                                     target.OnClientConnected(client.Id, client.Name, client.Team);
+                            // Hosts
+                            foreach(IHost host in _hosts)
+                                host.AddClient(client);
                             //
                             Log.Default.WriteLine(LogLevels.Info, "Connect {0}[{1}] succeed", name, address == null ? "???" : address.ToString());
                         }
@@ -528,6 +556,10 @@ namespace TetriNET2.Server
                             foreach (IAdmin target in _adminManager.Admins)
                                 target.OnGameCreated(client.Id, description);
 
+                        // Hosts
+                        foreach (IHost host in _hosts)
+                            host.AddGameRoom(game);
+
                         // Start room
                         game.Start(_cancellationTokenSource);
 
@@ -651,7 +683,7 @@ namespace TetriNET2.Server
                 options.SuddenDeathTick >= 1 && options.SuddenDeathTick <= 30 &&
                 options.StartingLevel >= 0 && options.StartingLevel <= 100;
             if (accepted)
-                game.ChangeOptions(options);
+                game.ChangeOptions(options); // ChangeOptions is responsible for using Callback
             else
                 Log.Default.WriteLine(LogLevels.Info, "Invalid options");
         }
@@ -681,12 +713,22 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, client {0} is not game master", client.Name);
                 return;
             }
-            game.ResetWinList();
+            //
+            game.ResetWinList(); // ResetWinList is responsible for using Callback
         }
 
         private void OnClientLeaveGame(IClient client)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Client leave game: {0}", client.Name);
+
+            IGameRoom game = client.Game;
+            if (game == null)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot leave game, client {0} is not in a game room", client.Name);
+                return;
+            }
+            //
+            game.Leave(client); // Leave is responsible for using Callback
         }
 
         private void OnClientPlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
@@ -699,8 +741,8 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot place piece, client {0} is not in a game room", client.Name);
                 return;
             }
-
-            game.PlacePiece(client, pieceIndex, highestIndex, piece, orientation, posX, posY, grid);
+            //
+            game.PlacePiece(client, pieceIndex, highestIndex, piece, orientation, posX, posY, grid); // PlacePiece is responsible for using Callback
         }
 
         private void OnClientModifyGrid(IClient client, byte[] grid)
@@ -713,8 +755,8 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot modify grid, client {0} is not in a game room", client.Name);
                 return;
             }
-
-            game.ModifyGrid(client, grid);
+            //
+            game.ModifyGrid(client, grid); // ModifyGrid is responsible for using Callback
         }
 
         private void OnClientUseSpecial(IClient client, IClient target, Specials special)
@@ -727,8 +769,8 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot use special, client {0} is not in a game room", client.Name);
                 return;
             }
-
-            game.UseSpecial(client, target, special);
+            //
+            game.UseSpecial(client, target, special); // UseSpecial is responsible for using Callback
         }
 
         private void OnClientClearLines(IClient client, int count)
@@ -741,8 +783,8 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot clear lines, client {0} is not in a game room", client.Name);
                 return;
             }
-
-            game.ClearLines(client, count);
+            //
+            game.ClearLines(client, count); // ClearLines is responsible for using Callback
         }
 
         private void OnClientGameLost(IClient client)
@@ -755,8 +797,8 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot game lost, client {0} is not in a game room", client.Name);
                 return;
             }
-
-            game.GameLost(client);
+            //
+            game.GameLost(client); // GameLost is responsible for using Callback
         }
 
         private void OnClientFinishContinuousSpecial(IClient client, Specials special)
@@ -769,8 +811,8 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot finish continuous special, client {0} is not in a game room", client.Name);
                 return;
             }
-
-            game.FinishContinuousSpecial(client, special);
+            //
+            game.FinishContinuousSpecial(client, special); // FinishContinuousSpecial is responsible for using Callback
         }
 
         private void OnClientEarnAchievement(IClient client, int achievementId, string achievementTitle)
@@ -783,8 +825,8 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot earn achievement, client {0} is not in a game room", client.Name);
                 return;
             }
-
-            game.EarnAchievement(client, achievementId, achievementTitle);
+            //
+            game.EarnAchievement(client, achievementId, achievementTitle); // EarnAchievement  is responsible for using Callback
         }
 
         // Admin
@@ -859,6 +901,7 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "TimeoutTask started");
 
+            List<IClient> timeoutClients = new List<IClient>();
             try
             {
                 while (true)
@@ -871,24 +914,35 @@ namespace TetriNET2.Server
 
                     // TODO: don't check every client on each loop, should test 10 by 10
                     // Check client timeout + send heartbeat if needed
-                    foreach (IClient client in _clientManager.Clients)
+                    timeoutClients.Clear();
+                    lock (_clientManager.LockObject)
                     {
-                        // Check player timeout
-                        TimeSpan timespan = DateTime.Now - client.LastActionFromClient;
-                        if (timespan.TotalMilliseconds > TimeoutDelay && IsTimeoutDetectionActive)
+                        foreach (IClient client in _clientManager.Clients)
                         {
-                            Log.Default.WriteLine(LogLevels.Info, "Timeout++ for client {0}", client.Name);
-                            // Update timeout count
-                            client.SetTimeout();
-                            if (client.TimeoutCount >= MaxTimeoutCountBeforeDisconnection)
-                                OnClientLeft(client, LeaveReasons.Timeout);
-                        }
+                            // Check player timeout
+                            TimeSpan timespan = DateTime.Now - client.LastActionFromClient;
+                            if (timespan.TotalMilliseconds > TimeoutDelay && IsTimeoutDetectionActive)
+                            {
+                                Log.Default.WriteLine(LogLevels.Info, "Timeout++ for client {0}", client.Name);
+                                // Update timeout count
+                                client.SetTimeout();
+                                if (client.TimeoutCount >= MaxTimeoutCountBeforeDisconnection)
+                                {
+                                    Log.Default.WriteLine(LogLevels.Info, "Max Timeout count reached for client {0} -> disconnect", client.Name);
+                                    //OnClientLeft(client, LeaveReasons.Timeout);
+                                    timeoutClients.Add(client);
+                                }
+                            }
 
-                        // Send heartbeat if needed
-                        TimeSpan delayFromPreviousHeartbeat = DateTime.Now - client.LastActionToClient;
-                        if (delayFromPreviousHeartbeat.TotalMilliseconds > HeartbeatDelay)
-                            client.OnHeartbeatReceived();
+                            // Send heartbeat if needed
+                            TimeSpan delayFromPreviousHeartbeat = DateTime.Now - client.LastActionToClient;
+                            if (delayFromPreviousHeartbeat.TotalMilliseconds > HeartbeatDelay)
+                                client.OnHeartbeatReceived();
+                        }
                     }
+                    if (timeoutClients.Any())
+                        foreach(IClient timeoutClient in timeoutClients)
+                            OnClientLeft(timeoutClient, LeaveReasons.Timeout);
 
                     // Stop task if stop event is raised
                     bool signaled = _cancellationTokenSource.Token.WaitHandle.WaitOne(10);

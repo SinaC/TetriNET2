@@ -8,6 +8,5 @@ namespace TetriNET2.Server.Interfaces
     {
         IClient CreateClient(string name, string team, IPAddress address, ITetriNETCallback callback);
         IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password);
-        IPieceProvider CreatePieceProvider();
     }
 }

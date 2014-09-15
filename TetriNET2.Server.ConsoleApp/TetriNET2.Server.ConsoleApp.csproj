@@ -41,11 +41,26 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="DummyClient.cs" />
+    <Compile Include="DummyHost.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TetriNET2.Common\TetriNET2.Common.csproj">
+      <Project>{36268a24-7765-41c9-b1ee-f6105be7e145}</Project>
+      <Name>TetriNET2.Common</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\TetriNET2.Server\TetriNET2.Server.csproj">
+      <Project>{a905c246-6c5d-490b-90a6-c91ca5c04940}</Project>
+      <Name>TetriNET2.Server</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

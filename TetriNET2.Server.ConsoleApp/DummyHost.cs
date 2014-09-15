@@ -4,15 +4,15 @@ using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces;
 
-namespace TetriNET2.Tests.Server.Mocking
+namespace TetriNET2.Server.ConsoleApp
 {
-    public sealed class HostMock : IHost
+    public class DummyHost : IHost
     {
-        public HostMock(IClientManager clientManager, IGameRoomManager gameRoomManager, IAdminManager adminManager)
+        public DummyHost(IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
         {
             ClientManager = clientManager;
-            GameRoomManager = gameRoomManager;
             AdminManager = adminManager;
+            GameRoomManager = gameRoomManager;
         }
 
         #region IHost
