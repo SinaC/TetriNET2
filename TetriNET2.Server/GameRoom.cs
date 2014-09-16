@@ -309,21 +309,33 @@ namespace TetriNET2.Server
                 throw new ArgumentNullException("client");
             if (target == null)
                 throw new ArgumentNullException("target");
+            if (client.Game != this)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, {0} is not in game room {1}", client.Name, Name);
+                return false;
+            }
+            if (target.Game != this)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, target {0} is not in game room {1}", target.Name, Name);
+                return false;
+            }
             if (!client.IsPlayer)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick {0}, it is not flagged as player", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, {0} is not flagged as player", client.Name);
                 return false;
             }
             if (!target.IsPlayer)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick {0}, target is not flagged as player", target.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, target {0} is not flagged as player", target.Name);
                 return false;
             }
             if (_voteKickTarget != null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick {0}, a vote kick is already running on room {1}", client.Name, Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, {0}, a vote kick is already running on room {1}", client.Name, Name);
                 return false;
             }
+            // Set vote kick target
+            _voteKickTarget = target;
             // Set player vote
             client.LastVoteKickAnswer = true;
             // Inform players
