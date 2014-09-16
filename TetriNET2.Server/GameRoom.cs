@@ -13,6 +13,7 @@ namespace TetriNET2.Server
     {
         private const int PiecesSendOnGameStarted = 5;
         private const int PiecesSendOnPlacePiece = 4;
+        private const int VoteKickTimeout = 10000; // in ms
 
         private readonly IPieceProvider _pieceProvider;
         private readonly List<IClient> _clients = new List<IClient>();
@@ -21,9 +22,11 @@ namespace TetriNET2.Server
         private readonly Dictionary<string, GameStatisticsByPlayer> _gameStatistics; // By player (cannot be stored in IClient because IClient is lost when disconnected during a game)
         private readonly List<WinEntry> _winList;
         private readonly Timer _suddenDeathTimer;
+        private readonly Timer _voteKickTimer;
 
         private int _specialId;
         private bool _isSuddenDeathActive;
+        private IClient _voteKickTarget;
 
         public GameRoom(IActionQueue actionQueue, IPieceProvider pieceProvider, string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null)
         {
@@ -57,6 +60,7 @@ namespace TetriNET2.Server
             _gameStatistics = new Dictionary<string, GameStatisticsByPlayer>();
             _winList = new List<WinEntry>();
             _suddenDeathTimer = new Timer(SuddenDeathCallback, null, Timeout.Infinite, 0);
+            _voteKickTimer = new Timer(VoteKickCallback, null, Timeout.Infinite, 0);
         }
 
         #region IGameRoom
@@ -148,6 +152,7 @@ namespace TetriNET2.Server
                 client.Roles |= ClientRoles.Player;
             client.State = ClientStates.WaitInGameRoom;
             client.Game = this;
+            client.LastVoteKickAnswer = null;
 
             // Inform client
             client.OnGameJoined(GameJoinResults.Successfull, Id, Options);
@@ -167,12 +172,21 @@ namespace TetriNET2.Server
             if (!removed)
                 return false;
 
+            // Clear vote kick target and timer
+            if (_voteKickTarget == client)
+            {
+                _voteKickTarget = null;
+                _voteKickTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            }
+
+            // Save play state
             bool wasPlaying = client.State == ClientStates.Playing;
 
             // Change role, state and game
             client.Roles &= ~(ClientRoles.Player | ClientRoles.Spectator); // remove player+spectator
             client.State = ClientStates.Connected;
             client.Game = null;
+            client.LastVoteKickAnswer = null;
 
             // Inform client
             client.OnGameLeft();
@@ -286,6 +300,77 @@ namespace TetriNET2.Server
                 client.OnGameOptionsChanged(options);
 
             Log.Default.WriteLine(LogLevels.Info, "Game options changed");
+            return true;
+        }
+
+        public bool VoteKick(IClient client, IClient target, string reason)
+        {
+            if (client == null)
+                throw new ArgumentNullException("client");
+            if (target == null)
+                throw new ArgumentNullException("target");
+            if (!client.IsPlayer)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick {0}, it is not flagged as player", client.Name);
+                return false;
+            }
+            if (!target.IsPlayer)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick {0}, target is not flagged as player", target.Name);
+                return false;
+            }
+            if (_voteKickTarget != null)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick {0}, a vote kick is already running on room {1}", client.Name, Name);
+                return false;
+            }
+            // Set player vote
+            client.LastVoteKickAnswer = true;
+            // Inform players
+            foreach(IClient other in Players.Where(p => p != client && p != target))
+                other.OnVoteKickAsked(client.Id, target.Id, reason);
+            // Start timeout timer
+            _voteKickTimer.Change(TimeSpan.FromMilliseconds(VoteKickTimeout), Timeout.InfiniteTimeSpan);
+            
+            Log.Default.WriteLine(LogLevels.Warning, "Vote kick started on {0} from {1}", target.Name, client.Name);
+            return true;
+        }
+
+        public bool VoteKickAnswer(IClient client, bool accepted)
+        {
+            if (client == null)
+                throw new ArgumentNullException("client");
+            if (!client.IsPlayer)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot handle vote kick answer, {0} is not flagged as player", client.Name);
+                return false;
+            }
+            if (_voteKickTarget == null)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot handle vote kick answer from {0}, no vote kick has been started", client.Name);
+                return false;
+            }
+            // Set player vote
+            client.LastVoteKickAnswer = accepted;
+            // Check if everyone has replied
+            if (Players.All(p => p.LastVoteKickAnswer.HasValue))
+            {
+                // Store target and reset it
+                IClient target = _voteKickTarget;
+                _voteKickTarget = null;
+
+                // Reset timer
+                _voteKickTimer.Change(Timeout.Infinite, Timeout.Infinite);
+
+                // Kick player out of game
+                Leave(target);
+
+                // Reset answers
+                foreach (IClient other in Players)
+                    other.LastVoteKickAnswer = null;
+            }
+
+            Log.Default.WriteLine(LogLevels.Info, "Vote kick answer {0} from {1}", accepted, client.Name);
             return true;
         }
 
@@ -544,7 +629,15 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Info, "Cannot stop game");
                 return false;
             }
+            //
             State = GameRoomStates.GameFinished;
+
+            // Stop sudden death timer
+            if (_isSuddenDeathActive)
+            {
+                _isSuddenDeathActive = false;
+                _suddenDeathTimer.Change(Timeout.Infinite, Timeout.Infinite);
+            }
 
             GameStatistics statistics = PrepareGameStatistics();
 
@@ -864,6 +957,24 @@ namespace TetriNET2.Server
                 // Delay elapsed, send lines
                 foreach (IClient player in Players.Where(p => p.State == ClientStates.Playing))
                     player.OnServerLinesAdded(1);
+            }
+        }
+
+        private void VoteKickCallback(object state)
+        {
+            if (_voteKickTarget != null)
+            {
+                Log.Default.WriteLine(LogLevels.Info, "Vote kick timeout reached, cancel vote");
+
+                // Reset target
+                _voteKickTarget = null;
+
+                // Reset timer
+                _voteKickTimer.Change(Timeout.Infinite, Timeout.Infinite);
+
+                // Reset answers
+                foreach (IClient other in Players)
+                    other.LastVoteKickAnswer = null;
             }
         }
 

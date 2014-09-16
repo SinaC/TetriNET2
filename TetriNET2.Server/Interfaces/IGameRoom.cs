@@ -36,6 +36,8 @@ namespace TetriNET2.Server.Interfaces
         bool Stop();
 
         bool ChangeOptions(GameOptions options);
+        bool VoteKick(IClient client, IClient target, string reason);
+        bool VoteKickAnswer(IClient client, bool accepted);
         bool ResetWinList();
 
         bool PlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid);

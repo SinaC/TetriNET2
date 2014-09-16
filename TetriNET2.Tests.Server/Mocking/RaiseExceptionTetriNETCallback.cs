@@ -95,7 +95,7 @@ namespace TetriNET2.Tests.Server.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnVoteKickAsked(Guid sourceClient, Guid targetClient)
+        public void OnVoteKickAsked(Guid sourceClient, Guid targetClient, string reason)
         {
             throw new NotImplementedException();
         }

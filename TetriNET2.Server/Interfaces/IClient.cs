@@ -28,6 +28,7 @@ namespace TetriNET2.Server.Interfaces
         byte[] Grid { get; set; }
         DateTime LossTime { get; set; }
         IGameRoom Game { get; set; }
+        bool? LastVoteKickAnswer { get; set; }
 
         //
         bool IsGameMaster { get; }

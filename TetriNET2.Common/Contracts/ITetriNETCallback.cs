@@ -32,7 +32,7 @@ namespace TetriNET2.Common.Contracts
         void OnGameFinished(GameFinishedReasons reason, GameStatistics statistics);
         void OnWinListModified(List<WinEntry> winEntries);
         void OnGameOptionsChanged(GameOptions gameOptions);
-        void OnVoteKickAsked(Guid sourceClient, Guid targetClient);
+        void OnVoteKickAsked(Guid sourceClient, Guid targetClient, string reason);
         void OnAchievementEarned(Guid playerId, int achievementId, string achievementTitle);
 
         void OnPiecePlaced(int firstIndex, List<Pieces> nextPieces);

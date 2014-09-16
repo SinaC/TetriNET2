@@ -673,29 +673,49 @@ namespace TetriNET2.Server
             options.PieceOccurancies = options.PieceOccurancies.GroupBy(x => x.Value).Select(x => x.First()).ToList();
 
             // Check options before accepting them
-            bool accepted =
-                RangeRandom.SumOccurancies(options.PieceOccurancies) == 100 &&
-                RangeRandom.SumOccurancies(options.SpecialOccurancies) == 100 &&
-                options.InventorySize >= 1 && options.InventorySize <= 15 &&
-                options.LinesToMakeForSpecials >= 1 && options.LinesToMakeForSpecials <= 4 &&
-                options.SpecialsAddedEachTime >= 1 && options.SpecialsAddedEachTime <= 4 &&
-                options.DelayBeforeSuddenDeath >= 0 && options.DelayBeforeSuddenDeath <= 15 &&
-                options.SuddenDeathTick >= 1 && options.SuddenDeathTick <= 30 &&
-                options.StartingLevel >= 0 && options.StartingLevel <= 100;
+            bool accepted = options.IsValid;
             if (accepted)
                 game.ChangeOptions(options); // ChangeOptions is responsible for using Callback
             else
                 Log.Default.WriteLine(LogLevels.Info, "Invalid options");
         }
 
-        private void OnClientVoteKick(IClient client, IClient target)
+        private void OnClientVoteKick(IClient client, IClient target, string reason)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Client vote kick: {0}", client.Name);
+
+            if (client.Game == null)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, client {0} is not in a game room", client.Name);
+                return;
+            }
+            if (target.Game == null)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, target {0} is not in a game room", target.Name);
+                return;
+            }
+            if (client.Game == target.Game)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, client {0} and target {1} are not in the same game", client.Name, target.Name);
+                return;
+            }
+            //
+            IGameRoom game = client.Game;
+            game.VoteKick(client, target, reason); // VoteKick is responsible for using Callback
         }
 
         private void OnClientVoteKickAnswer(IClient client, bool accepted)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Client vote kick answer: {0}", client.Name);
+
+            IGameRoom game = client.Game;
+            if (game == null)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot handle vote kick answer, client {0} is not in a game room", client.Name);
+                return;
+            }
+            //
+            game.VoteKickAnswer(client, accepted); // VoteKickAnswer is responsible for using Callback
         }
 
         private void OnClientResetWinList(IClient client)
@@ -919,7 +939,7 @@ namespace TetriNET2.Server
                     {
                         foreach (IClient client in _clientManager.Clients)
                         {
-                            // Check player timeout
+                            // Check client timeout
                             TimeSpan timespan = DateTime.Now - client.LastActionFromClient;
                             if (timespan.TotalMilliseconds > TimeoutDelay && IsTimeoutDetectionActive)
                             {
@@ -929,7 +949,6 @@ namespace TetriNET2.Server
                                 if (client.TimeoutCount >= MaxTimeoutCountBeforeDisconnection)
                                 {
                                     Log.Default.WriteLine(LogLevels.Info, "Max Timeout count reached for client {0} -> disconnect", client.Name);
-                                    //OnClientLeft(client, LeaveReasons.Timeout);
                                     timeoutClients.Add(client);
                                 }
                             }
@@ -940,6 +959,7 @@ namespace TetriNET2.Server
                                 client.OnHeartbeatReceived();
                         }
                     }
+                    // Remove timeout clients if any
                     if (timeoutClients.Any())
                         foreach(IClient timeoutClient in timeoutClients)
                             OnClientLeft(timeoutClient, LeaveReasons.Timeout);

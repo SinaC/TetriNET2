@@ -26,7 +26,7 @@ namespace TetriNET2.Common.Contracts
         void ClientPauseGame(ITetriNETCallback callback);
         void ClientResumeGame(ITetriNETCallback callback);
         void ClientChangeOptions(ITetriNETCallback callback, GameOptions options);
-        void ClientVoteKick(ITetriNETCallback callback, Guid targetId);
+        void ClientVoteKick(ITetriNETCallback callback, Guid targetId, string reason);
         void ClientVoteKickResponse(ITetriNETCallback callback, bool accepted);
         void ClientResetWinList(ITetriNETCallback callback);
 

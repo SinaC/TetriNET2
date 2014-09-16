@@ -27,7 +27,7 @@ namespace TetriNET2.Server.Interfaces
     public delegate void HostClientPauseGameEventHandler(IClient client);
     public delegate void HostClientResumeGameEventHandler(IClient client);
     public delegate void HostClientChangeOptionsEventHandler(IClient client, GameOptions options);
-    public delegate void HostClientVoteKickEventHandler(IClient client, IClient target);
+    public delegate void HostClientVoteKickEventHandler(IClient client, IClient target, string reason);
     public delegate void HostClientVoteKickResponseEventHandler(IClient client, bool accepted);
     public delegate void HostClientResetWinListEventHandler(IClient client);
 

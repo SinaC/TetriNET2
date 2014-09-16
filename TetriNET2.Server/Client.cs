@@ -76,6 +76,7 @@ namespace TetriNET2.Server
         public byte[] Grid { get; set; }
         public DateTime LossTime { get; set; }
         public IGameRoom Game { get; set; }
+        public bool? LastVoteKickAnswer { get; set; }
 
         public bool IsGameMaster
         {
@@ -222,9 +223,9 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnGameOptionsChanged(gameOptions));
         }
 
-        public void OnVoteKickAsked(Guid sourceClient, Guid targetClient)
+        public void OnVoteKickAsked(Guid sourceClient, Guid targetClient, string reason)
         {
-            ExceptionFreeAction(() => Callback.OnVoteKickAsked(sourceClient, targetClient));
+            ExceptionFreeAction(() => Callback.OnVoteKickAsked(sourceClient, targetClient, reason));
         }
 
         public void OnAchievementEarned(Guid playerId, int achievementId, string achievementTitle)

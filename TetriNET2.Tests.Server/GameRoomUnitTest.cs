@@ -262,6 +262,7 @@ namespace TetriNET2.Tests.Server
 
             Assert.AreEqual(ClientStates.Connected, client.State);
             Assert.AreEqual(ClientRoles.NoRole, client.Roles);
+            Assert.IsFalse(client.LastVoteKickAnswer.HasValue);
             Assert.IsNull(client.Game);
         }
 
@@ -276,6 +277,7 @@ namespace TetriNET2.Tests.Server
 
             Assert.AreEqual(ClientStates.Connected, client.State);
             Assert.AreEqual(ClientRoles.NoRole, client.Roles);
+            Assert.IsFalse(client.LastVoteKickAnswer.HasValue);
             Assert.IsNull(client.Game);
         }
 
@@ -479,6 +481,12 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, callback3.GetCallCount("OnGameOptionsChanged"));
         }
 
+        #endregion
+
+        #region VoteKick TODO
+        #endregion
+
+        #region VoteKickAnswer TODO
         #endregion
 
         #region ResetWinList
@@ -1780,6 +1788,7 @@ namespace TetriNET2.Tests.Server
         #endregion
 
         // TODO: 
+        // Vote kick
         //  reset win list after a few win, win list updated after a win, ...
 
     }
@@ -1797,7 +1806,7 @@ namespace TetriNET2.Tests.Server
         protected override IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators)
         {
             GameOptions options = new GameOptions();
-            options.ResetToDefault();
+            options.Initialize(GameRules.Standard);
             return CreateGameRoom(name, maxPlayers, maxSpectators, GameRules.Classic, options);
         }
 

@@ -173,9 +173,9 @@ namespace TetriNET2.Tests.Server.Mocking
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, gameOptions);
         }
 
-        public void OnVoteKickAsked(Guid sourceClient, Guid targetClient)
+        public void OnVoteKickAsked(Guid sourceClient, Guid targetClient, string reason)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, sourceClient, targetClient);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, sourceClient, targetClient, reason);
         }
 
         public void OnAchievementEarned(Guid playerId, int achievementId, string achievementTitle)

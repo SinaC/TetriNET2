@@ -203,12 +203,12 @@ namespace TetriNET2.Tests.Server.Mocking
                 HostClientChangeOptions(client, options);
         }
 
-        public void ClientVoteKick(ITetriNETCallback callback, Guid targetId)
+        public void ClientVoteKick(ITetriNETCallback callback, Guid targetId, string reason)
         {
             IClient client = ClientManager[callback];
             IClient target = ClientManager[targetId];
             if (client != null && target != null && HostClientVoteKick != null)
-                HostClientVoteKick(client, target);
+                HostClientVoteKick(client, target, reason);
         }
 
         public void ClientVoteKickResponse(ITetriNETCallback callback, bool accepted)

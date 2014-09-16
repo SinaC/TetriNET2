@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
+using System.Threading;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces;
@@ -10,25 +11,13 @@ namespace TetriNET2.Server.ConsoleApp
 {
     public class DummyClient : ITetriNETCallback
     {
-        private class CallInfo
-        {
-            public static readonly CallInfo NullObject = new CallInfo
-            {
-                Count = 0,
-                ParametersPerCall = null
-            };
-
-            public int Count { get; set; }
-            public List<List<object>> ParametersPerCall { get; set; }
-        }
-
         public readonly string Name;
         public readonly string Team;
         public readonly Versioning Versioning;
         public readonly IPAddress Address;
 
         private readonly IHost _host;
-        private readonly Dictionary<string, CallInfo> _callInfos = new Dictionary<string, CallInfo>();
+        private readonly Timer _timer;
 
         public DummyClient(IHost host, string name, string team, Versioning version, IPAddress address)
         {
@@ -37,45 +26,12 @@ namespace TetriNET2.Server.ConsoleApp
             Team = team;
             Versioning = version;
             Address = address;
+            _timer = new Timer(TimerCallback, null, 500, 350);
         }
 
-        private void UpdateCallInfo(string callbackName, params object[] parameters)
+        private void TimerCallback(object state)
         {
-            List<object> paramList = parameters == null ? new List<object>() : parameters.ToList();
-            if (!_callInfos.ContainsKey(callbackName))
-                _callInfos.Add(callbackName, new CallInfo
-                {
-                    Count = 1,
-                    ParametersPerCall = new List<List<object>> { paramList }
-                });
-            else
-            {
-                CallInfo callInfo = _callInfos[callbackName];
-                callInfo.Count++;
-                callInfo.ParametersPerCall.Add(paramList);
-            }
-        }
-
-        public int GetCallCount(string callbackName)
-        {
-            CallInfo value;
-            _callInfos.TryGetValue(callbackName, out value);
-            return (value ?? CallInfo.NullObject).Count;
-        }
-
-        public List<object> GetCallParameters(string callbackName, int callId)
-        {
-            CallInfo value;
-            if (!_callInfos.TryGetValue(callbackName, out value))
-                return null;
-            if (callId >= value.Count)
-                return null;
-            return value.ParametersPerCall[callId];
-        }
-
-        public void Reset()
-        {
-            _callInfos.Clear();
+            ClientHeartbeat();
         }
 
         #region ITetriNET
@@ -150,9 +106,9 @@ namespace TetriNET2.Server.ConsoleApp
             _host.ClientChangeOptions(this, options);
         }
 
-        public void ClientVoteKick(Guid targetId)
+        public void ClientVoteKick(Guid targetId, string reason)
         {
-            _host.ClientVoteKick(this, targetId);
+            _host.ClientVoteKick(this, targetId, reason);
         }
 
         public void ClientVoteKickResponse(bool accepted)
@@ -319,7 +275,7 @@ namespace TetriNET2.Server.ConsoleApp
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, gameOptions);
         }
 
-        public void OnVoteKickAsked(Guid sourceClient, Guid targetClient)
+        public void OnVoteKickAsked(Guid sourceClient, Guid targetClient, string reason)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, sourceClient, targetClient);
         }
@@ -367,6 +323,63 @@ namespace TetriNET2.Server.ConsoleApp
         public void OnContinuousSpecialFinished(Guid playerId, Specials special)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, playerId, special);
+        }
+
+        #endregion
+
+        #region Call Info
+
+        private class CallInfo
+        {
+            public static readonly CallInfo NullObject = new CallInfo
+            {
+                Count = 0,
+                ParametersPerCall = null
+            };
+
+            public int Count { get; set; }
+            public List<List<object>> ParametersPerCall { get; set; }
+        }
+
+        private readonly Dictionary<string, CallInfo> _callInfos = new Dictionary<string, CallInfo>();
+
+        private void UpdateCallInfo(string callbackName, params object[] parameters)
+        {
+            List<object> paramList = parameters == null ? new List<object>() : parameters.ToList();
+            if (!_callInfos.ContainsKey(callbackName))
+                _callInfos.Add(callbackName, new CallInfo
+                {
+                    Count = 1,
+                    ParametersPerCall = new List<List<object>> { paramList }
+                });
+            else
+            {
+                CallInfo callInfo = _callInfos[callbackName];
+                callInfo.Count++;
+                callInfo.ParametersPerCall.Add(paramList);
+            }
+        }
+
+        public int GetCallCount(string callbackName)
+        {
+            CallInfo value;
+            _callInfos.TryGetValue(callbackName, out value);
+            return (value ?? CallInfo.NullObject).Count;
+        }
+
+        public List<object> GetCallParameters(string callbackName, int callId)
+        {
+            CallInfo value;
+            if (!_callInfos.TryGetValue(callbackName, out value))
+                return null;
+            if (callId >= value.Count)
+                return null;
+            return value.ParametersPerCall[callId];
+        }
+
+        public void ResetCallInfo()
+        {
+            _callInfos.Clear();
         }
 
         #endregion
