@@ -90,9 +90,9 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnAdminConnected(adminId, name));
         }
 
-        public void OnAdminDisconnected(Guid adminId)
+        public void OnAdminDisconnected(Guid adminId, LeaveReasons reason)
         {
-            ExceptionFreeAction(() => Callback.OnAdminDisconnected(adminId));
+            ExceptionFreeAction(() => Callback.OnAdminDisconnected(adminId, reason));
         }
 
         public void OnGameCreated(Guid clientId, GameDescription game)

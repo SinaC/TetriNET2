@@ -24,7 +24,7 @@ namespace TetriNET2.Common.Contracts
 
         void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options);
         void OnGameLeft();
-        void OnClientGameJoined(Guid clientId);
+        void OnClientGameJoined(Guid clientId, bool asSpectator);
         void OnClientGameLeft(Guid clientId);
         void OnGameStarted(List<Pieces> pieces);
         void OnGamePaused();

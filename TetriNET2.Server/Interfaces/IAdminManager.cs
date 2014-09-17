@@ -21,5 +21,6 @@ namespace TetriNET2.Server.Interfaces
         bool Add(IAdmin admin);
         bool Remove(IAdmin admin);
         void Clear();
+        bool Contains(string name, ITetriNETAdminCallback callback);
     }
 }

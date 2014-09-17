@@ -235,7 +235,7 @@ namespace TetriNET2.Server.ConsoleApp
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnClientGameJoined(Guid clientId)
+        public void OnClientGameJoined(Guid clientId, bool asSpectator)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId);
         }
@@ -333,7 +333,8 @@ namespace TetriNET2.Server.ConsoleApp
         {
             if (disposing)
             {
-                _timer.Dispose();
+                if (_timer != null)
+                    _timer.Dispose();
             }
         }
 

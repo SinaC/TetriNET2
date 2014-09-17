@@ -15,7 +15,7 @@ namespace TetriNET2.Common.Contracts
         void OnClientDisconnected(Guid clientId, LeaveReasons reason);
 
         void OnAdminConnected(Guid adminId, string name);
-        void OnAdminDisconnected(Guid adminId);
+        void OnAdminDisconnected(Guid adminId, LeaveReasons reason);
 
         void OnGameCreated(Guid clientId, GameDescription game);
 

@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
+using TetriNET2.Common.Helpers;
 using TetriNET2.Common.Logger;
 using TetriNET2.Server.Interfaces;
 
@@ -19,6 +20,7 @@ namespace TetriNET2.Server
         private const int TimeoutDelay = 500; // in ms
         private const int MaxTimeoutCountBeforeDisconnection = 3;
         private const bool IsTimeoutDetectionActive = true;
+        private const int MinRestartDelay = 30; // in seconds
 
         private readonly List<IHost> _hosts = new List<IHost>();
         private readonly IFactory _factory;
@@ -29,6 +31,9 @@ namespace TetriNET2.Server
 
         private CancellationTokenSource _cancellationTokenSource;
         private Task _timeoutTask;
+        private Timer _restartTimer;
+        private int _restartSecondLeft;
+        private bool _isRestartRunning;
 
         public Server(IFactory factory, IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
         {
@@ -64,6 +69,8 @@ namespace TetriNET2.Server
         }
 
         #region IServer
+
+        public event PerformRestartServerEventHandler PerformRestartServer;
 
         public ServerStates State { get; private set; }
 
@@ -271,7 +278,6 @@ namespace TetriNET2.Server
             OnAdminLeft(admin, LeaveReasons.ConnectionLost);
         }
 
-
         private void OnClientLeft(IClient client, LeaveReasons reason)
         {
             // Remove from game room
@@ -302,8 +308,20 @@ namespace TetriNET2.Server
 
         private void OnAdminLeft(IAdmin admin, LeaveReasons reason)
         {
-            throw new NotImplementedException();
-            // TODO: remove from admin manager, inform other admin
+            // Remove from admin manager
+            lock (_adminManager.LockObject)
+                _adminManager.Remove(admin);
+
+            // Inform admin
+            admin.OnDisconnected();
+
+            // Inform other admins
+            foreach(IAdmin other in _adminManager.Admins) // no need to check on admin, already removed from collection
+                other.OnAdminDisconnected(admin.Id, reason);
+
+            // Hosts
+            foreach (IHost host in _hosts)
+                host.RemoveAdmin(admin);
         }
 
         #region IHost events handler
@@ -323,7 +341,7 @@ namespace TetriNET2.Server
                 {
                     if (_clientManager.Contains(name, callback))
                     {
-                        result = ConnectResults.FailedPlayerAlreadyExists;
+                        result = ConnectResults.FailedClientAlreadyExists;
                         Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it already exists", name, address == null ? "???" : address.ToString());
                     }
                     else if (_clientManager.ClientCount >= _clientManager.MaxClients)
@@ -369,7 +387,7 @@ namespace TetriNET2.Server
                             client.ResetTimeout();
                             // Send message to clients
                             lock (_clientManager.LockObject)
-                                foreach (IClient target in _clientManager.Clients)
+                                foreach (IClient target in _clientManager.Clients.Where(c => c != client))
                                     target.OnClientConnected(client.Id, client.Name, client.Team);
                             // Send message to admin
                             lock (_adminManager.LockObject)
@@ -379,7 +397,7 @@ namespace TetriNET2.Server
                             foreach(IHost host in _hosts)
                                 host.AddClient(client);
                             //
-                            Log.Default.WriteLine(LogLevels.Info, "Connect {0}[{1}] succeed", name, address == null ? "???" : address.ToString());
+                            Log.Default.WriteLine(LogLevels.Info, "Connect Client {0}[{1}] succeed", name, address == null ? "???" : address.ToString());
                         }
                     }
                 }
@@ -851,70 +869,314 @@ namespace TetriNET2.Server
         // Admin
         private void OnAdminConnect(ITetriNETAdminCallback callback, IPAddress address, Versioning version, string name, string password)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Connect admin {0}[1] {2}.{3}", name, address == null ? "???" : address.ToString(), version == null ? -1 : version.Major, version == null ? -1 : version.Minor);
+
+            ConnectResults result = ConnectResults.Successfull;
+
+            if (version == null || Version.Major != version.Major || Version.Minor != version.Minor)
+                result = ConnectResults.FailedIncompatibleVersion;
+            else
+            {
+                lock (_adminManager.LockObject)
+                {
+                    if (_adminManager.Contains(name, callback))
+                    {
+                        result = ConnectResults.FailedAdminAlreadyExists;
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it already exists", name, address == null ? "???" : address.ToString());
+                    }
+                    else if (_adminManager.AdminCount >= _adminManager.MaxAdmins)
+                    {
+                        result = ConnectResults.FailedTooManyAdmins;
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because too many admins already connected", name, address == null ? "???" : address.ToString());
+                    }
+                    else if (String.IsNullOrEmpty(name) || name.Length > 20)
+                    {
+                        result = ConnectResults.FailedInvalidName;
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because name is invalid", name, address == null ? "???" : address.ToString());
+                    }
+                    else if (_banManager.IsBanned(address))
+                    {
+                        result = ConnectResults.FailedBanned;
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because admin is banned", name, address == null ? "???" : address.ToString());
+                    }
+                    else
+                    {
+                        IAdmin admin = _factory.CreateAdmin(name, address, callback);
+                        bool added = _adminManager.Add(admin);
+                        if (!added)
+                        {
+                            result = ConnectResults.FailedInternalError;
+                            Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it cannot be added to admin manager", name, address == null ? "???" : address.ToString());
+                        }
+                        else
+                        {
+                            // Handle connection lost
+                            admin.ConnectionLost += OnAdminConnectLost;
+                            // Inform admin about connection succeed
+                            admin.OnConnected(result, Version, admin.Id);
+                            // Send message to other admins
+                            lock (_adminManager.LockObject)
+                                foreach (IAdmin target in _adminManager.Admins.Where(a => a != admin))
+                                    target.OnAdminConnected(admin.Id, admin.Name);
+                            // Hosts
+                            foreach (IHost host in _hosts)
+                                host.AddAdmin(admin);
+                            //
+                            Log.Default.WriteLine(LogLevels.Info, "Connect Admin {0}[{1}] succeed", name, address == null ? "???" : address.ToString());
+                        }
+                    }
+                }
+            }
+
+            if (result != ConnectResults.Successfull) // Inform admin about connection fail
+                callback.OnConnected(result, Version, Guid.Empty);
         }
 
         private void OnAdminDisconnect(IAdmin admin)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Disconnect admin:{0}", admin.Name);
+
+            OnAdminLeft(admin, LeaveReasons.Disconnected);
         }
 
         private void OnAdminSendPrivateAdminMessage(IAdmin admin, IAdmin target, string message)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin send admin private message:{0} {1} {2}", admin.Name, target.Name, message);
+
+            target.OnPrivateMessageReceived(admin.Id, message);
         }
 
         private void OnAdminSendPrivateMessage(IAdmin admin, IClient client, string message)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin send client private message:{0} {1} {2}", admin.Name, client.Name, message);
+
+            client.OnPrivateMessageReceived(admin.Id, message);
         }
 
         private void OnAdminSendBroadcastMessage(IAdmin admin, string message)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin send broadcast message:{0} {1}", admin.Name, message);
+
+            // Send message to clients
+            lock (_clientManager.LockObject)
+                foreach (IClient target in _clientManager.Clients)
+                    target.OnBroadcastMessageReceived(admin.Id, message);
+            // Send message to admin
+            lock (_adminManager.LockObject)
+                foreach (IAdmin target in _adminManager.Admins)
+                    target.OnBroadcastMessageReceived(admin.Id, message);
         }
 
         private void OnAdminGetAdminList(IAdmin admin)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin asks for admin list:{0}", admin.Name);
+
+            // Build list
+            List<AdminData> list;
+            lock (_adminManager.LockObject)
+                list = _adminManager.Admins.Select(x => new AdminData
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Address = x.Address.ToString(),
+                    ConnectTime = x.ConnectTime
+                }).ToList();
+            // Send list
+            admin.OnAdminListReceived(list);
         }
 
         private void OnAdminGetClientList(IAdmin admin)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin asks for client list:{0}", admin.Name);
+
+            // Build list
+            List<ClientData> list;
+            lock (_clientManager.LockObject)
+                list = _clientManager.Clients.Select(x => new ClientData
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Address = x.Address.ToString(),
+                    State = x.State,
+                    Roles = x.Roles,
+                    ConnectTime = x.ConnectTime,
+                    LastActionFromClient = x.LastActionFromClient,
+                    LastActionToClient = x.LastActionToClient,
+                    TimeoutCount = x.TimeoutCount,
+                }).ToList();
+            // Send list
+            admin.OnClientListReceived(list);
         }
 
         private void OnAdminGetClientListInRoom(IAdmin admin, IGameRoom room)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin asks for client list in room:{0} {1}", admin.Name, room.Name);
+
+            // Build list
+            List<ClientData> list = BuildClientDatas(room);
+            // Send list
+            admin.OnClientListReceived(list);
         }
 
         private void OnAdminGetRoomList(IAdmin admin)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin asks for room list:{0}", admin.Name);
+
+            // Build list
+            List<GameRoomData> list;
+            lock (_gameRoomManager)
+                list = _gameRoomManager.Rooms.Select(x => new GameRoomData
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Rule = x.Rule,
+                    Options = x.Options,
+                    Clients = BuildClientDatas(x)
+                }).ToList();
+            // Send list
+            admin.OnRoomListReceived(list);
         }
 
         private void OnAdminGetBannedList(IAdmin admin)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin asks for banned list:{0}", admin.Name);
+
+            // Build list
+            List<BanEntryData> list = _banManager.Entries.ToList();
+            // Send list
+            admin.OnBannedListReceived(list);
         }
 
         private void OnAdminKick(IAdmin admin, IClient client, string reason)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin kick: {0} {1} {2}", admin.Name, client.Name, reason);
+
+            // Inform target and other clients
+            lock (_clientManager.LockObject)
+            {
+                string message = String.Format("{0} has been kicked (reason: {1})", client.Name, reason);
+                foreach (IClient other in _clientManager.Clients.Where(c => c != client))
+                    other.OnServerMessageReceived(message);
+                client.OnServerMessageReceived(String.Format("You have been kicked (reason: {0}", reason));
+            }
+
+            // Inform admin and other admins
+            lock (_adminManager.LockObject)
+            {
+                string message = String.Format("{0} has been kicked by {1} (reason: {2})", client.Name, admin.Name, reason);
+                foreach(IAdmin other in _adminManager.Admins.Where(a => a != admin))
+                    other.OnServerMessageReceived(message);
+                admin.OnServerMessageReceived(String.Format("You have kicked {0} (reason: {1})", client.Name, reason));
+            }
+
+            // Kick
+            OnClientLeft(client, LeaveReasons.Kick);
         }
 
         private void OnAdminBan(IAdmin admin, IClient client, string reason)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin ban: {0} {1} {2}", admin.Name, client.Name, reason);
+
+            // Inform target and other clients
+            lock (_clientManager.LockObject)
+            {
+                string message = String.Format("{0} has been banned (reason: {1})", client.Name, reason);
+                foreach (IClient other in _clientManager.Clients.Where(c => c != client))
+                    other.OnServerMessageReceived(message);
+                client.OnServerMessageReceived(String.Format("You have been banned (reason: {0}", reason));
+            }
+
+            // Inform admin and other admins
+            lock (_adminManager.LockObject)
+            {
+                string message = String.Format("{0} has been banned by {1} (reason: {2})", client.Name, admin.Name, reason);
+                foreach (IAdmin other in _adminManager.Admins.Where(a => a != admin))
+                    other.OnServerMessageReceived(message);
+                admin.OnServerMessageReceived(String.Format("You have banned {0} (reason: {1})", client.Name, reason));
+            }
+
+            // Ban
+            _banManager.Ban(client.Name, client.Address, reason);
+
+            // Kick
+            OnClientLeft(client, LeaveReasons.Kick);
         }
 
         private void OnAdminRestartServer(IAdmin admin, int seconds)
         {
-            throw new NotImplementedException();
+            Log.Default.WriteLine(LogLevels.Info, "Admin ask for server restart:{0} {1}", admin.Name, seconds);
+
+            if (_isRestartRunning)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot restart server, a restart is already running");
+                return;
+            }
+            if (seconds <= MinRestartDelay)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Cannot restart server, delay must be > to min restart delay ({0} seconds)", MinRestartDelay);
+                return;
+            }
+            if (PerformRestartServer == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Cannot restart server, No event associated to PerformRestartServer");
+                return;
+            }
+
+            SendRestartMessage(seconds);
+
+            _isRestartRunning = true;
+            _restartSecondLeft = seconds;
+            _restartTimer = new Timer(RestartCallback, null, 0, 1000);
         }
 
         #endregion
+
+        #region IDisposable
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                if (_cancellationTokenSource != null)
+                    _cancellationTokenSource.Dispose();
+                if (_restartTimer != null)
+                    _restartTimer.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
+        }
+
+        #endregion
+
+        private void RestartCallback(object state)
+        {
+            // Final countdown
+            if (_restartSecondLeft <= 0) // Let's restart
+            {
+                // Reset restart info
+                _isRestartRunning = false;
+                _restartTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                // Perform restart
+                PerformRestartServer.Do(x => x());
+            }
+            else
+            {
+                // Decrement countdown
+                _restartSecondLeft--;
+
+                // Send message to clients and admins
+                if (
+                    _restartSecondLeft <= 10 // every second if less than 10 seconds left
+                    || (_restartSecondLeft <= 60 && (_restartSecondLeft%10 == 0)) // every 10 seconds if less than 1 minute left
+                    || (_restartSecondLeft <= 5*60 && (_restartSecondLeft%30 == 0)) // every 30 seconds if less than 5 minutes left
+                    || (_restartSecondLeft%60 == 0) // every minute otherwise
+                    )
+                    SendRestartMessage(_restartSecondLeft);
+            }
+        }
 
         private void TimeoutTask()
         {
@@ -980,6 +1242,41 @@ namespace TetriNET2.Server
             Log.Default.WriteLine(LogLevels.Info, "TimeoutTask stopped");
         }
 
+        private void SendRestartMessage(int seconds)
+        {
+            string msg = BuildRestartMessage(seconds);
+            lock (_clientManager.LockObject)
+                foreach (IClient client in _clientManager.Clients)
+                    client.OnServerMessageReceived(msg);
+            lock (_adminManager.LockObject)
+                foreach (IAdmin other in _adminManager.Admins)
+                    other.OnServerMessageReceived(msg);
+        }
+
+        private static string BuildRestartMessage(int seconds)
+        {
+            return seconds <= 0
+                ? "***Server will restart NOW***"
+                : String.Format("***Server will restart in {0} seconds***", seconds);
+        }
+
+        private static List<ClientData> BuildClientDatas(IGameRoom room)
+        {
+            lock (room)
+                return room.Clients.Select(c => new ClientData
+                {
+                    Id = c.Id,
+                    Name = c.Name,
+                    Address = c.Address.ToString(),
+                    State = c.State,
+                    Roles = c.Roles,
+                    ConnectTime = c.ConnectTime,
+                    LastActionFromClient = c.LastActionFromClient,
+                    LastActionToClient = c.LastActionToClient,
+                    TimeoutCount = c.TimeoutCount,
+                }).ToList();
+        }
+
         // Check if every events of instance are handled
         private static bool CheckEvents<T>(T instance)
         {
@@ -999,21 +1296,5 @@ namespace TetriNET2.Server
             return true;
         }
 
-        #region IDisposable
-
-        private void Dispose(bool disposing)
-        {
-            if (disposing)
-            {
-                _cancellationTokenSource.Dispose();
-            }
-        }
-
-        public void Dispose()
-        {
-            Dispose(true);
-        }
-
-        #endregion
     }
 }

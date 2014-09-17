@@ -132,6 +132,12 @@ namespace TetriNET2.Server
             _admins.Clear();
         }
 
-        #endregion IAdminManager
+        public bool Contains(string name, ITetriNETAdminCallback callback)
+        {
+            bool found = _admins.Any(x => x.Value.Name == name || x.Key == callback);
+            return found;
+        }
+
+        #endregion
     }
 }

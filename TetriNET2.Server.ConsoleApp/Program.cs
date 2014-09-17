@@ -126,6 +126,11 @@ namespace TetriNET2.Server.ConsoleApp
             return new Client(name, address, callback, team);
         }
 
+        public IAdmin CreateAdmin(string name, IPAddress address, ITetriNETAdminCallback callback)
+        {
+            return new Admin(name, address, callback);
+        }
+
         public IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
         {
             return new GameRoom(new BlockingActionQueue(), new PieceBag(RangeRandom.Random, 4), name, maxPlayers, maxSpectators, rule, options, password);

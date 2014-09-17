@@ -133,9 +133,9 @@ namespace TetriNET2.Tests.Server.Mocking
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnClientGameJoined(Guid clientId)
+        public void OnClientGameJoined(Guid clientId, bool asSpectator)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, asSpectator);
         }
 
         public void OnClientGameLeft(Guid clientId)

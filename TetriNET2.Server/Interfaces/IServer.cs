@@ -10,8 +10,12 @@ namespace TetriNET2.Server.Interfaces
         Stopping
     }
 
+    public delegate void PerformRestartServerEventHandler();
+
     public interface IServer
     {
+        event PerformRestartServerEventHandler PerformRestartServer;
+
         ServerStates State { get; }
         Versioning Version { get; }
 

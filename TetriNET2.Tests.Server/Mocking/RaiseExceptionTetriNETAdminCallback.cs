@@ -31,7 +31,7 @@ namespace TetriNET2.Tests.Server.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnAdminDisconnected(Guid adminId)
+        public void OnAdminDisconnected(Guid adminId, LeaveReasons reason)
         {
             throw new NotImplementedException();
         }

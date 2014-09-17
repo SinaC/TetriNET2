@@ -17,6 +17,9 @@ namespace TetriNET2.Common.DataContracts
         public List<ClientData> Clients { get; set; }
 
         [DataMember]
-        public GameRules Rules { get; set; }
+        public GameRules Rule { get; set; }
+
+        [DataMember]
+        public GameOptions Options { get; set; }
     }
 }

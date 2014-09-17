@@ -36,6 +36,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(true, "No exception occured");
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClient")]
         [TestCategory("Server.IClient.Exception")]
         [TestMethod]
         public void TestConnectionLostCalledOnException()

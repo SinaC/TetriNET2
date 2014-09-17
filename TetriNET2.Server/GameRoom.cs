@@ -221,7 +221,7 @@ namespace TetriNET2.Server
 
             // Inform other clients in game
             foreach (IClient target in Clients.Where(c => c != client))
-                target.OnClientGameJoined(client.Id);
+                target.OnClientGameJoined(client.Id, asSpectator);
             return true;
         }
 
@@ -989,8 +989,10 @@ namespace TetriNET2.Server
         {
             if (disposing)
             {
-                _suddenDeathTimer.Dispose();
-                _voteKickTimer.Dispose();
+                if (_suddenDeathTimer != null)
+                    _suddenDeathTimer.Dispose();
+                if (_voteKickTimer != null)
+                    _voteKickTimer.Dispose();
             }
         }
 

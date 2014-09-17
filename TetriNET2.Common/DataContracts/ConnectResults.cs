@@ -15,8 +15,16 @@ namespace TetriNET2.Common.DataContracts
         FailedTooManyClients,
 
         [EnumMember]
+        [Description("Too many admins")]
+        FailedTooManyAdmins,
+
+        [EnumMember]
         [Description("Already exists")]
-        FailedPlayerAlreadyExists,
+        FailedClientAlreadyExists,
+
+        [EnumMember]
+        [Description("Already exists")]
+        FailedAdminAlreadyExists,
 
         [EnumMember]
         [Description("Invalid name")]

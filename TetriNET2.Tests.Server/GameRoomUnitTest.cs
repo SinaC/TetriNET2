@@ -595,8 +595,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
-        erererer
-
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKick")]
         [TestMethod]
         public void TestVoteKickClientNotPlayer()
@@ -612,6 +612,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKick")]
         [TestMethod]
         public void TestVoteKickTargetNotPlayer()
@@ -627,6 +629,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKick")]
         [TestMethod]
         public void TestVoteKickNotEnoughPlayers()
@@ -642,6 +646,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKick")]
         [TestMethod]
         public void TestVoteKickNoSimultaneousVoteKick()
@@ -660,6 +666,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKick")]
         [TestMethod]
         public void TestVoteKickPropertiesModified()
@@ -683,6 +691,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(client1.LastVoteKickAnswer.Value);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKick")]
         [TestMethod]
         public void TestVoteKickCallbackCalled()
@@ -712,6 +722,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, callback4.GetCallCount("OnVoteKickAsked")); // spectators are not asked about vote
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKick")]
         [TestMethod]
         public void TestVoteKickTimeout()
@@ -743,6 +755,8 @@ namespace TetriNET2.Tests.Server
 
         #region VoteKickAnswer
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKickAnswer")]
         [TestMethod]
         public void TestVoteKickAnswerNullClient()
@@ -761,6 +775,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKickAnswer")]
         [TestMethod]
         public void TestVoteKickAnswerClientNotPlayer()
@@ -774,6 +790,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKickAnswer")]
         [TestMethod]
         public void TestVoteKickAnswerNoVoteKickStarted()
@@ -787,6 +805,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKickAnswer")]
         [TestMethod]
         public void TestVoteKickAnswerVoteTargetCannotVote()
@@ -807,6 +827,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKickAnswer")]
         [TestMethod]
         public void TestVoteKickAnswerNoMultipleAnswerForSamePlayer()
@@ -832,6 +854,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKickAnswer")]
         [TestMethod]
         public void TestVoteKickAnswerNotLastToAnswer()
@@ -852,6 +876,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKickAnswer")]
         [TestMethod]
         public void TestVoteKickAnswerLastToAnswerNotKicked()
@@ -885,6 +911,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, callback4.GetCallCount("OnClientGameLeft"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.VoteKickAnswer")]
         [TestMethod]
         public void TestVoteKickAnswerLastToAnswerKicked()
@@ -922,6 +950,8 @@ namespace TetriNET2.Tests.Server
 
         #region ChangeOptions
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ChangeOptions")]
         [TestMethod]
         public void TestChangeOptionsFailedIfNotWaitingGameStart()
@@ -936,6 +966,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ChangeOptions")]
         [TestMethod]
         public void TestChangeOptionsOkWhenWaitingGameStart()
@@ -950,6 +982,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(newOptions, game.Options);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ChangeOptions")]
         [TestMethod]
         public void TestChangeOptionsClientsInformed()
@@ -979,6 +1013,8 @@ namespace TetriNET2.Tests.Server
 
         #region ResetWinList
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ResetWinList")]
         [TestMethod]
         public void TestResetWinListClientsInformed()
@@ -1002,6 +1038,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, callback3.GetCallCount("OnWinListModified"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ResetWinList")]
         [TestMethod]
         public void TestResetWinListFailedIfNotWaitingGameStart()
@@ -1021,6 +1059,8 @@ namespace TetriNET2.Tests.Server
 
         #region PlacePiece
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.PlacePiece")]
         [TestMethod]
         public void TestPlacePieceExceptionIfNullClient()
@@ -1039,6 +1079,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.PlacePiece")]
         [TestMethod]
         public void TestPlacePieceFailedIfClientNotInGame()
@@ -1057,6 +1099,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.PlacePiece")]
         [TestMethod]
         public void TestPlacePieceFailedIfGameNotStarted()
@@ -1072,6 +1116,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.PlacePiece")]
         [TestMethod]
         public void TestPlacePieceFailedIfClientNotPlaying()
@@ -1089,6 +1135,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.PlacePiece")]
         [TestMethod]
         public void TestPlacePieceOkIfGameStarted()
@@ -1105,6 +1153,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.PlacePiece")]
         [TestMethod]
         public void TestPlacePieceActionCallbacksCalled()
@@ -1137,6 +1187,8 @@ namespace TetriNET2.Tests.Server
 
         #region ModifyGrid
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ModifyGrid")]
         [TestMethod]
         public void TestModifyGridExceptionIfNullClient()
@@ -1155,6 +1207,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ModifyGrid")]
         [TestMethod]
         public void TestModifyGridFailedIfClientNotInGame()
@@ -1173,6 +1227,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ModifyGrid")]
         [TestMethod]
         public void TestModifyGridFailedIfGameNotStarted()
@@ -1188,6 +1244,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ModifyGrid")]
         [TestMethod]
         public void TestModifyGridFailedIfClientNotPlaying()
@@ -1205,6 +1263,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ModifyGrid")]
         [TestMethod]
         public void TestModifyGridOkIfGameStarted()
@@ -1221,6 +1281,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ModifyGrid")]
         [TestMethod]
         public void TestModifyGridActionCallbacksCalled()
@@ -1250,6 +1312,8 @@ namespace TetriNET2.Tests.Server
 
         #region UseSpecial
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.UseSpecial")]
         [TestMethod]
         public void TestUseSpecialExceptionIfNullClient()
@@ -1268,6 +1332,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.UseSpecial")]
         [TestMethod]
         public void TestUseSpecialExceptionIfNullTarget()
@@ -1288,6 +1354,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.UseSpecial")]
         [TestMethod]
         public void TestUseSpecialFailedIfClientNotInGame()
@@ -1306,6 +1374,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.UseSpecial")]
         [TestMethod]
         public void TestUseSpecialFailedIfTargetNotInGame()
@@ -1324,6 +1394,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.UseSpecial")]
         [TestMethod]
         public void TestUseSpecialFailedIfGameNotStarted()
@@ -1342,6 +1414,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.UseSpecial")]
         [TestMethod]
         public void TestUseSpecialFailedIfClientNotPlaying()
@@ -1362,6 +1436,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.UseSpecial")]
         [TestMethod]
         public void TestUseSpecialFailedIfTargetNotPlaying()
@@ -1382,6 +1458,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.UseSpecial")]
         [TestMethod]
         public void TestUseSpecialOkIfGameStarted()
@@ -1401,6 +1479,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.UseSpecial")]
         [TestMethod]
         public void TestUseSpecialActionCallbacksCalled()
@@ -1426,6 +1506,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, callback3.GetCallCount("OnSpecialUsed"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.UseSpecial")]
         [TestMethod]
         public void TestUseSpecialSwitchFieldsActionCallbacksCalled()
@@ -1458,6 +1540,8 @@ namespace TetriNET2.Tests.Server
 
         #region ClearLines
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ClearLines")]
         [TestMethod]
         public void TestClearLinesExceptionIfNullClient()
@@ -1476,6 +1560,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ClearLines")]
         [TestMethod]
         public void TestClearLinesFailedIfClientNotInGame()
@@ -1494,6 +1580,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ClearLines")]
         [TestMethod]
         public void TestClearLinesFailedIfGameNotStarted()
@@ -1509,6 +1597,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ClearLines")]
         [TestMethod]
         public void TestClearLinesFailedIfClientNotPlaying()
@@ -1526,6 +1616,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ClearLines")]
         [TestMethod]
         public void TestClearLinesOkIfGameStartedAndClassicMultiplayerRules()
@@ -1543,6 +1635,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ClearLines")]
         [TestMethod]
         public void TestClearLinesActionCallbacksCalled()
@@ -1572,6 +1666,8 @@ namespace TetriNET2.Tests.Server
 
         #region GameLost
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.GameLost")]
         [TestMethod]
         public void TestGameLostExceptionIfNullClient()
@@ -1590,6 +1686,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.GameLost")]
         [TestMethod]
         public void TestGameLostFailedIfClientNotInGame()
@@ -1603,6 +1701,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.GameLost")]
         [TestMethod]
         public void TestGameLostFailedIfClientNotPlaying()
@@ -1620,6 +1720,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.GameLost")]
         [TestMethod]
         public void TestGameLostOkIfGameStarted()
@@ -1640,6 +1742,8 @@ namespace TetriNET2.Tests.Server
 
         #region FinishContinuousSpecial
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.FinishContinuousSpecial")]
         [TestMethod]
         public void TestFinishContinuousSpecialExceptionIfNullClient()
@@ -1658,6 +1762,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.FinishContinuousSpecial")]
         [TestMethod]
         public void TestFinishContinuousSpecialFailedIfClientNotInGame()
@@ -1676,6 +1782,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.FinishContinuousSpecial")]
         [TestMethod]
         public void TestFinishContinuousSpecialOkIfGameStarted()
@@ -1692,6 +1800,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.FinishContinuousSpecial")]
         [TestMethod]
         public void TestFinishContinuousSpecialActionCallbacksCalled()
@@ -1721,6 +1831,8 @@ namespace TetriNET2.Tests.Server
 
         #region EarnAchievement
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.EarnAchievement")]
         [TestMethod]
         public void TestEarnAchievementSpecialExceptionIfNullClient()
@@ -1739,6 +1851,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.EarnAchievement")]
         [TestMethod]
         public void TestEarnAchievementSpecialFailedIfClientNotInGame()
@@ -1757,6 +1871,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.EarnAchievement")]
         [TestMethod]
         public void TestEarnAchievement()
@@ -1779,6 +1895,8 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(succeed);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.EarnAchievement")]
         [TestMethod]
         public void TestEarnAchievementCallbacksCalled()
@@ -1808,6 +1926,8 @@ namespace TetriNET2.Tests.Server
 
         #region StartGame
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.StartGame")]
         [TestMethod]
         public void TestStartGameFailedIfNotWaitingGameStart()
@@ -1829,6 +1949,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(GameRoomStates.Created, game.State);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.StartGame")]
         [TestMethod]
         public void TestStartGameFailedIfNoPlayers()
@@ -1851,6 +1973,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(GameRoomStates.WaitStartGame, game.State);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.StartGame")]
         [TestMethod]
         public void TestStartGameStatusUpdatedAndCallbackCalled()
@@ -1883,6 +2007,8 @@ namespace TetriNET2.Tests.Server
 
         #region StopGame
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.StopGame")]
         [TestMethod]
         public void TestStopGameFailedIfGameNotStarted()
@@ -1905,6 +2031,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(GameRoomStates.WaitStartGame, game.State);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.StopGame")]
         [TestMethod]
         public void TestStopGameStatusUpdatedAndCallbackCalledIfGameStarted()
@@ -1938,6 +2066,8 @@ namespace TetriNET2.Tests.Server
 
         #region PauseGame
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.PauseGame")]
         [TestMethod]
         public void TestPauseGameFailedIfGameNotStarted()
@@ -1963,6 +2093,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.PauseGame")]
         [TestMethod]
         public void TestPauseGameStatusUpdatedAndCallbacksCalled()
@@ -1993,6 +2125,8 @@ namespace TetriNET2.Tests.Server
 
         #region ResumeGame
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ResumeGame")]
         [TestMethod]
         public void TestResumeGameFailedIfGameNotStarted()
@@ -2018,6 +2152,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ResumeGame")]
         [TestMethod]
         public void TestResumeGameFailedIfGameNotPaused()
@@ -2043,6 +2179,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, callback1.GetCallCount("OnGamePaused"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ResumeGame")]
         [TestMethod]
         public void TestResumeGameStatusUpdatedAndCallbacksCalled()
@@ -2074,6 +2212,8 @@ namespace TetriNET2.Tests.Server
 
         #region Join while game started
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.Join")]
         [TestMethod]
         public void TestJoinPlayerWhileGameStarted()
@@ -2106,6 +2246,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, callback4.GetCallCount("OnGameJoined"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.Join")]
         [TestMethod]
         public void TestJoinSpectatorWhileGameStarted()
@@ -2142,6 +2284,8 @@ namespace TetriNET2.Tests.Server
 
         #region Leave while game started
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.Leave")]
         [TestMethod]
         public void TestLeavePlayingPlayerWhileGameStartedNoPlayingPlayerLeft()
@@ -2168,6 +2312,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, callback2.GetCallCount("OnWinListModified"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.Leave")]
         [TestMethod]
         public void TestLeavePlayingPlayerWhileGameStartedOnePlayingPlayerLeft()
@@ -2200,6 +2346,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, callback3.GetCallCount("OnWinListModified"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.Leave")]
         [TestMethod]
         public void TestLeavePlayingPlayerWhileGameStartedMultiplePlayingPlayerLeft()
@@ -2237,6 +2385,8 @@ namespace TetriNET2.Tests.Server
 
         #region Game lost (most complex scenario)
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.GameLost")]
         [TestMethod]
         public void TestGameLostWithOnePlayingPlayer()
@@ -2259,6 +2409,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, callback1.GetCallCount("OnWinListModified"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.GameLost")]
         [TestMethod]
         public void TestGameLostWithTwoPlayingPlayers()
@@ -2301,6 +2453,8 @@ namespace TetriNET2.Tests.Server
             //Assert.AreEqual(client1.Id, callback1.GetCallParameters("OnPlayerWon", 0)[0]);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.GameLost")]
         [TestMethod]
         public void TestGameLostWithMultiplePlayingPlayer()
@@ -2378,6 +2532,8 @@ namespace TetriNET2.Tests.Server
 
         #region Constructor
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoom")]
         [TestCategory("Server.GameRoom.ctor")]
         [TestMethod]
         public void TestConstructorNullActionQueue()
@@ -2394,6 +2550,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoom")]
         [TestCategory("Server.GameRoom.ctor")]
         [TestMethod]
         public void TestConstructorNullPieceProvider()
@@ -2410,6 +2568,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoom")]
         [TestCategory("Server.GameRoom.ctor")]
         [TestMethod]
         public void TestConstructorNullName()
@@ -2426,6 +2586,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoom")]
         [TestCategory("Server.GameRoom.ctor")]
         [TestMethod]
         public void TestConstructorStrictlyPositiveMaxPlayers()
@@ -2442,6 +2604,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoom")]
         [TestCategory("Server.GameRoom.ctor")]
         [TestMethod]
         public void TestConstructorStrictlyPositiveMaxSpectators()
@@ -2458,6 +2622,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoom")]
         [TestCategory("Server.GameRoom.ctor")]
         [TestMethod]
         public void TestConstructorNullOptions()
@@ -2474,6 +2640,8 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoom")]
         [TestCategory("Server.GameRoom.ctor")]
         [TestMethod]
         public void TestConstructorSetProperties()
@@ -2498,6 +2666,8 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(GameRoomStates.Created, game.State);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoom")]
         [TestCategory("Server.GameRoom.ctor")]
         [TestMethod]
         public void TestConstructorLockObjectNotNull()
@@ -2511,6 +2681,8 @@ namespace TetriNET2.Tests.Server
 
         #region ClearLines
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoom")]
         [TestCategory("Server.GameRoom.ClearLines")]
         [TestMethod]
         public void TestClearLinesActionNotEnqueuedIfClassicMultiplayerRulesNotSet()

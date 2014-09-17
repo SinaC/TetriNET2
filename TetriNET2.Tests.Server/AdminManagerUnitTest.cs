@@ -228,6 +228,44 @@ namespace TetriNET2.Tests.Server
 
         #endregion
 
+        #region Contains
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Contains")]
+        [TestMethod]
+        public void TestContainsExistingAdmin()
+        {
+            IAdminManager adminManager = CreateAdminManager(10);
+            IAdmin admin = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
+            adminManager.Add(admin);
+
+            bool containsOnName = adminManager.Contains(admin.Name, null);
+            bool containsOnCallback = adminManager.Contains(null, admin.Callback);
+
+            Assert.IsTrue(containsOnName);
+            Assert.IsTrue(containsOnCallback);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Contains")]
+        [TestMethod]
+        public void TestContainsNonExistingAdmin()
+        {
+            IAdminManager adminManager = CreateAdminManager(10);
+            IAdmin admin = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
+            adminManager.Add(admin);
+
+            bool containsOnName = adminManager.Contains("admin2", null);
+            bool containsOnCallback = adminManager.Contains(null, new CountCallTetriNETAdminCallback());
+
+            Assert.IsFalse(containsOnName);
+            Assert.IsFalse(containsOnCallback);
+        }
+
+        #endregion
+
         #region Indexers
 
         [TestCategory("Server")]

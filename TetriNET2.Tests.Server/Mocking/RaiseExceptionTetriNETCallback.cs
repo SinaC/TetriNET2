@@ -63,7 +63,7 @@ namespace TetriNET2.Tests.Server.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnClientGameJoined(Guid clientId)
+        public void OnClientGameJoined(Guid clientId, bool asSpectator)
         {
             throw new NotImplementedException();
         }

@@ -61,7 +61,7 @@ namespace TetriNET2.Tests.Server.Mocking
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnAdminDisconnected(Guid adminId)
+        public void OnAdminDisconnected(Guid adminId, LeaveReasons reason)
         {
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
