@@ -28,16 +28,16 @@ namespace TetriNET2.Server.Interfaces
         IEnumerable<IClient> Players { get; }
         IEnumerable<IClient> Spectators { get; }
 
+        bool Start(CancellationTokenSource cancellationTokenSource);
+        bool Stop();
+
         bool Join(IClient client, bool asSpectator);
         bool Leave(IClient client);
         void Clear();
 
-        bool Start(CancellationTokenSource cancellationTokenSource);
-        bool Stop();
-
-        bool ChangeOptions(GameOptions options);
         bool VoteKick(IClient client, IClient target, string reason);
         bool VoteKickAnswer(IClient client, bool accepted);
+        bool ChangeOptions(GameOptions options);
         bool ResetWinList();
 
         bool PlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid);

@@ -23,6 +23,9 @@ namespace TetriNET2.Tests.Server
 
         #region Exception
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClient")]
+        [TestCategory("Server.IClient.Exception")]
         [TestMethod]
         public void TestExceptionFreeAction()
         {
@@ -33,6 +36,7 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(true, "No exception occured");
         }
 
+        [TestCategory("Server.IClient.Exception")]
         [TestMethod]
         public void TestConnectionLostCalledOnException()
         {
@@ -49,6 +53,9 @@ namespace TetriNET2.Tests.Server
 
         #region Timeout
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClient")]
+        [TestCategory("Server.IClient.Timeout")]
         [TestMethod]
         public void TestLastActionToClientUpdate()
         {
@@ -61,6 +68,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreNotEqual(lastActionToClient, client.LastActionToClient);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClient")]
+        [TestCategory("Server.IClient.Timeout")]
         [TestMethod]
         public void TestSetTimeout()
         {
@@ -74,6 +84,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, client.TimeoutCount);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClient")]
+        [TestCategory("Server.IClient.Timeout")]
         [TestMethod]
         public void TestResetTimeout()
         {
@@ -88,6 +101,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, client.TimeoutCount);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClient")]
+        [TestCategory("Server.IClient.Timeout")]
         [TestMethod]
         public void TestLastActionToClientNotUpdatedOnException()
         {
@@ -113,6 +129,9 @@ namespace TetriNET2.Tests.Server
 
         #region Constructor
 
+        [TestCategory("Server")]
+        [TestCategory("Server.Client")]
+        [TestCategory("Server.Client.ctor")]
         [TestMethod]
         public void TestConstructorNullName()
         {
@@ -128,6 +147,9 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.Client")]
+        [TestCategory("Server.Client.ctor")]
         [TestMethod]
         public void TestConstructorNullAddress()
         {
@@ -143,6 +165,9 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.Client")]
+        [TestCategory("Server.Client.ctor")]
         [TestMethod]
         public void TestConstructorNullCallback()
         {
@@ -158,6 +183,9 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.Client")]
+        [TestCategory("Server.Client.ctor")]
         [TestMethod]
         public void TestConstructorSetProperties()
         {

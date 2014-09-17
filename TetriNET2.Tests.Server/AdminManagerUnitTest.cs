@@ -24,6 +24,9 @@ namespace TetriNET2.Tests.Server
 
         #region Add
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Add")]
         [TestMethod]
         public void TestAddNullAdmin()
         {
@@ -44,6 +47,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, adminManager.Admins.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Add")]
         [TestMethod]
         public void TestAddNoMaxAdmins()
         {
@@ -59,6 +65,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(adminManager.Admins.Any(x => x.Name == "admin1") && adminManager.Admins.Any(x => x.Name == "admin2"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Add")]
         [TestMethod]
         public void TestAddWithMaxAdmins()
         {
@@ -72,6 +81,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(adminManager.Admins.First().Name == "admin1");
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Add")]
         [TestMethod]
         public void TestAddSameAdmin()
         {
@@ -86,6 +98,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, adminManager.Admins.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Add")]
         [TestMethod]
         public void TestAddSameName()
         {
@@ -99,6 +114,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, adminManager.Admins.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Add")]
         [TestMethod]
         public void TestAddSameCallback()
         {
@@ -117,6 +135,9 @@ namespace TetriNET2.Tests.Server
 
         #region Remove
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Remove")]
         [TestMethod]
         public void TestRemoveExistingAdmin()
         {
@@ -131,6 +152,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, adminManager.Admins.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Remove")]
         [TestMethod]
         public void TestRemoveNonExistingAdmin()
         {
@@ -146,6 +170,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, adminManager.Admins.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Remove")]
         [TestMethod]
         public void TestRemoveNullAdmin()
         {
@@ -170,6 +197,9 @@ namespace TetriNET2.Tests.Server
 
         #region Clear
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Clear")]
         [TestMethod]
         public void TestClearNoAdmins()
         {
@@ -180,6 +210,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, adminManager.AdminCount);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Clear")]
         [TestMethod]
         public void TestClearSomeAdmins()
         {
@@ -197,6 +230,9 @@ namespace TetriNET2.Tests.Server
 
         #region Indexers
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Indexers")]
         [TestMethod]
         public void TestIndexerGuidFindExistingAdmin()
         {
@@ -214,6 +250,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(searched, admin2);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Indexers")]
         [TestMethod]
         public void TestIndexerGuidFindNonExistingAdmin()
         {
@@ -230,6 +269,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsNull(searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Indexers")]
         [TestMethod]
         public void TestIndexertNameFindExistingAdmin()
         {
@@ -247,6 +289,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(searched, admin2);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Indexers")]
         [TestMethod]
         public void TesIndexertNameFindNonExistingAdmin()
         {
@@ -263,6 +308,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsNull(searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Indexers")]
         [TestMethod]
         public void TestIndexerCallbackFindExistingAdmin()
         {
@@ -280,6 +328,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(searched, admin2);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Indexers")]
         [TestMethod]
         public void TestIndexerCallbackFindNonExistingAdmin()
         {
@@ -296,6 +347,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsNull(searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Indexers")]
         [TestMethod]
         public void TestIndexerAddressFindExistingAdmin()
         {
@@ -313,6 +367,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(searched, admin2);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdminManager")]
+        [TestCategory("Server.IAdminManager.Indexers")]
         [TestMethod]
         public void TestIndexerAddressFindNonExistingAdmin()
         {
@@ -347,6 +404,9 @@ namespace TetriNET2.Tests.Server
 
         #region Constructor
 
+        [TestCategory("Server")]
+        [TestCategory("Server.AdminManager")]
+        [TestCategory("Server.AdminManager.ctor")]
         [TestMethod]
         public void TestConstructorStrictlyPositiveMaxAdmins()
         {
@@ -361,6 +421,9 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.AdminManager")]
+        [TestCategory("Server.AdminManager.ctor")]
         [TestMethod]
         public void TestConstructorSetProperties()
         {
@@ -371,6 +434,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(maxAdmins, adminManager.MaxAdmins);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.AdminManager")]
+        [TestCategory("Server.AdminManager.ctor")]
         [TestMethod]
         public void TestConstructorLockObjectNotNull()
         {
@@ -380,6 +446,5 @@ namespace TetriNET2.Tests.Server
         }
 
         #endregion
-
     }
 }

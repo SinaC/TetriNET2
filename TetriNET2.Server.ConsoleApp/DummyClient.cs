@@ -9,7 +9,7 @@ using TetriNET2.Server.Interfaces;
 
 namespace TetriNET2.Server.ConsoleApp
 {
-    public class DummyClient : ITetriNETCallback
+    public class DummyClient : ITetriNETCallback, IDisposable
     {
         public readonly string Name;
         public readonly string Team;
@@ -323,6 +323,23 @@ namespace TetriNET2.Server.ConsoleApp
         public void OnContinuousSpecialFinished(Guid playerId, Specials special)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, playerId, special);
+        }
+
+        #endregion
+
+        #region IDisposable
+
+        private void Dispose(bool disposing)
+        {
+            if (disposing)
+            {
+                _timer.Dispose();
+            }
+        }
+
+        public void Dispose()
+        {
+            Dispose(true);
         }
 
         #endregion

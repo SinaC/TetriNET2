@@ -27,6 +27,7 @@ namespace TetriNET2.Tests.Server
             Log.Default.Logger = new LogMock();
         }
 
+        [TestCategory("Server.IPieceProvider")]
         [TestMethod]
         public void TestExceptionIfOccuranciesIsNull()
         {
@@ -44,6 +45,7 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server.IPieceProvider")]
         [TestMethod]
         public void TestGetFirstPieceIsValid()
         {
@@ -59,6 +61,7 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(Pieces.TetriminoI, piece);
         }
 
+        [TestCategory("Server.IPieceProvider")]
         [TestMethod]
         public void TestGetMultiplePiecesAreValid()
         {
@@ -96,6 +99,7 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(Pieces.TetriminoO, piece4);
         }
 
+        [TestCategory("Server.IPieceProvider")]
         [TestMethod]
         public void TestReset()
         {
@@ -160,7 +164,8 @@ namespace TetriNET2.Tests.Server
         {
             return new PieceBag(PseudoRandom, HistorySize);
         }
-        
+
+        [TestCategory("Server.PieceProvider")]
         [TestMethod]
         public void TestHistory()
         {

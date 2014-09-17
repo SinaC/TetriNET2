@@ -23,6 +23,9 @@ namespace TetriNET2.Tests.Server
 
         #region Add
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Add")]
         [TestMethod]
         public void TestAddNullAdmin()
         {
@@ -43,6 +46,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, gameRoomManager.Rooms.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Add")]
         [TestMethod]
         public void TestAddNoMaxRooms()
         {
@@ -58,6 +64,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(gameRoomManager.Rooms.Any(x => x.Name == "room1") && gameRoomManager.Rooms.Any(x => x.Name == "room2"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Add")]
         [TestMethod]
         public void TestAddWithMaxRooms()
         {
@@ -71,6 +80,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual("room1", gameRoomManager.Rooms.First().Name);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Add")]
         [TestMethod]
         public void TestAddSameGameRoom()
         {
@@ -89,6 +101,9 @@ namespace TetriNET2.Tests.Server
 
         #region Remove
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Remove")]
         [TestMethod]
         public void TestRemoveExistingRoom()
         {
@@ -103,6 +118,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, gameRoomManager.Rooms.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Remove")]
         [TestMethod]
         public void TestRemoveNonExistingRoom()
         {
@@ -118,6 +136,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, gameRoomManager.Rooms.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Remove")]
         [TestMethod]
         public void TestRemoveNullRoom()
         {
@@ -142,6 +163,9 @@ namespace TetriNET2.Tests.Server
 
         #region Clear
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Clear")]
         [TestMethod]
         public void TestClearNoRooms()
         {
@@ -152,6 +176,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, gameRoomManager.RoomCount);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Clear")]
         [TestMethod]
         public void TestClearSomeRooms()
         {
@@ -169,6 +196,9 @@ namespace TetriNET2.Tests.Server
 
         #region Indexers
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Indexers")]
         [TestMethod]
         public void TestIndexerGuidFindExistingRoom()
         {
@@ -186,6 +216,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(room2, searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Indexers")]
         [TestMethod]
         public void TestIndexerGuidFindNonExistingAdmin()
         {
@@ -202,6 +235,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsNull(searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Indexers")]
         [TestMethod]
         public void TestIndexerNameFindExistingRoom()
         {
@@ -219,6 +255,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(room2, searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoomManager")]
+        [TestCategory("Server.IGameRoomManager.Indexers")]
         [TestMethod]
         public void TestIndexerNameFindNonExistingAdmin()
         {
@@ -251,9 +290,11 @@ namespace TetriNET2.Tests.Server
             return new GameRoom(new ActionQueueMock(), new PieceProviderMock(), name, maxPlayers, maxSpectators, rule, options, password);
         }
 
-
         #region Constructor
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoomManager")]
+        [TestCategory("Server.GameRoomManager.ctor")]
         [TestMethod]
         public void TestConstructorStrictlyPositiveMaxRooms()
         {
@@ -268,6 +309,9 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoomManager")]
+        [TestCategory("Server.GameRoomManager.ctor")]
         [TestMethod]
         public void TestConstructorSetProperties()
         {
@@ -278,6 +322,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(maxRooms, gameRoomManager.MaxRooms);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.GameRoomManager")]
+        [TestCategory("Server.GameRoomManager.ctor")]
         [TestMethod]
         public void TestConstructorLockObjectNotNull()
         {

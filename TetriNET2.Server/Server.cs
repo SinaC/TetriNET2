@@ -9,7 +9,6 @@ using System.Threading.Tasks;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Common.Logger;
-using TetriNET2.Common.Randomizer;
 using TetriNET2.Server.Interfaces;
 
 namespace TetriNET2.Server
@@ -524,7 +523,7 @@ namespace TetriNET2.Server
                 else
                 {
                     GameOptions options = new GameOptions();
-                    // TODO: fill options in function of rule
+                    options.Initialize(rule);
                     IGameRoom game = _factory.CreateGameRoom(name, 6, 10, rule, options, password);
                     bool added = _gameRoomManager.Add(game);
                     if (!added)

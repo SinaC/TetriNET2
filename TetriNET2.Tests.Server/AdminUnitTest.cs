@@ -22,6 +22,9 @@ namespace TetriNET2.Tests.Server
 
         #region Exception
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdmin")]
+        [TestCategory("Server.IAdmin.Exception")]
         [TestMethod]
         public void TestExceptionFreeAction()
         {
@@ -32,6 +35,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(true, "No exception occured");
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IAdmin")]
+        [TestCategory("Server.IAdmin.Exception")]
         [TestMethod]
         public void TestConnectionLostCalledOnException()
         {
@@ -45,7 +51,6 @@ namespace TetriNET2.Tests.Server
         }
 
         #endregion
-
     }
 
     [TestClass]
@@ -58,6 +63,9 @@ namespace TetriNET2.Tests.Server
 
         #region Constructor
 
+        [TestCategory("Server")]
+        [TestCategory("Server.Admin")]
+        [TestCategory("Server.Admin.ctor")]
         [TestMethod]
         public void TestNullName()
         {
@@ -73,6 +81,9 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.Admin")]
+        [TestCategory("Server.Admin.ctor")]
         [TestMethod]
         public void TestNullAddress()
         {
@@ -88,6 +99,9 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.Admin")]
+        [TestCategory("Server.Admin.ctor")]
         [TestMethod]
         public void TestNullCallback()
         {
@@ -103,6 +117,9 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.Admin")]
+        [TestCategory("Server.Admin.ctor")]
         [TestMethod]
         public void TestConstructorSetProperties()
         {

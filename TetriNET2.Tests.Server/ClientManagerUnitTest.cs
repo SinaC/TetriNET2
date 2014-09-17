@@ -24,6 +24,9 @@ namespace TetriNET2.Tests.Server
 
         #region Add
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Add")]
         [TestMethod]
         public void TestAddNullClient()
         {
@@ -44,6 +47,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, clientManager.Clients.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Add")]
         [TestMethod]
         public void TestAddNoMaxClients()
         {
@@ -59,6 +65,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(clientManager.Clients.Any(x => x.Name == "client1") && clientManager.Clients.Any(x => x.Name == "client2"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Add")]
         [TestMethod]
         public void TestAddWithMaxClients()
         {
@@ -72,6 +81,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(clientManager.Clients.First().Name == "client1");
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Add")]
         [TestMethod]
         public void TestAddSameClient()
         {
@@ -86,6 +98,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, clientManager.Clients.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Add")]
         [TestMethod]
         public void TestAddSameName()
         {
@@ -99,6 +114,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, clientManager.Clients.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Add")]
         [TestMethod]
         public void TestAddSameCallback()
         {
@@ -117,6 +135,9 @@ namespace TetriNET2.Tests.Server
 
         #region Remove
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Remove")]
         [TestMethod]
         public void TestRemoveExistingClient()
         {
@@ -131,6 +152,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, clientManager.Clients.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Remove")]
         [TestMethod]
         public void TestRemoveNonExistingClient()
         {
@@ -146,6 +170,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, clientManager.Clients.Count());
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Remove")]
         [TestMethod]
         public void TestRemoveNullClient()
         {
@@ -170,6 +197,9 @@ namespace TetriNET2.Tests.Server
         
         #region Clear
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Clear")]
         [TestMethod]
         public void TestClearNoClients()
         {
@@ -180,6 +210,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, clientManager.ClientCount);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Clear")]
         [TestMethod]
         public void TestClearSomeClients()
         {
@@ -193,10 +226,13 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, clientManager.ClientCount);
         }
 
-#endregion
+        #endregion
 
         #region Contains
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Contains")]
         [TestMethod]
         public void TestContainsExistingClient()
         {
@@ -211,6 +247,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(containsOnCallback);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Contains")]
         [TestMethod]
         public void TestContainsNonExistingClient()
         {
@@ -225,10 +264,13 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(containsOnCallback);
         }
 
-#endregion
+        #endregion
         
         #region Indexers
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Indexers")]
         [TestMethod]
         public void TestIndexerGuidFindExistingClient()
         {
@@ -246,6 +288,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(client2, searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Indexers")]
         [TestMethod]
         public void TestIndexerGuidFindNonExistingClient()
         {
@@ -262,6 +307,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsNull(searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Indexers")]
         [TestMethod]
         public void TestIndexerNameFindExistingClient()
         {
@@ -279,6 +327,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(client2, searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Indexers")]
         [TestMethod]
         public void TestIndexerNameFindNonExistingClient()
         {
@@ -295,6 +346,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsNull(searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Indexers")]
         [TestMethod]
         public void TestIndexerCallbackFindExistingClient()
         {
@@ -312,6 +366,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(client2, searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Indexers")]
         [TestMethod]
         public void TestIndexerCallbackFindNonExistingClient()
         {
@@ -328,6 +385,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsNull(searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Indexers")]
         [TestMethod]
         public void TestIndexerAddressFindExistingClient()
         {
@@ -345,6 +405,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(client2, searched);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IClientManager")]
+        [TestCategory("Server.IClientManager.Indexers")]
         [TestMethod]
         public void TestIndexerAddressFindNonExistingClient()
         {
@@ -379,6 +442,9 @@ namespace TetriNET2.Tests.Server
 
         #region Constructor
 
+        [TestCategory("Server")]
+        [TestCategory("Server.ClientManager")]
+        [TestCategory("Server.ClientManager.ctor")]
         [TestMethod]
         public void TestConstructorStrictlyPositiveMaxClients()
         {
@@ -393,6 +459,9 @@ namespace TetriNET2.Tests.Server
             }
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.ClientManager")]
+        [TestCategory("Server.ClientManager.ctor")]
         [TestMethod]
         public void TestConstructorSetProperties()
         {
@@ -403,6 +472,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(maxClients, clientManager.MaxClients);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.ClientManager")]
+        [TestCategory("Server.ClientManager.ctor")]
         [TestMethod]
         public void TestConstructorLockObjectNotNull()
         {

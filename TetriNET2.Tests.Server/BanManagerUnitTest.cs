@@ -24,6 +24,9 @@ namespace TetriNET2.Tests.Server
 
         #region IsBanned
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IBanManager")]
+        [TestCategory("Server.IBanManager.IsBanned")]
         [TestMethod]
         public void TestIsBannedFalseWhenNoBannedPlayers()
         {
@@ -35,6 +38,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsFalse(isBanned);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IBanManager")]
+        [TestCategory("Server.IBanManager.IsBanned")]
         [TestMethod]
         public void TestIsBannedTrueWhenBannedPlayers()
         {
@@ -48,6 +54,9 @@ namespace TetriNET2.Tests.Server
             Assert.IsTrue(isBanned);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IBanManager")]
+        [TestCategory("Server.IBanManager.IsBanned")]
         [TestMethod]
         public void TestIsBannedFalseOnUnknownAddress()
         {
@@ -65,6 +74,9 @@ namespace TetriNET2.Tests.Server
 
         #region BannedReason
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IBanManager")]
+        [TestCategory("Server.IBanManager.BannedReason")]
         [TestMethod]
         public void TestBannedReasonOnBannedPlayers()
         {
@@ -78,6 +90,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(reason, bannedReason);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IBanManager")]
+        [TestCategory("Server.IBanManager.BannedReason")]
         [TestMethod]
         public void TestBannedReasonOnUnknownAddress()
         {
@@ -92,6 +107,9 @@ namespace TetriNET2.Tests.Server
 
         #endregion
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IBanManager")]
+        [TestCategory("Server.IBanManager.Entries")]
         [TestMethod]
         public void TestEntries()
         {
@@ -106,6 +124,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(2, entries.Count);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IBanManager")]
+        [TestCategory("Server.IBanManager.Ban")]
         [TestMethod]
         public void TestBan2IdenticalAddress()
         {
@@ -119,6 +140,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(1, entries.Count);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IBanManager")]
+        [TestCategory("Server.IBanManager.Clear")]
         [TestMethod]
         public void TestClear()
         {
@@ -132,6 +156,9 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, entries.Count);
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IBanManager")]
+        [TestCategory("Server.IBanManager.Load/Save")]
         [TestMethod]
         public void TestInternalLoadSave()
         {
@@ -156,6 +183,9 @@ namespace TetriNET2.Tests.Server
 
         #region Constructor
 
+        [TestCategory("Server")]
+        [TestCategory("Server.BanManager")]
+        [TestCategory("Server.BanManager.ctor")]
         [TestMethod]
         public void TestConstructorNullFilename()
         {
