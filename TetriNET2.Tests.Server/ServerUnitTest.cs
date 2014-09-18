@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Net;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -7,6 +8,7 @@ using TetriNET2.Common.DataContracts;
 using TetriNET2.Common.Logger;
 using TetriNET2.Server;
 using TetriNET2.Server.Interfaces;
+using TetriNET2.Tests.Server.ClientSide;
 using TetriNET2.Tests.Server.Helpers;
 using TetriNET2.Tests.Server.Mocking;
 
@@ -22,11 +24,9 @@ namespace TetriNET2.Tests.Server
 
         protected abstract IServer CreateServer();
         protected abstract HostMock CreateHost();
-        protected abstract ClientMock CreateClient(IHost host, string name, Versioning version, string team = null);
-        protected abstract AdminMock CreateAdmin(IHost host, string name, Versioning version);
         protected abstract IGameRoom CreateGameRoom(string name);
-
-        // TODO: IHost event handlers 
+        protected abstract ClientFake CreateClientFake(IHost host, string name, Versioning version, IPAddress address = null, string team = null);
+        protected abstract AdminFake CreateAdminFake(IHost host, string name, Versioning version);
 
         [TestInitialize]
         public void Initialize()
@@ -112,6 +112,41 @@ namespace TetriNET2.Tests.Server
             server.AddHost(host);
 
             Assert.IsTrue(EventChecker.CheckEvents(host));
+        }
+
+        #endregion
+
+        #region SetVersion
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IServer")]
+        [TestCategory("Server.IServer.SetVersion")]
+        [TestMethod]
+        public void TestSetVersionFailedIfServerStarted()
+        {
+            IServer server = CreateServer();
+            server.SetVersion(1, 1);
+            server.AddHost(CreateHost());
+            server.Start();
+
+            bool succeed = server.SetVersion(10, 20);
+
+            Assert.IsFalse(succeed);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IServer")]
+        [TestCategory("Server.IServer.SetVersion")]
+        [TestMethod]
+        public void TestSetVersionIsVersionSet()
+        {
+            IServer server = CreateServer();
+
+            bool succeed = server.SetVersion(10, 20);
+
+            Assert.IsTrue(succeed);
+            Assert.AreEqual(10, server.Version.Major);
+            Assert.AreEqual(20, server.Version.Minor);
         }
 
         #endregion
@@ -225,14 +260,14 @@ namespace TetriNET2.Tests.Server
             server.SetVersion(1, 1);
             server.AddHost(host);
             server.Start();
-            ClientMock client1 = CreateClient(host, "client1", server.Version);
-            ClientMock client2 = CreateClient(host, "client2", server.Version);
-            AdminMock admin1 = CreateAdmin(host, "admin1", server.Version);
-            AdminMock admin2 = CreateAdmin(host, "admin2", server.Version);
-            client1.ClientConnect();
-            client2.ClientConnect();
-            admin1.AdminConnect(null);
-            admin2.AdminConnect(null);
+            ClientFake clientFake1 = CreateClientFake(host, "client1", server.Version);
+            ClientFake clientFake2 = CreateClientFake(host, "client2", server.Version);
+            AdminFake adminFake1 = CreateAdminFake(host, "admin1", server.Version);
+            AdminFake adminFake2 = CreateAdminFake(host, "admin2", server.Version);
+            clientFake1.ClientConnect();
+            clientFake2.ClientConnect();
+            adminFake1.AdminConnect(null);
+            adminFake2.AdminConnect(null);
 
             bool succeed = server.Stop();
 
@@ -242,48 +277,168 @@ namespace TetriNET2.Tests.Server
             Assert.AreEqual(0, GameRoomManager.RoomCount);
             Assert.AreEqual(0, AdminManager.AdminCount);
             Assert.AreEqual(0, ClientManager.ClientCount);
-            Assert.AreEqual(1, client1.GetCallCount("OnServerStopped"));
-            Assert.AreEqual(1, client2.GetCallCount("OnServerStopped"));
-            Assert.AreEqual(1, admin1.GetCallCount("OnServerStopped"));
-            Assert.AreEqual(1, admin2.GetCallCount("OnServerStopped"));
+            Assert.AreEqual(1, clientFake1.GetCallCount("OnServerStopped"));
+            Assert.AreEqual(1, clientFake2.GetCallCount("OnServerStopped"));
+            Assert.AreEqual(1, adminFake1.GetCallCount("OnServerStopped"));
+            Assert.AreEqual(1, adminFake2.GetCallCount("OnServerStopped"));
         }
 
         #endregion
 
-        #region SetVersion
+        #region ClientConnect
 
         [TestCategory("Server")]
         [TestCategory("Server.IServer")]
-        [TestCategory("Server.IServer.SetVersion")]
+        [TestCategory("Server.IServer.ClientConnect")]
         [TestMethod]
-        public void TestSetVersionFailedIfServerStarted()
+        public void TestClientConnectOk()
         {
             IServer server = CreateServer();
+            IHost host = CreateHost();
+            IGameRoom gameRoom = CreateGameRoom("room1");
+            gameRoom.Start(new CancellationTokenSource());
+            GameRoomManager.Add(gameRoom);
             server.SetVersion(1, 1);
-            server.AddHost(CreateHost());
+            server.AddHost(host);
             server.Start();
 
-            bool succeed = server.SetVersion(10, 20);
+            ClientFake clientFake1 = CreateClientFake(host, "client1", server.Version);
+            clientFake1.ClientConnect();
 
-            Assert.IsFalse(succeed);
+            Assert.AreEqual(1, clientFake1.GetCallCount("OnConnected"));
+            Assert.AreEqual(ConnectResults.Successfull, clientFake1.GetCallParameters("OnConnected", 0)[0]);
+            Assert.AreEqual(1, ClientManager.ClientCount);
+            Assert.IsNotNull(ClientManager.Clients.FirstOrDefault());
         }
 
         [TestCategory("Server")]
         [TestCategory("Server.IServer")]
-        [TestCategory("Server.IServer.SetVersion")]
+        [TestCategory("Server.IServer.ClientConnect")]
         [TestMethod]
-        public void TestSetVersionIsVersionSet()
+        public void TestClientConnectOkOtherInformed()
         {
             IServer server = CreateServer();
-            
-            bool succeed = server.SetVersion(10, 20);
+            IHost host = CreateHost();
+            IGameRoom gameRoom = CreateGameRoom("room1");
+            gameRoom.Start(new CancellationTokenSource());
+            GameRoomManager.Add(gameRoom);
+            server.SetVersion(1, 1);
+            server.AddHost(host);
+            server.Start();
+            ClientFake clientFake1 = CreateClientFake(host, "client1", server.Version);
+            AdminFake adminFake1 = CreateAdminFake(host, "admin1", server.Version);
+            AdminFake adminFake2 = CreateAdminFake(host, "admin2", server.Version);
+            clientFake1.ClientConnect();
+            adminFake1.AdminConnect(null);
+            adminFake2.AdminConnect(null);
+            clientFake1.ResetCallInfo();
+            adminFake1.ResetCallInfo();
+            adminFake2.ResetCallInfo();
 
-            Assert.IsTrue(succeed);
-            Assert.AreEqual(10, server.Version.Major);
-            Assert.AreEqual(20, server.Version.Minor);
+            ClientFake clientFake2 = CreateClientFake(host, "client2", server.Version);
+            clientFake2.ClientConnect();
+
+            Assert.AreEqual(1, clientFake1.GetCallCount("OnClientConnected"));
+            Assert.AreEqual(1, adminFake1.GetCallCount("OnClientConnected"));
+            Assert.AreEqual(1, adminFake2.GetCallCount("OnClientConnected"));
         }
 
+        [TestCategory("Server")]
+        [TestCategory("Server.IServer")]
+        [TestCategory("Server.IServer.ClientConnect")]
+        [TestMethod]
+        public void TestClientConnectFailedIncompatibleVersion()
+        {
+            IServer server = CreateServer();
+            IHost host = CreateHost();
+            IGameRoom gameRoom = CreateGameRoom("room1");
+            gameRoom.Start(new CancellationTokenSource());
+            GameRoomManager.Add(gameRoom);
+            server.SetVersion(1, 1);
+            server.AddHost(host);
+            server.Start();
+
+            ClientFake clientFake1 = CreateClientFake(host, "client1", new Versioning {Major = 1, Minor = 2});
+            clientFake1.ClientConnect();
+
+            Assert.AreEqual(1, clientFake1.GetCallCount("OnConnected"));
+            Assert.AreEqual(ConnectResults.FailedIncompatibleVersion, clientFake1.GetCallParameters("OnConnected", 0)[0]);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IServer")]
+        [TestCategory("Server.IServer.ClientConnect")]
+        [TestMethod]
+        public void TestClientConnectFailedIfDuplicateName()
+        {
+            IServer server = CreateServer();
+            IHost host = CreateHost();
+            IGameRoom gameRoom = CreateGameRoom("room1");
+            gameRoom.Start(new CancellationTokenSource());
+            GameRoomManager.Add(gameRoom);
+            server.SetVersion(1, 1);
+            server.AddHost(host);
+            server.Start();
+            ClientFake clientFake1 = CreateClientFake(host, "client1", server.Version);
+            clientFake1.ClientConnect();
+
+            ClientFake clientFake2 = CreateClientFake(host, "client1", server.Version);
+            clientFake2.ClientConnect();
+
+            Assert.AreEqual(1, clientFake2.GetCallCount("OnConnected"));
+            Assert.AreEqual(ConnectResults.FailedClientAlreadyExists, clientFake2.GetCallParameters("OnConnected", 0)[0]);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IServer")]
+        [TestCategory("Server.IServer.ClientConnect")]
+        [TestMethod]
+        public void TestClientConnectFailedInvalidName()
+        {
+            IServer server = CreateServer();
+            IHost host = CreateHost();
+            IGameRoom gameRoom = CreateGameRoom("room1");
+            gameRoom.Start(new CancellationTokenSource());
+            GameRoomManager.Add(gameRoom);
+            server.SetVersion(1, 1);
+            server.AddHost(host);
+            server.Start();
+
+            ClientFake clientFake1 = CreateClientFake(host, "012345678901234567890123456789", server.Version);
+            clientFake1.ClientConnect();
+
+            Assert.AreEqual(1, clientFake1.GetCallCount("OnConnected"));
+            Assert.AreEqual(ConnectResults.FailedInvalidName, clientFake1.GetCallParameters("OnConnected", 0)[0]);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IServer")]
+        [TestCategory("Server.IServer.ClientConnect")]
+        [TestMethod]
+        public void TestClientConnectFailedIfBanned()
+        {
+            IServer server = CreateServer();
+            IHost host = CreateHost();
+            IGameRoom gameRoom = CreateGameRoom("room1");
+            gameRoom.Start(new CancellationTokenSource());
+            GameRoomManager.Add(gameRoom);
+            server.SetVersion(1, 1);
+            server.AddHost(host);
+            server.Start();
+            BanManager.Ban("client1", IPAddress.Parse("127.0.0.2"), "test");
+
+            ClientFake clientFake1 = CreateClientFake(host, "client1", server.Version, IPAddress.Parse("127.0.0.2"));
+            clientFake1.ClientConnect();
+
+            Assert.AreEqual(1, clientFake1.GetCallCount("OnConnected"));
+            Assert.AreEqual(ConnectResults.FailedBanned, clientFake1.GetCallParameters("OnConnected", 0)[0]);
+        }
+
+        // TODO: check maxClients
+
         #endregion
+
+        // TODO: test remaining IHost event handlers
     }
 
     [TestClass]
@@ -321,18 +476,18 @@ namespace TetriNET2.Tests.Server
             return new HostMock(ClientManager, AdminManager, GameRoomManager);
         }
 
-        protected override ClientMock CreateClient(IHost host, string name, Versioning version, string team = null)
+        protected override ClientFake CreateClientFake(IHost host, string name, Versioning version, IPAddress address = null, string team = null)
         {
-            ClientMock client = new ClientMock(name, team, version, IPAddress.Any)
+            ClientFake client = new ClientFake(name, team, version, address ?? IPAddress.Any)
             {
                 Host = host
             };
             return client;
         }
 
-        protected override AdminMock CreateAdmin(IHost host, string name, Versioning version)
+        protected override AdminFake CreateAdminFake(IHost host, string name, Versioning version)
         {
-            AdminMock admin = new AdminMock(name, version, IPAddress.Any)
+            AdminFake admin = new AdminFake(name, version, IPAddress.Any)
             {
                 Host = host
             };

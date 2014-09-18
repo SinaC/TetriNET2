@@ -3,6 +3,7 @@ using System.Net;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces;
+using TetriNET2.Tests.Server.ClientSide;
 
 namespace TetriNET2.Tests.Server.Mocking
 {
@@ -107,7 +108,12 @@ namespace TetriNET2.Tests.Server.Mocking
         public void ClientConnect(ITetriNETCallback callback, Versioning version, string name, string team)
         {
             if (HostClientConnect != null)
-                HostClientConnect(callback, IPAddress.Any, version, name, team);
+            {
+                IPAddress address = null;
+                if (callback is ClientFake)
+                    address = (callback as ClientFake).Address;
+                HostClientConnect(callback, address ?? IPAddress.Any, version, name, team);
+            }
         }
 
         public void ClientDisconnect(ITetriNETCallback callback)
@@ -289,7 +295,13 @@ namespace TetriNET2.Tests.Server.Mocking
         public void AdminConnect(ITetriNETAdminCallback callback, Versioning version, string name, string password)
         {
             if (HostAdminConnect != null)
-                HostAdminConnect(callback, IPAddress.Any, version, name, password);
+            {
+                IPAddress address = null;
+                if (callback is AdminFake)
+                    address = (callback as AdminFake).Address;
+
+                HostAdminConnect(callback, address ?? IPAddress.Any, version, name, password);
+            }
         }
 
         public void AdminDisconnect(ITetriNETAdminCallback callback)

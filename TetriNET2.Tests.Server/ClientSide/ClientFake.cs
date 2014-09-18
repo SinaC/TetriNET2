@@ -7,9 +7,9 @@ using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces;
 
-namespace TetriNET2.Tests.Server.Mocking
+namespace TetriNET2.Tests.Server.ClientSide
 {
-    public class ClientMock : ITetriNETCallback, IDisposable
+    public class ClientFake : ITetriNETCallback, IDisposable
     {
         public IHost Host { get; set; }
         
@@ -20,7 +20,7 @@ namespace TetriNET2.Tests.Server.Mocking
 
         private readonly Timer _timer;
 
-        public ClientMock(string name, string team, Versioning version, IPAddress address)
+        public ClientFake(string name, string team, Versioning version, IPAddress address)
         {
             Name = name;
             Team = team;

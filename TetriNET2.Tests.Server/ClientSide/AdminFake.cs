@@ -6,9 +6,9 @@ using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces;
 
-namespace TetriNET2.Tests.Server.Mocking
+namespace TetriNET2.Tests.Server.ClientSide
 {
-    public class AdminMock : ITetriNETAdminCallback
+    public class AdminFake : ITetriNETAdminCallback
     {
         public IHost Host { get; set; }
 
@@ -16,7 +16,7 @@ namespace TetriNET2.Tests.Server.Mocking
         public readonly Versioning Versioning;
         public readonly IPAddress Address;
 
-        public AdminMock(string name, Versioning version, IPAddress address)
+        public AdminFake(string name, Versioning version, IPAddress address)
         {
             Name = name;
             Versioning = version;
