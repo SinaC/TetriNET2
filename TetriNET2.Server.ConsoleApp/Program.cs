@@ -43,6 +43,7 @@ namespace TetriNET2.Server.ConsoleApp
 
             IServer server = new Server(factory, banManager, clientManager, adminManager, gameRoomManager);
             server.AddHost(dummyHost);
+            server.PerformRestartServer += ServerOnPerformRestartServer;
 
             //
             try
@@ -116,6 +117,12 @@ namespace TetriNET2.Server.ConsoleApp
                 else
                     System.Threading.Thread.Sleep(100);
             }
+        }
+
+        private static void ServerOnPerformRestartServer(IServer server)
+        {
+            // TODO
+            server.Stop();
         }
     }
 

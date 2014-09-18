@@ -161,12 +161,12 @@ namespace TetriNET2.Server
             return true;
         }
 
-        public void SetVersion(int major, int minor)
+        public bool SetVersion(int major, int minor)
         {
             if (State != ServerStates.Waiting)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot change version while server is already started");
-                return;
+                return false;
             }
 
             Version = new Versioning
@@ -174,26 +174,27 @@ namespace TetriNET2.Server
                     Major = major,
                     Minor = minor
                 };
+            return true;
         }
 
-        public void Start()
+        public bool Start()
         {
             Log.Default.WriteLine(LogLevels.Info, "Starting server");
 
             if (Version == null)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot start server until a version has been specified");
-                return;
+                return false;
             }
             if (_hosts.Count == 0)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot start server without any host");
-                return;
+                return false;
             }
             if (State != ServerStates.Waiting)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Server already started");
-                return;
+                return false;
             }
             //
             State = ServerStates.Starting;
@@ -210,16 +211,17 @@ namespace TetriNET2.Server
             State = ServerStates.Started;
 
             Log.Default.WriteLine(LogLevels.Info, "Server started");
+            return true;
         }
 
-        public void Stop()
+        public bool Stop()
         {
             Log.Default.WriteLine(LogLevels.Info, "Stopping server");
 
             if (State != ServerStates.Started)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Server not started");
-                return;
+                return false;
             }
             //
             State = ServerStates.Stopping;
@@ -264,6 +266,7 @@ namespace TetriNET2.Server
             State = ServerStates.Waiting;
 
             Log.Default.WriteLine(LogLevels.Info, "Server stopped");
+            return true;
         }
 
         #endregion
@@ -1160,7 +1163,7 @@ namespace TetriNET2.Server
                 _isRestartRunning = false;
                 _restartTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 // Perform restart
-                PerformRestartServer.Do(x => x());
+                PerformRestartServer.Do(x => x(this));
             }
             else
             {

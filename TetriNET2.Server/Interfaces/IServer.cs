@@ -10,7 +10,7 @@ namespace TetriNET2.Server.Interfaces
         Stopping
     }
 
-    public delegate void PerformRestartServerEventHandler();
+    public delegate void PerformRestartServerEventHandler(IServer server);
 
     public interface IServer
     {
@@ -21,9 +21,9 @@ namespace TetriNET2.Server.Interfaces
 
         bool AddHost(IHost host);
 
-        void SetVersion(int major, int minor);
+        bool SetVersion(int major, int minor);
 
-        void Start();
-        void Stop();
+        bool Start();
+        bool Stop();
     }
 }

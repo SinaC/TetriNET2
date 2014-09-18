@@ -136,8 +136,8 @@ namespace TetriNET2.Server.Interfaces
 
         //
         IClientManager ClientManager { get; }
-        IGameRoomManager GameRoomManager { get; }
         IAdminManager AdminManager { get; }
+        IGameRoomManager GameRoomManager { get; }
 
         //
         void Start();

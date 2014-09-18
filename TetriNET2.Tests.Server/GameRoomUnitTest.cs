@@ -82,6 +82,7 @@ namespace TetriNET2.Tests.Server
         public void TestStopClientsRemovedAndStatusChanged()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
@@ -91,7 +92,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
 
             game.Stop();
 
@@ -112,6 +112,7 @@ namespace TetriNET2.Tests.Server
         public void TestStopCallbackCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
@@ -121,7 +122,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
 
             game.Stop();
 
@@ -139,9 +139,44 @@ namespace TetriNET2.Tests.Server
         [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.Join")]
         [TestMethod]
+        public void TestJoinNullClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+
+            try
+            {
+                game.Join(null, false);
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
+        [TestCategory("Server.IGameRoom.Join")]
+        [TestMethod]
+        public void TestJoinGameRoomNoStarted()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            IClient client = CreateClient("client1", new CountCallTetriNETCallback());
+
+            bool succeed = game.Join(client, false);
+
+            Assert.IsFalse(succeed);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
+        [TestCategory("Server.IGameRoom.Join")]
+        [TestMethod]
         public void TestJoinPlayerNoMaxPlayers()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client = CreateClient("client1", new CountCallTetriNETCallback());
 
             bool succeed = game.Join(client, false);
@@ -160,6 +195,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinSpectatorNoMaxSpectators()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client = CreateClient("client1", new CountCallTetriNETCallback());
 
             bool succeed = game.Join(client, true);
@@ -178,6 +214,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinPlayerMaxPlayers()
         {
             IGameRoom game = CreateGameRoom("game1", 1, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
             game.Join(client1, false);
@@ -198,6 +235,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinSpectatorMaxSpectators()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 1);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
             game.Join(client1, true);
@@ -218,6 +256,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinSameClient()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
@@ -234,6 +273,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinPlayerModifyPlayerProperties()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client = CreateClient("client1", new CountCallTetriNETCallback());
             
             game.Join(client, false);
@@ -250,6 +290,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinSpectatorModifySpectatorProperties()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client = CreateClient("client1", new CountCallTetriNETCallback());
 
             game.Join(client, true);
@@ -266,6 +307,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinPlayerCallbackCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback = new CountCallTetriNETCallback();
             IClient client = CreateClient("client1", callback);
 
@@ -281,6 +323,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinSpectatorCallbackCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback = new CountCallTetriNETCallback();
             IClient client = CreateClient("client1", callback);
 
@@ -296,6 +339,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinPlayerOtherClientsInformed()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
@@ -319,6 +363,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinSpectatorOtherClientsInformed()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
@@ -366,6 +411,7 @@ namespace TetriNET2.Tests.Server
         public void TestLeaveNonExistingClient()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client1, false);
 
@@ -383,6 +429,7 @@ namespace TetriNET2.Tests.Server
         public void TestLeaveClientNotInGameRoom()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             
             bool succeed = game.Leave(client1);
@@ -397,6 +444,7 @@ namespace TetriNET2.Tests.Server
         public void TestLeaveExistingClient()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
             game.Join(client1, false);
@@ -418,6 +466,7 @@ namespace TetriNET2.Tests.Server
         public void TestLeavePlayerModifyPlayerProperties()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client, false);
 
@@ -436,6 +485,7 @@ namespace TetriNET2.Tests.Server
         public void TestLeaveSpectatorModifySpectatorProperties()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client, true);
 
@@ -454,6 +504,7 @@ namespace TetriNET2.Tests.Server
         public void TestLeaveClientCallbackCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client = CreateClient("client1", callback1);
             game.Join(client, true);
@@ -470,6 +521,7 @@ namespace TetriNET2.Tests.Server
         public void TestLeaveClientOtherClientsInformed()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
@@ -510,6 +562,7 @@ namespace TetriNET2.Tests.Server
         public void TestClearMultipleClients()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             game.Join(CreateClient("client1", new CountCallTetriNETCallback()), true);
             game.Join(CreateClient("client2", new CountCallTetriNETCallback()), true);
             game.Join(CreateClient("client3", new CountCallTetriNETCallback()), true);
@@ -586,6 +639,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickTargetNotInGame()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client1, false);
             IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
@@ -602,6 +656,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickClientNotPlayer()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client1, true);
             IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
@@ -619,6 +674,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickTargetNotPlayer()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client1, false);
             IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
@@ -636,6 +692,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickNotEnoughPlayers()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client1, false);
             IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
@@ -653,6 +710,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickNoSimultaneousVoteKick()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client1, false);
             IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
@@ -673,6 +731,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickPropertiesModified()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -682,7 +741,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.VoteKick(client1, client2, "reason");
 
@@ -698,6 +756,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickCallbackCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -707,11 +766,9 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback4 = new CountCallTetriNETCallback();
             IClient client4 = CreateClient("client4", callback4);
             game.Join(client4, true);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.VoteKick(client1, client2, "reason");
 
@@ -729,6 +786,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickTimeout()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -738,7 +796,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
 
             game.VoteKick(client1, client2, "reason");
             Thread.Sleep(10500);
@@ -782,6 +839,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickAnswerClientNotPlayer()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client1, true);
 
@@ -797,6 +855,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickAnswerNoVoteKickStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client1, false);
 
@@ -812,6 +871,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickAnswerVoteTargetCannotVote()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -834,6 +894,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickAnswerNoMultipleAnswerForSamePlayer()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -861,6 +922,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickAnswerNotLastToAnswer()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
             game.Join(client1, false);
             IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
@@ -883,6 +945,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickAnswerLastToAnswerNotKicked()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -918,6 +981,7 @@ namespace TetriNET2.Tests.Server
         public void TestVoteKickAnswerLastToAnswerKicked()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -990,6 +1054,7 @@ namespace TetriNET2.Tests.Server
         {
             GameOptions originalOptions = new GameOptions();
             IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
@@ -999,7 +1064,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
 
             GameOptions newOptions = new GameOptions();
             game.ChangeOptions(newOptions);
@@ -1020,6 +1084,7 @@ namespace TetriNET2.Tests.Server
         public void TestResetWinListClientsInformed()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
@@ -1029,7 +1094,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
 
             game.ResetWinList();
 
@@ -1045,9 +1109,17 @@ namespace TetriNET2.Tests.Server
         public void TestResetWinListFailedIfNotWaitingGameStart()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
-            game.Join(client1, true);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, false);
+            game.StartGame();
 
             bool succeed = game.ResetWinList();
 
@@ -1086,12 +1158,12 @@ namespace TetriNET2.Tests.Server
         public void TestPlacePieceFailedIfClientNotInGame()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.PlacePiece(client2, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
@@ -1106,10 +1178,10 @@ namespace TetriNET2.Tests.Server
         public void TestPlacePieceFailedIfGameNotStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.PlacePiece(client1, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
 
@@ -1123,10 +1195,10 @@ namespace TetriNET2.Tests.Server
         public void TestPlacePieceFailedIfClientNotPlaying()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             client1.State = ClientStates.GameLost; // simulate game loss
 
@@ -1142,10 +1214,10 @@ namespace TetriNET2.Tests.Server
         public void TestPlacePieceOkIfGameStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.PlacePiece(client1, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
@@ -1160,6 +1232,7 @@ namespace TetriNET2.Tests.Server
         public void TestPlacePieceActionCallbacksCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -1169,7 +1242,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             game.PlacePiece(client1, 0, 0, Pieces.TetriminoO, 0, 0, 0, null);
@@ -1214,12 +1286,12 @@ namespace TetriNET2.Tests.Server
         public void TestModifyGridFailedIfClientNotInGame()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.ModifyGrid(client2, null);
@@ -1234,10 +1306,10 @@ namespace TetriNET2.Tests.Server
         public void TestModifyGridFailedIfGameNotStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.ModifyGrid(client1, null);
 
@@ -1251,10 +1323,10 @@ namespace TetriNET2.Tests.Server
         public void TestModifyGridFailedIfClientNotPlaying()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             client1.State = ClientStates.GameLost; // simulate game loss
 
@@ -1270,10 +1342,10 @@ namespace TetriNET2.Tests.Server
         public void TestModifyGridOkIfGameStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.ModifyGrid(client1, null);
@@ -1288,6 +1360,7 @@ namespace TetriNET2.Tests.Server
         public void TestModifyGridActionCallbacksCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -1297,7 +1370,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             game.ModifyGrid(client1, null);
@@ -1361,12 +1433,12 @@ namespace TetriNET2.Tests.Server
         public void TestUseSpecialFailedIfClientNotInGame()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.UseSpecial(client2, client1, Specials.BlockBomb);
@@ -1381,12 +1453,12 @@ namespace TetriNET2.Tests.Server
         public void TestUseSpecialFailedIfTargetNotInGame()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.UseSpecial(client1, client2, Specials.BlockBomb);
@@ -1401,13 +1473,13 @@ namespace TetriNET2.Tests.Server
         public void TestUseSpecialFailedIfGameNotStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
             game.Join(client2, false);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.UseSpecial(client1, client2, Specials.AddLines);
 
@@ -1421,13 +1493,13 @@ namespace TetriNET2.Tests.Server
         public void TestUseSpecialFailedIfClientNotPlaying()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
             game.Join(client2, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             client1.State = ClientStates.GameLost; // simulate game loss
 
@@ -1443,13 +1515,13 @@ namespace TetriNET2.Tests.Server
         public void TestUseSpecialFailedIfTargetNotPlaying()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
             game.Join(client2, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             client2.State = ClientStates.GameLost; // simulate game loss
 
@@ -1465,13 +1537,13 @@ namespace TetriNET2.Tests.Server
         public void TestUseSpecialOkIfGameStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
             game.Join(client2, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.UseSpecial(client1, client2, Specials.AddLines);
@@ -1486,6 +1558,7 @@ namespace TetriNET2.Tests.Server
         public void TestUseSpecialActionCallbacksCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -1495,7 +1568,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             game.UseSpecial(client1, client2, Specials.AddLines);
@@ -1513,6 +1585,7 @@ namespace TetriNET2.Tests.Server
         public void TestUseSpecialSwitchFieldsActionCallbacksCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -1522,7 +1595,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             game.UseSpecial(client1, client2, Specials.SwitchFields);
@@ -1567,12 +1639,12 @@ namespace TetriNET2.Tests.Server
         public void TestClearLinesFailedIfClientNotInGame()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.ClearLines(client2, 4);
@@ -1587,10 +1659,10 @@ namespace TetriNET2.Tests.Server
         public void TestClearLinesFailedIfGameNotStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.ClearLines(client1, 4);
 
@@ -1604,10 +1676,10 @@ namespace TetriNET2.Tests.Server
         public void TestClearLinesFailedIfClientNotPlaying()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             client1.State = ClientStates.GameLost; // simulate game loss
 
@@ -1623,10 +1695,10 @@ namespace TetriNET2.Tests.Server
         public void TestClearLinesOkIfGameStartedAndClassicMultiplayerRules()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.Options.ClassicStyleMultiplayerRules = true;
             game.StartGame();
 
@@ -1642,6 +1714,7 @@ namespace TetriNET2.Tests.Server
         public void TestClearLinesActionCallbacksCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -1651,7 +1724,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             game.ModifyGrid(client1, null);
@@ -1708,10 +1780,10 @@ namespace TetriNET2.Tests.Server
         public void TestGameLostFailedIfClientNotPlaying()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             client1.State = ClientStates.GameLost; // simulate game loss
 
@@ -1727,10 +1799,10 @@ namespace TetriNET2.Tests.Server
         public void TestGameLostOkIfGameStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.GameLost(client1);
@@ -1769,12 +1841,12 @@ namespace TetriNET2.Tests.Server
         public void TestFinishContinuousSpecialFailedIfClientNotInGame()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.FinishContinuousSpecial(client2, Specials.Darkness);
@@ -1789,10 +1861,10 @@ namespace TetriNET2.Tests.Server
         public void TestFinishContinuousSpecialOkIfGameStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.FinishContinuousSpecial(client1, Specials.Darkness);
@@ -1807,6 +1879,7 @@ namespace TetriNET2.Tests.Server
         public void TestFinishContinuousSpecialActionCallbacksCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -1816,7 +1889,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             game.FinishContinuousSpecial(client1, Specials.Darkness);
@@ -1858,12 +1930,12 @@ namespace TetriNET2.Tests.Server
         public void TestEarnAchievementSpecialFailedIfClientNotInGame()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.EarnAchievement(client2, 5, "achievement");
@@ -1878,6 +1950,7 @@ namespace TetriNET2.Tests.Server
         public void TestEarnAchievement()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -1887,7 +1960,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.EarnAchievement(client1, 5, "achievement");
@@ -1902,6 +1974,7 @@ namespace TetriNET2.Tests.Server
         public void TestEarnAchievementCallbacksCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -1911,7 +1984,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             game.EarnAchievement(client1, 5, "achievement");
@@ -1933,6 +2005,7 @@ namespace TetriNET2.Tests.Server
         public void TestStartGameFailedIfNotWaitingGameStart()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -1942,6 +2015,7 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
+            game.Stop();
 
             bool succeed = game.StartGame();
 
@@ -1956,6 +2030,7 @@ namespace TetriNET2.Tests.Server
         public void TestStartGameFailedIfNoPlayers()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
@@ -1965,7 +2040,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.StartGame();
 
@@ -1980,6 +2054,7 @@ namespace TetriNET2.Tests.Server
         public void TestStartGameStatusUpdatedAndCallbackCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -1989,7 +2064,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.StartGame();
 
@@ -2014,6 +2088,7 @@ namespace TetriNET2.Tests.Server
         public void TestStopGameFailedIfGameNotStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2023,7 +2098,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.StopGame();
 
@@ -2038,6 +2112,7 @@ namespace TetriNET2.Tests.Server
         public void TestStopGameStatusUpdatedAndCallbackCalledIfGameStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2047,7 +2122,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.StopGame();
@@ -2073,6 +2147,7 @@ namespace TetriNET2.Tests.Server
         public void TestPauseGameFailedIfGameNotStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2082,7 +2157,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.PauseGame();
 
@@ -2100,6 +2174,7 @@ namespace TetriNET2.Tests.Server
         public void TestPauseGameStatusUpdatedAndCallbacksCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2109,7 +2184,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
 
             bool succeed = game.PauseGame();
@@ -2132,6 +2206,7 @@ namespace TetriNET2.Tests.Server
         public void TestResumeGameFailedIfGameNotStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2141,7 +2216,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.ResumeGame();
 
@@ -2159,6 +2233,7 @@ namespace TetriNET2.Tests.Server
         public void TestResumeGameFailedIfGameNotPaused()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2168,7 +2243,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
 
             bool succeed = game.ResumeGame();
 
@@ -2186,6 +2260,7 @@ namespace TetriNET2.Tests.Server
         public void TestResumeGameStatusUpdatedAndCallbacksCalled()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2195,7 +2270,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             game.PauseGame();
 
@@ -2219,6 +2293,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinPlayerWhileGameStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2228,7 +2303,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             callback1.Reset();
             callback2.Reset();
@@ -2253,6 +2327,7 @@ namespace TetriNET2.Tests.Server
         public void TestJoinSpectatorWhileGameStarted()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource()); 
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2262,7 +2337,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             callback1.Reset();
             callback2.Reset();
@@ -2291,13 +2365,13 @@ namespace TetriNET2.Tests.Server
         public void TestLeavePlayingPlayerWhileGameStartedNoPlayingPlayerLeft()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource()); 
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
             game.Join(client2, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             callback1.Reset();
             callback2.Reset();
@@ -2319,6 +2393,7 @@ namespace TetriNET2.Tests.Server
         public void TestLeavePlayingPlayerWhileGameStartedOnePlayingPlayerLeft()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2328,7 +2403,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             callback1.Reset();
             callback2.Reset();
@@ -2353,6 +2427,7 @@ namespace TetriNET2.Tests.Server
         public void TestLeavePlayingPlayerWhileGameStartedMultiplePlayingPlayerLeft()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource()); 
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2362,7 +2437,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             callback1.Reset();
             callback2.Reset();
@@ -2392,10 +2466,10 @@ namespace TetriNET2.Tests.Server
         public void TestGameLostWithOnePlayingPlayer()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             callback1.Reset();
 
@@ -2416,6 +2490,7 @@ namespace TetriNET2.Tests.Server
         public void TestGameLostWithTwoPlayingPlayers()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2425,7 +2500,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, true);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             callback1.Reset();
             callback2.Reset();
@@ -2460,6 +2534,7 @@ namespace TetriNET2.Tests.Server
         public void TestGameLostWithMultiplePlayingPlayer()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
@@ -2469,7 +2544,6 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.Start(new CancellationTokenSource());
             game.StartGame();
             callback1.Reset();
             callback2.Reset();
@@ -2688,10 +2762,10 @@ namespace TetriNET2.Tests.Server
         public void TestClearLinesActionNotEnqueuedIfClassicMultiplayerRulesNotSet()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, false);
-            game.Start(new CancellationTokenSource());
             game.Options.ClassicStyleMultiplayerRules = false;
             game.StartGame();
 

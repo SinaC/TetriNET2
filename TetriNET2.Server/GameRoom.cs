@@ -140,6 +140,9 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Game {0} task not yet started", Name);
                 return false;
             }
+
+            State = GameRoomStates.Stopping;
+
             // Disable sudden death
             _isSuddenDeathActive = false;
             _suddenDeathTimer.Change(Timeout.Infinite, Timeout.Infinite);
@@ -174,6 +177,9 @@ namespace TetriNET2.Server
             // Reset piece
             _pieceProvider.Reset();
 
+            // Wait action queue stopped
+            _actionQueue.Wait(2000);
+
             // Reset special id
             _specialId = 0;
 
@@ -186,7 +192,11 @@ namespace TetriNET2.Server
         {
             if (client == null)
                 throw new ArgumentNullException("client");
-
+            if (State == GameRoomStates.Created || State == GameRoomStates.Stopping)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot join, game room {0} is not started(or stopping)", Name);
+                return false;
+            }
             if (!asSpectator && PlayerCount >= MaxPlayers)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Too many players in game room {0}", Name);

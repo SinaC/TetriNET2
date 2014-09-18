@@ -29,5 +29,9 @@ namespace TetriNET2.Common.DataContracts
         [EnumMember]
         [Description("Paused")]
         GamePaused, // -> GameStarted
+
+        [EnumMember]
+        [Description("Stopping")]
+        Stopping,
     }
 }

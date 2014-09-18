@@ -8,11 +8,11 @@ namespace TetriNET2.Tests.Server.Mocking
 {
     public sealed class HostMock : IHost
     {
-        public HostMock(IClientManager clientManager, IGameRoomManager gameRoomManager, IAdminManager adminManager)
+        public HostMock(IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
         {
             ClientManager = clientManager;
-            GameRoomManager = gameRoomManager;
             AdminManager = adminManager;
+            GameRoomManager = gameRoomManager;
         }
 
         #region IHost
