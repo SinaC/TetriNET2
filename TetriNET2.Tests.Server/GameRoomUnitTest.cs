@@ -2614,7 +2614,7 @@ namespace TetriNET2.Tests.Server
         {
             try
             {
-                IGameRoom game = CreateGameRoom(null, new PieceProviderMock(), "game1", 5, 5, GameRules.Classic, new GameOptions(), "password");
+                IGameRoom game = new GameRoom(null, new PieceProviderMock(), "game1", 5, 5, GameRules.Classic, new GameOptions(), "password");
 
                 Assert.Fail("Exception not thrown");
             }
@@ -2632,7 +2632,7 @@ namespace TetriNET2.Tests.Server
         {
             try
             {
-                IGameRoom game = CreateGameRoom(new ActionQueueMock(), null, "game1", 5, 5, GameRules.Classic, new GameOptions(), "password");
+                IGameRoom game = new GameRoom(new ActionQueueMock(), null, "game1", 5, 5, GameRules.Classic, new GameOptions(), "password");
 
                 Assert.Fail("Exception not thrown");
             }
@@ -2650,7 +2650,7 @@ namespace TetriNET2.Tests.Server
         {
             try
             {
-                IGameRoom game = CreateGameRoom(null, 5, 5, GameRules.Classic, new GameOptions(), "password");
+                IGameRoom game = new GameRoom(new ActionQueueMock(), new PieceProviderMock(), null, 5, 5, GameRules.Classic, new GameOptions(), "password");
 
                 Assert.Fail("Exception not thrown");
             }
@@ -2668,7 +2668,7 @@ namespace TetriNET2.Tests.Server
         {
             try
             {
-                IGameRoom game = CreateGameRoom("game1", 0, 5, GameRules.Classic, new GameOptions(), "password");
+                IGameRoom game = new GameRoom(new ActionQueueMock(), new PieceProviderMock(), "game1", 0, 5, GameRules.Classic, new GameOptions(), "password");
 
                 Assert.Fail("Exception not thrown");
             }
@@ -2686,7 +2686,7 @@ namespace TetriNET2.Tests.Server
         {
             try
             {
-                IGameRoom game = CreateGameRoom("game1", 5, 0, GameRules.Classic, new GameOptions(), "password");
+                IGameRoom game = new GameRoom(new ActionQueueMock(), new PieceProviderMock(), "game1", 5, 0, GameRules.Classic, new GameOptions(), "password");
 
                 Assert.Fail("Exception not thrown");
             }
@@ -2704,7 +2704,7 @@ namespace TetriNET2.Tests.Server
         {
             try
             {
-                IGameRoom game = CreateGameRoom("game1", 5, 5, GameRules.Classic, null, "password");
+                IGameRoom game = new GameRoom(new ActionQueueMock(), new PieceProviderMock(), "game1", 5, 5, GameRules.Classic, null, "password");
 
                 Assert.Fail("Exception not thrown");
             }
@@ -2727,7 +2727,7 @@ namespace TetriNET2.Tests.Server
             const string password = "password";
             GameOptions options = new GameOptions();
 
-            IGameRoom game = CreateGameRoom(name, maxPlayers, maxSpectators, rule, options, password);
+            IGameRoom game = new GameRoom(new ActionQueueMock(), new PieceProviderMock(), name, maxPlayers, maxSpectators, rule, options, password);
 
             Assert.IsNotNull(game);
             Assert.AreEqual(name, game.Name);
@@ -2746,7 +2746,7 @@ namespace TetriNET2.Tests.Server
         [TestMethod]
         public void TestConstructorLockObjectNotNull()
         {
-            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, new GameOptions());
+            IGameRoom game = new GameRoom(new ActionQueueMock(), new PieceProviderMock(), "game1", 5, 10, GameRules.Custom, new GameOptions());
 
             Assert.IsNotNull(game.LockObject);
         }

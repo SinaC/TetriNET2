@@ -78,6 +78,9 @@ namespace TetriNET2.Server
 
         public bool AddHost(IHost host)
         {
+            if (host == null)
+                throw new ArgumentNullException("host");
+
             if (_hosts.Any(x => x == host))
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Host already added");
@@ -271,62 +274,6 @@ namespace TetriNET2.Server
 
         #endregion
 
-        private void OnClientConnectLost(IClient client)
-        {
-            OnClientLeft(client, LeaveReasons.ConnectionLost);
-        }
-
-        private void OnAdminConnectLost(IAdmin admin)
-        {
-            OnAdminLeft(admin, LeaveReasons.ConnectionLost);
-        }
-
-        private void OnClientLeft(IClient client, LeaveReasons reason)
-        {
-            // Remove from game room
-            IGameRoom game = client.Game;
-            if (game != null)
-            {
-                lock(game.LockObject)
-                    game.Leave(client);
-            }
-
-            // Remove from client manager
-            lock(_clientManager.LockObject)
-                _clientManager.Remove(client);
-
-            // Inform client
-            client.OnDisconnected();
-
-            // Inform clients and admins
-            foreach(IClient target in _clientManager.Clients) // no need to check on client, already removed from collection
-                target.OnClientDisconnected(client.Id, reason);
-            foreach(IAdmin admin in _adminManager.Admins)
-                admin.OnClientDisconnected(client.Id, reason);
-
-            // Hosts
-            foreach (IHost host in _hosts)
-                host.RemoveClient(client);
-        }
-
-        private void OnAdminLeft(IAdmin admin, LeaveReasons reason)
-        {
-            // Remove from admin manager
-            lock (_adminManager.LockObject)
-                _adminManager.Remove(admin);
-
-            // Inform admin
-            admin.OnDisconnected();
-
-            // Inform other admins
-            foreach(IAdmin other in _adminManager.Admins) // no need to check on admin, already removed from collection
-                other.OnAdminDisconnected(admin.Id, reason);
-
-            // Hosts
-            foreach (IHost host in _hosts)
-                host.RemoveAdmin(admin);
-        }
-
         #region IHost events handler
 
         // Client
@@ -383,7 +330,7 @@ namespace TetriNET2.Server
                                         Players = r.Players.Select(p => p.Name).ToList(),
                                     }).ToList();
                             // Handle connection lost
-                            client.ConnectionLost += OnClientConnectLost;
+                            client.ConnectionLost += OnClientConnectionLost;
                             // Inform client about connection succeed
                             client.OnConnected(result, Version, client.Id, games);
                             // Client is alive
@@ -872,6 +819,8 @@ namespace TetriNET2.Server
         // Admin
         private void OnAdminConnect(ITetriNETAdminCallback callback, IPAddress address, Versioning version, string name, string password)
         {
+            // TODO: check password
+
             Log.Default.WriteLine(LogLevels.Info, "Connect admin {0}[1] {2}.{3}", name, address == null ? "???" : address.ToString(), version == null ? -1 : version.Major, version == null ? -1 : version.Minor);
 
             ConnectResults result = ConnectResults.Successfull;
@@ -914,7 +863,7 @@ namespace TetriNET2.Server
                         else
                         {
                             // Handle connection lost
-                            admin.ConnectionLost += OnAdminConnectLost;
+                            admin.ConnectionLost += OnAdminConnectionLost;
                             // Inform admin about connection succeed
                             admin.OnConnected(result, Version, admin.Id);
                             // Send message to other admins
@@ -1153,6 +1102,62 @@ namespace TetriNET2.Server
         }
 
         #endregion
+        
+        private void OnClientConnectionLost(IClient client)
+        {
+            OnClientLeft(client, LeaveReasons.ConnectionLost);
+        }
+
+        private void OnAdminConnectionLost(IAdmin admin)
+        {
+            OnAdminLeft(admin, LeaveReasons.ConnectionLost);
+        }
+
+        private void OnClientLeft(IClient client, LeaveReasons reason)
+        {
+            // Remove from game room
+            IGameRoom game = client.Game;
+            if (game != null)
+            {
+                lock (game.LockObject)
+                    game.Leave(client);
+            }
+
+            // Remove from client manager
+            lock (_clientManager.LockObject)
+                _clientManager.Remove(client);
+
+            // Inform client
+            client.OnDisconnected();
+
+            // Inform clients and admins
+            foreach (IClient target in _clientManager.Clients) // no need to check on client, already removed from collection
+                target.OnClientDisconnected(client.Id, reason);
+            foreach (IAdmin admin in _adminManager.Admins)
+                admin.OnClientDisconnected(client.Id, reason);
+
+            // Hosts
+            foreach (IHost host in _hosts)
+                host.RemoveClient(client);
+        }
+
+        private void OnAdminLeft(IAdmin admin, LeaveReasons reason)
+        {
+            // Remove from admin manager
+            lock (_adminManager.LockObject)
+                _adminManager.Remove(admin);
+
+            // Inform admin
+            admin.OnDisconnected();
+
+            // Inform other admins
+            foreach (IAdmin other in _adminManager.Admins) // no need to check on admin, already removed from collection
+                other.OnAdminDisconnected(admin.Id, reason);
+
+            // Hosts
+            foreach (IHost host in _hosts)
+                host.RemoveAdmin(admin);
+        }
 
         private void RestartCallback(object state)
         {
@@ -1298,6 +1303,5 @@ namespace TetriNET2.Server
             }
             return true;
         }
-
     }
 }

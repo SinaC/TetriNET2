@@ -289,7 +289,7 @@ namespace TetriNET2.Tests.Server.Mocking
         public void AdminConnect(ITetriNETAdminCallback callback, Versioning version, string name, string password)
         {
             if (HostAdminConnect != null)
-                HostAdminConnect(callback, null, version, name, password);
+                HostAdminConnect(callback, IPAddress.Any, version, name, password);
         }
 
         public void AdminDisconnect(ITetriNETAdminCallback callback)

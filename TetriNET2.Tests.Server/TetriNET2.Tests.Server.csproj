@@ -56,7 +56,10 @@
     <Compile Include="ClientUnitTest.cs" />
     <Compile Include="GameRoomManagerUnitTest.cs" />
     <Compile Include="GameRoomUnitTest.cs" />
+    <Compile Include="Helpers\EventChecker.cs" />
     <Compile Include="Mocking\ActionQueueMock.cs" />
+    <Compile Include="Mocking\AdminMock.cs" />
+    <Compile Include="Mocking\ClientMock.cs" />
     <Compile Include="Mocking\CountCallTetriNETAdminCallback.cs" />
     <Compile Include="Mocking\CountCallTetriNETCallback.cs" />
     <Compile Include="Mocking\HostMock.cs" />
