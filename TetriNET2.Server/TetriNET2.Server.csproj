@@ -53,6 +53,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Interfaces\IHost\IHost.cs" />
+    <Compile Include="Interfaces\IHost\ITetriNETAdminHost.cs" />
+    <Compile Include="Interfaces\IHost\ITetriNETHost.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Admin.cs" />
     <Compile Include="AdminManager.cs" />
@@ -69,11 +72,14 @@
     <Compile Include="Interfaces\IFactory.cs" />
     <Compile Include="Interfaces\IGameRoom.cs" />
     <Compile Include="Interfaces\IGameRoomManager.cs" />
-    <Compile Include="Interfaces\IHost.cs" />
+    <Compile Include="Interfaces\IHost_OLD.cs" />
     <Compile Include="Interfaces\IPieceProvider.cs" />
     <Compile Include="Interfaces\IServer.cs" />
     <Compile Include="PieceBag.cs" />
     <Compile Include="Server.cs" />
+    <Compile Include="WCFHost\WCFHost.cs" />
+    <Compile Include="WCFHost\WCFTetriNETAdminHost.cs" />
+    <Compile Include="WCFHost\WCFTetriNETHost.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

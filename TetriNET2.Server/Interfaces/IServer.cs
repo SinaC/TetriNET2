@@ -19,7 +19,7 @@ namespace TetriNET2.Server.Interfaces
         ServerStates State { get; }
         Versioning Version { get; }
 
-        bool AddHost(IHost host);
+        bool AddHost(IHost.IHost host);
 
         bool SetVersion(int major, int minor);
 

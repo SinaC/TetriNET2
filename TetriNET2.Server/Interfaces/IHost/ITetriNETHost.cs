@@ -2,7 +2,7 @@
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 
-namespace TetriNET2.Server.Interfaces
+namespace TetriNET2.Server.Interfaces.IHost
 {
     // ------
     // Client
@@ -43,32 +43,7 @@ namespace TetriNET2.Server.Interfaces
     public delegate void HostClientFinishContinuousSpecialEventHandler(IClient client, Specials special);
     public delegate void HostClientEarnAchievementEventHandler(IClient client, int achievementId, string achievementTitle);
 
-    // ------
-    // Admin
-    // Connect/Disconnect
-    public delegate void HostAdminConnectEventHandler(ITetriNETAdminCallback callback, IPAddress address, Versioning version, string name, string password);
-    public delegate void HostAdminDisconnectEventHandler(IAdmin admin);
-
-    // Messaging
-    public delegate void HostAdminSendPrivateAdminMessageEventHandler(IAdmin admin, IAdmin target, string message);
-    public delegate void HostAdminSendPrivateMessageEventHandler(IAdmin admin, IClient target, string message);
-    public delegate void HostAdminSendBroadcastMessageEventHandler(IAdmin admin, string message);
-
-    // Monitoring
-    public delegate void HostAdminGetAdminListEventHandler(IAdmin admin);
-    public delegate void HostAdminGetClientListEventHandler(IAdmin admin);
-    public delegate void HostAdminGetClientListInRoomEventHandler(IAdmin admin, IGameRoom room);
-    public delegate void HostAdminGetRoomListEventHandler(IAdmin admin);
-    public delegate void HostAdminGetBannedListEventHandler(IAdmin admin);
-
-    // Kick/Ban
-    public delegate void HostAdminKickEventHandler(IAdmin admin, IClient target, string reason);
-    public delegate void HostAdminBanEventHandler(IAdmin admin, IClient target, string reason);
-    
-    // Server commands
-    public delegate void HostAdminRestartServerEventHandler(IAdmin admin, int seconds);
-
-    public interface IHost : ITetriNET, ITetriNETAdmin
+    public partial interface IHost : ITetriNET
     {
         // ------
         // Client
@@ -108,47 +83,5 @@ namespace TetriNET2.Server.Interfaces
         event HostClientGameLostEventHandler HostClientGameLost;
         event HostClientFinishContinuousSpecialEventHandler HostClientFinishContinuousSpecial;
         event HostClientEarnAchievementEventHandler HostClientEarnAchievement;
-
-        // ------
-        // Admin
-        // Connect/Disconnect
-        event HostAdminConnectEventHandler HostAdminConnect;
-        event HostAdminDisconnectEventHandler HostAdminDisconnect;
-
-        // Messaging
-        event HostAdminSendPrivateAdminMessageEventHandler HostAdminSendPrivateAdminMessage;
-        event HostAdminSendPrivateMessageEventHandler HostAdminSendPrivateMessage;
-        event HostAdminSendBroadcastMessageEventHandler HostAdminSendBroadcastMessage;
-
-        // Monitoring
-        event HostAdminGetAdminListEventHandler HostAdminGetAdminList;
-        event HostAdminGetClientListEventHandler HostAdminGetClientList;
-        event HostAdminGetClientListInRoomEventHandler HostAdminGetClientListInRoom;
-        event HostAdminGetRoomListEventHandler HostAdminGetRoomList;
-        event HostAdminGetBannedListEventHandler HostAdminGetBannedList;
-
-        // Kick/Ban
-        event HostAdminKickEventHandler HostAdminKick;
-        event HostAdminBanEventHandler HostAdminBan;
-
-        // Server commands
-        event HostAdminRestartServerEventHandler HostAdminRestartServer;
-
-        //
-        IClientManager ClientManager { get; }
-        IAdminManager AdminManager { get; }
-        IGameRoomManager GameRoomManager { get; }
-
-        //
-        void Start();
-        void Stop();
-
-        // Called when a client/admin/room is removed from client/admin/room manager
-        void AddClient(IClient added);
-        void AddAdmin(IAdmin added);
-        void AddGameRoom(IGameRoom added);
-        void RemoveClient(IClient removed);
-        void RemoveAdmin(IAdmin removed);
-        void RemoveGameRoom(IGameRoom removed);
     }
 }

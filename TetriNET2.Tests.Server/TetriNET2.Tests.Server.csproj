@@ -71,6 +71,7 @@
     <Compile Include="PieceProviderUnitTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServerUnitTest.cs" />
+    <Compile Include="WCFTetriNETAdminHost.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\TetriNET2.Common\TetriNET2.Common.csproj">

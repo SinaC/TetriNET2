@@ -4,20 +4,16 @@ using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces;
 using TetriNET2.Server.Interfaces.IHost;
-using TetriNET2.Tests.Server.ClientSide;
 
-namespace TetriNET2.Tests.Server.Mocking
+namespace TetriNET2.Server.WCFHost
 {
-    public sealed class HostMock : IHost
+    public partial class WCFHost : IHost
     {
-        public HostMock(IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
+        public partial class WCFServiceHost
         {
-            ClientManager = clientManager;
-            AdminManager = adminManager;
-            GameRoomManager = gameRoomManager;
         }
 
-        #region IHost
+        #region ITetriNETHost
 
         public event HostClientConnectEventHandler HostClientConnect;
         public event HostClientDisconnectEventHandler HostClientDisconnect;
@@ -44,65 +40,6 @@ namespace TetriNET2.Tests.Server.Mocking
         public event HostClientGameLostEventHandler HostClientGameLost;
         public event HostClientFinishContinuousSpecialEventHandler HostClientFinishContinuousSpecial;
         public event HostClientEarnAchievementEventHandler HostClientEarnAchievement;
-        public event HostAdminConnectEventHandler HostAdminConnect;
-        public event HostAdminDisconnectEventHandler HostAdminDisconnect;
-        public event HostAdminSendPrivateAdminMessageEventHandler HostAdminSendPrivateAdminMessage;
-        public event HostAdminSendPrivateMessageEventHandler HostAdminSendPrivateMessage;
-        public event HostAdminSendBroadcastMessageEventHandler HostAdminSendBroadcastMessage;
-        public event HostAdminGetAdminListEventHandler HostAdminGetAdminList;
-        public event HostAdminGetClientListEventHandler HostAdminGetClientList;
-        public event HostAdminGetClientListInRoomEventHandler HostAdminGetClientListInRoom;
-        public event HostAdminGetRoomListEventHandler HostAdminGetRoomList;
-        public event HostAdminGetBannedListEventHandler HostAdminGetBannedList;
-        public event HostAdminKickEventHandler HostAdminKick;
-        public event HostAdminBanEventHandler HostAdminBan;
-        public event HostAdminRestartServerEventHandler HostAdminRestartServer;
-
-        public IClientManager ClientManager { get; private set; }
-        public IGameRoomManager GameRoomManager { get; private set; }
-        public IAdminManager AdminManager { get; private set; }
-
-        public void Start()
-        {
-            // NOP
-        }
-
-        public void Stop()
-        {
-            // NOP
-        }
-
-        public void AddClient(IClient added)
-        {
-            // NOP
-        }
-
-        public void AddAdmin(IAdmin added)
-        {
-            // NOP
-        }
-
-        public void AddGameRoom(IGameRoom added)
-        {
-            // NOP
-        }
-
-        public void RemoveClient(IClient removed)
-        {
-            // NOP
-        }
-
-        public void RemoveAdmin(IAdmin removed)
-        {
-            // NOP
-        }
-
-        public void RemoveGameRoom(IGameRoom removed)
-        {
-            // NOP
-        }
-
-        #endregion
 
         #region ITetriNET
 
@@ -110,10 +47,7 @@ namespace TetriNET2.Tests.Server.Mocking
         {
             if (HostClientConnect != null)
             {
-                IPAddress address = null;
-                if (callback is ClientFake)
-                    address = (callback as ClientFake).Address;
-                HostClientConnect(callback, address ?? IPAddress.Any, version, name, team);
+                HostClientConnect(callback, IPAddress.Any, version, name, team); // TODO
             }
         }
 
@@ -291,109 +225,6 @@ namespace TetriNET2.Tests.Server.Mocking
 
         #endregion
 
-        #region ITetriNETAdmin
-
-        public void AdminConnect(ITetriNETAdminCallback callback, Versioning version, string name, string password)
-        {
-            if (HostAdminConnect != null)
-            {
-                IPAddress address = null;
-                if (callback is AdminFake)
-                    address = (callback as AdminFake).Address;
-
-                HostAdminConnect(callback, address ?? IPAddress.Any, version, name, password);
-            }
-        }
-
-        public void AdminDisconnect(ITetriNETAdminCallback callback)
-        {
-            IAdmin admin = AdminManager[callback];
-            if (admin != null && HostAdminDisconnect != null)
-                HostAdminDisconnect(admin);
-        }
-
-        public void AdminSendPrivateAdminMessage(ITetriNETAdminCallback callback, Guid targetAdminId, string message)
-        {
-            IAdmin admin = AdminManager[callback];
-            IAdmin target = AdminManager[targetAdminId];
-            if (admin != null && target != null && HostAdminSendPrivateAdminMessage != null)
-                HostAdminSendPrivateAdminMessage(admin, target, message);
-        }
-
-        public void AdminSendPrivateMessage(ITetriNETAdminCallback callback, Guid targetClientId, string message)
-        {
-            IAdmin admin = AdminManager[callback];
-            IClient target = ClientManager[targetClientId];
-            if (admin != null && HostAdminSendPrivateMessage != null)
-                HostAdminSendPrivateMessage(admin, target, message);
-        }
-
-        public void AdminSendBroadcastMessage(ITetriNETAdminCallback callback, string message)
-        {
-            IAdmin admin = AdminManager[callback];
-            if (admin != null && HostAdminSendBroadcastMessage != null)
-                HostAdminSendBroadcastMessage(admin, message);
-        }
-
-        public void AdminGetAdminList(ITetriNETAdminCallback callback)
-        {
-            IAdmin admin = AdminManager[callback];
-            if (admin != null && HostAdminGetAdminList != null)
-                HostAdminGetAdminList(admin);
-        }
-
-        public void AdminGetClientList(ITetriNETAdminCallback callback)
-        {
-            IAdmin admin = AdminManager[callback];
-            if (admin != null && HostAdminGetClientList != null)
-                HostAdminGetClientList(admin);
-        }
-
-        public void AdminGetClientListInRoom(ITetriNETAdminCallback callback, Guid roomId)
-        {
-            IAdmin admin = AdminManager[callback];
-            IGameRoom game = GameRoomManager[roomId];
-            if (admin != null && game != null && HostAdminGetClientListInRoom != null)
-                HostAdminGetClientListInRoom(admin, game);
-        }
-
-        public void AdminGetRoomList(ITetriNETAdminCallback callback)
-        {
-            IAdmin admin = AdminManager[callback];
-            if (admin != null && HostAdminGetRoomList != null)
-                HostAdminGetRoomList(admin);
-        }
-
-        public void AdminGetBannedList(ITetriNETAdminCallback callback)
-        {
-            IAdmin admin = AdminManager[callback];
-            if (admin != null && HostAdminGetBannedList != null)
-                HostAdminGetBannedList(admin);
-        }
-
-        public void AdminKick(ITetriNETAdminCallback callback, Guid targetId, string reason)
-        {
-            IAdmin admin = AdminManager[callback];
-            IClient target = ClientManager[targetId];
-            if (admin != null && target != null && HostAdminKick != null)
-                HostAdminKick(admin, target, reason);
-        }
-
-        public void AdminBan(ITetriNETAdminCallback callback, Guid targetId, string reason)
-        {
-            IAdmin admin = AdminManager[callback];
-            IClient target = ClientManager[targetId];
-            if (admin != null && target != null && HostAdminBan != null)
-                HostAdminBan(admin, target, reason);
-        }
-
-        public void AdminRestartServer(ITetriNETAdminCallback callback, int seconds)
-        {
-            IAdmin admin = AdminManager[callback];
-            if (admin != null && HostAdminRestartServer != null)
-                HostAdminRestartServer(admin, seconds);
-        }
-
-        #endregion
+        #endregion      
     }
 }

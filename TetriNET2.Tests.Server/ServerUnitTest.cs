@@ -8,6 +8,7 @@ using TetriNET2.Common.DataContracts;
 using TetriNET2.Common.Logger;
 using TetriNET2.Server;
 using TetriNET2.Server.Interfaces;
+using TetriNET2.Server.Interfaces.IHost;
 using TetriNET2.Tests.Server.ClientSide;
 using TetriNET2.Tests.Server.Helpers;
 using TetriNET2.Tests.Server.Mocking;

@@ -8,6 +8,7 @@ using TetriNET2.Common.DataContracts;
 using TetriNET2.Common.Logger;
 using TetriNET2.Common.Randomizer;
 using TetriNET2.Server.Interfaces;
+using TetriNET2.Server.Interfaces.IHost;
 
 namespace TetriNET2.Server.ConsoleApp
 {
