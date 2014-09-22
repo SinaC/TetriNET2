@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Common.Contracts
@@ -6,7 +7,7 @@ namespace TetriNET2.Common.Contracts
     public interface ITetriNETAdmin
     {
         // Connect/disconnect
-        void AdminConnect(ITetriNETAdminCallback callback, Versioning version, string name, string password);
+        void AdminConnect(ITetriNETAdminCallback callback, IPAddress address, Versioning version, string name, string password);
         void AdminDisconnect(ITetriNETAdminCallback callback);
 
         // Messaging

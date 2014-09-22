@@ -17,7 +17,8 @@ namespace TetriNET2.Common.Helpers
             return evaluator(o);
         }
 
-        public static TResult Return<TInput, TResult>(this TInput o, [InstantHandle] Func<TInput, TResult> evaluator, TResult failureValue) where TInput : class
+        public static TResult Return<TInput, TResult>(this TInput o, [InstantHandle] Func<TInput, TResult> evaluator, TResult failureValue) 
+            where TInput : class
         {
             if (o == null)
                 return failureValue;
@@ -40,7 +41,8 @@ namespace TetriNET2.Common.Helpers
             return evaluator(o) ? null : o;
         }
 
-        public static TInput Do<TInput>(this TInput o, [InstantHandle] Action<TInput> action) where TInput : class
+        public static TInput Do<TInput>(this TInput o, [InstantHandle] Action<TInput> action) 
+            where TInput : class
         {
             if (o == null)
                 return null;

@@ -30,7 +30,7 @@ namespace TetriNET2.Server.ConsoleApp
         private static void Main(string[] args)
         {
             Log.Default.Logger = new NLogger();
-            Log.Default.Initialize(@"D:\TEMP\LOGS\", "TETRINET2_SERVER.LOG");
+            Log.Default.Initialize(@"D:\TEMP\LOG\", "TETRINET2_SERVER.LOG");
 
             IFactory factory = new Factory();
             IBanManager banManager = new BanManager(@"D:\TEMP\ban.lst");
@@ -38,12 +38,19 @@ namespace TetriNET2.Server.ConsoleApp
             IAdminManager adminManager = new AdminManager(5);
             IGameRoomManager gameRoomManager = new GameRoomManager(10);
 
-            IHost dummyHost = new DummyHost(clientManager, adminManager, gameRoomManager);
+            IHost dummyHost = new DummyHost(banManager, clientManager, adminManager, gameRoomManager);
             List<DummyClient> dummyClients = new List<DummyClient>();
 
+            IHost wcfHost = new WCFHost.WCFHost(banManager, clientManager, adminManager, gameRoomManager)
+                {
+                    Port = 7788
+                };
 
             IServer server = new Server(factory, banManager, clientManager, adminManager, gameRoomManager);
+            
             server.AddHost(dummyHost);
+            server.AddHost(wcfHost);
+
             server.PerformRestartServer += ServerOnPerformRestartServer;
 
             //
@@ -87,7 +94,7 @@ namespace TetriNET2.Server.ConsoleApp
                         case ConsoleKey.Add:
                         {
                             DummyClient dummyClient = new DummyClient(dummyHost, "BuiltIn-" + Guid.NewGuid().ToString().Substring(0, 5), "DUMMY", new Versioning { Major = 1, Minor = 0}, IPAddress.Any);
-                            dummyHost.ClientConnect(dummyClient, dummyClient.Versioning, dummyClient.Name, dummyClient.Team);
+                            dummyHost.ClientConnect(dummyClient, dummyClient.Address, dummyClient.Versioning, dummyClient.Name, dummyClient.Team);
                             dummyClients.Add(dummyClient);
                             break;
                         }
@@ -108,10 +115,13 @@ namespace TetriNET2.Server.ConsoleApp
                         case ConsoleKey.D:
                             Console.WriteLine("Clients:");
                             foreach (IClient client in clientManager.Clients)
-                                Console.WriteLine("{0}) {1} [{2}] {3} {4} {5:HH:mm:ss.fff} {6:HH:mm:ss.fff}", client.Id, client.Name, client.Team, client.State, client.PieceIndex, client.LastActionFromClient, client.LastActionToClient);
-                            Console.WriteLine("Admin:");
+                                Console.WriteLine("{0}) {1} [{2}] {3} {4} {5} {6:HH:mm:ss.fff} {7:HH:mm:ss.fff}", client.Id, client.Name, client.Team, client.State, client.Game == null ? "no in game" : client.Game.Name, client.PieceIndex, client.LastActionFromClient, client.LastActionToClient);
+                            Console.WriteLine("Admins:");
                             foreach (IAdmin admin in adminManager.Admins)
                                 Console.WriteLine("{0}) {1}", admin.Id, admin.Name);
+                            Console.WriteLine("Rooms:");
+                            foreach(IGameRoom room in gameRoomManager.Rooms)
+                                Console.WriteLine("{0}) {1} {2} {3} #players:{4} #spectators:{5}  password:{6} {7:HH:mm:ss}", room.Id, room.Name, room.State, room.Rule, room.PlayerCount, room.SpectatorCount, room.Password, room.CreationTime);
                             break;
                     }
                 }

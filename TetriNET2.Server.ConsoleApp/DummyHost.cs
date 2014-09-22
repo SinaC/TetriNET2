@@ -9,8 +9,9 @@ namespace TetriNET2.Server.ConsoleApp
 {
     public class DummyHost : IHost
     {
-        public DummyHost(IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
+        public DummyHost(IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
         {
+            BanManager = banManager;
             ClientManager = clientManager;
             AdminManager = adminManager;
             GameRoomManager = gameRoomManager;
@@ -57,6 +58,7 @@ namespace TetriNET2.Server.ConsoleApp
         public event HostAdminBanEventHandler HostAdminBan;
         public event HostAdminRestartServerEventHandler HostAdminRestartServer;
 
+        public IBanManager BanManager { get; private set; }
         public IClientManager ClientManager { get; private set; }
         public IGameRoomManager GameRoomManager { get; private set; }
         public IAdminManager AdminManager { get; private set; }
@@ -105,10 +107,10 @@ namespace TetriNET2.Server.ConsoleApp
 
         #region ITetriNET
 
-        public void ClientConnect(ITetriNETCallback callback, Versioning version, string name, string team)
+        public void ClientConnect(ITetriNETCallback callback, IPAddress address, Versioning version, string name, string team)
         {
             if (HostClientConnect != null)
-                HostClientConnect(callback, IPAddress.Any, version, name, team);
+                HostClientConnect(callback, address, version, name, team);
         }
 
         public void ClientDisconnect(ITetriNETCallback callback)
@@ -287,10 +289,10 @@ namespace TetriNET2.Server.ConsoleApp
 
         #region ITetriNETAdmin
 
-        public void AdminConnect(ITetriNETAdminCallback callback, Versioning version, string name, string password)
+        public void AdminConnect(ITetriNETAdminCallback callback, IPAddress address, Versioning version, string name, string password)
         {
             if (HostAdminConnect != null)
-                HostAdminConnect(callback, null, version, name, password);
+                HostAdminConnect(callback, address, version, name, password);
         }
 
         public void AdminDisconnect(ITetriNETAdminCallback callback)

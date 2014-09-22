@@ -280,12 +280,15 @@ namespace TetriNET2.Server
         // Client
         private void OnClientConnect(ITetriNETCallback callback, IPAddress address, Versioning version, string name, string team)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Connect client {0}[1] {2}.{3}", name, address == null ? "???" : address.ToString(), version == null ? -1 : version.Major, version == null ? -1 : version.Minor);
+            Log.Default.WriteLine(LogLevels.Info, "Connect client {0}[{1}] {2}.{3}", name, address == null ? "???" : address.ToString(), version == null ? -1 : version.Major, version == null ? -1 : version.Minor);
 
             ConnectResults result = ConnectResults.Successfull;
 
             if (version == null || Version.Major != version.Major || Version.Minor != version.Minor)
+            {
                 result = ConnectResults.FailedIncompatibleVersion;
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] server version {2}.{3} is incompatible", name, address == null ? "???" : address.ToString(), Version.Major, Version.Minor);
+            }
             else
             {
                 lock (_clientManager.LockObject)
@@ -345,7 +348,7 @@ namespace TetriNET2.Server
                                 foreach (IAdmin target in _adminManager.Admins)
                                     target.OnClientConnected(client.Id, client.Name, client.Team);
                             // Hosts
-                            foreach(IHost host in _hosts)
+                            foreach (IHost host in _hosts)
                                 host.AddClient(client);
                             //
                             Log.Default.WriteLine(LogLevels.Info, "Connect Client {0}[{1}] succeed", name, address == null ? "???" : address.ToString());
@@ -1116,6 +1119,8 @@ namespace TetriNET2.Server
 
         private void OnClientLeft(IClient client, LeaveReasons reason)
         {
+            Log.Default.WriteLine(LogLevels.Info, "Client left:{0} {1}", client.Name, reason);
+
             // Remove from game room
             IGameRoom game = client.Game;
             if (game != null)
@@ -1128,8 +1133,8 @@ namespace TetriNET2.Server
             lock (_clientManager.LockObject)
                 _clientManager.Remove(client);
 
-            // Inform client
-            client.OnDisconnected();
+            //// Inform client   TODO: should be done only if connection is still valid, otherwise recursive call via ExceptionFreeAction
+            //client.OnDisconnected();
 
             // Inform clients and admins
             foreach (IClient target in _clientManager.Clients) // no need to check on client, already removed from collection
@@ -1144,6 +1149,8 @@ namespace TetriNET2.Server
 
         private void OnAdminLeft(IAdmin admin, LeaveReasons reason)
         {
+            Log.Default.WriteLine(LogLevels.Info, "Admin left:{0} {1}", admin.Name, reason);
+
             // Remove from admin manager
             lock (_adminManager.LockObject)
                 _adminManager.Remove(admin);
@@ -1162,6 +1169,8 @@ namespace TetriNET2.Server
 
         private void RestartCallback(object state)
         {
+            Log.Default.WriteLine(LogLevels.Info, "RestartCallback: Seconds left:{0} IsRestartRunning:{1}", _restartSecondLeft, _isRestartRunning);
+
             // Final countdown
             if (_restartSecondLeft <= 0) // Let's restart
             {
@@ -1205,29 +1214,29 @@ namespace TetriNET2.Server
                     // TODO: don't check every client on each loop, should test 10 by 10
                     // Check client timeout + send heartbeat if needed
                     timeoutClients.Clear();
+                    List<IClient> clients;
                     lock (_clientManager.LockObject)
+                        clients = _clientManager.Clients.ToList();
+                    foreach (IClient client in clients)
                     {
-                        foreach (IClient client in _clientManager.Clients)
+                        // Check client timeout
+                        TimeSpan timespan = DateTime.Now - client.LastActionFromClient;
+                        if (timespan.TotalMilliseconds > TimeoutDelay && IsTimeoutDetectionActive)
                         {
-                            // Check client timeout
-                            TimeSpan timespan = DateTime.Now - client.LastActionFromClient;
-                            if (timespan.TotalMilliseconds > TimeoutDelay && IsTimeoutDetectionActive)
+                            Log.Default.WriteLine(LogLevels.Info, "Timeout++ for client {0}", client.Name);
+                            // Update timeout count
+                            client.SetTimeout();
+                            if (client.TimeoutCount >= MaxTimeoutCountBeforeDisconnection)
                             {
-                                Log.Default.WriteLine(LogLevels.Info, "Timeout++ for client {0}", client.Name);
-                                // Update timeout count
-                                client.SetTimeout();
-                                if (client.TimeoutCount >= MaxTimeoutCountBeforeDisconnection)
-                                {
-                                    Log.Default.WriteLine(LogLevels.Info, "Max Timeout count reached for client {0} -> disconnect", client.Name);
-                                    timeoutClients.Add(client);
-                                }
+                                Log.Default.WriteLine(LogLevels.Info, "Max Timeout count reached for client {0} -> disconnect", client.Name);
+                                timeoutClients.Add(client);
                             }
-
-                            // Send heartbeat if needed
-                            TimeSpan delayFromPreviousHeartbeat = DateTime.Now - client.LastActionToClient;
-                            if (delayFromPreviousHeartbeat.TotalMilliseconds > HeartbeatDelay)
-                                client.OnHeartbeatReceived();
                         }
+
+                        // Send heartbeat if needed
+                        TimeSpan delayFromPreviousHeartbeat = DateTime.Now - client.LastActionToClient;
+                        if (delayFromPreviousHeartbeat.TotalMilliseconds > HeartbeatDelay)
+                            client.OnHeartbeatReceived(); // -> this could fail and remove client from client manager
                     }
                     // Remove timeout clients if any
                     if (timeoutClients.Any())

@@ -474,7 +474,7 @@ namespace TetriNET2.Tests.Server
 
         protected override HostMock CreateHost()
         {
-            return new HostMock(ClientManager, AdminManager, GameRoomManager);
+            return new HostMock(BanManager, ClientManager, AdminManager, GameRoomManager);
         }
 
         protected override ClientFake CreateClientFake(IHost host, string name, Versioning version, IPAddress address = null, string team = null)

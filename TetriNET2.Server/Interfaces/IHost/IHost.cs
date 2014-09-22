@@ -3,6 +3,7 @@
     public partial interface IHost
     {
         //
+        IBanManager BanManager { get; }
         IClientManager ClientManager { get; }
         IAdminManager AdminManager { get; }
         IGameRoomManager GameRoomManager { get; }

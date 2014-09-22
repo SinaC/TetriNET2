@@ -4,14 +4,14 @@ using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces;
 using TetriNET2.Server.Interfaces.IHost;
-using TetriNET2.Tests.Server.ClientSide;
 
 namespace TetriNET2.Tests.Server.Mocking
 {
     public sealed class HostMock : IHost
     {
-        public HostMock(IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
+        public HostMock(IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
         {
+            BanManager = banManager;
             ClientManager = clientManager;
             AdminManager = adminManager;
             GameRoomManager = gameRoomManager;
@@ -58,6 +58,7 @@ namespace TetriNET2.Tests.Server.Mocking
         public event HostAdminBanEventHandler HostAdminBan;
         public event HostAdminRestartServerEventHandler HostAdminRestartServer;
 
+        public IBanManager BanManager { get; private set; }
         public IClientManager ClientManager { get; private set; }
         public IGameRoomManager GameRoomManager { get; private set; }
         public IAdminManager AdminManager { get; private set; }
@@ -106,14 +107,11 @@ namespace TetriNET2.Tests.Server.Mocking
 
         #region ITetriNET
 
-        public void ClientConnect(ITetriNETCallback callback, Versioning version, string name, string team)
+        public void ClientConnect(ITetriNETCallback callback, IPAddress address, Versioning version, string name, string team)
         {
             if (HostClientConnect != null)
             {
-                IPAddress address = null;
-                if (callback is ClientFake)
-                    address = (callback as ClientFake).Address;
-                HostClientConnect(callback, address ?? IPAddress.Any, version, name, team);
+                HostClientConnect(callback, address, version, name, team);
             }
         }
 
@@ -293,16 +291,10 @@ namespace TetriNET2.Tests.Server.Mocking
 
         #region ITetriNETAdmin
 
-        public void AdminConnect(ITetriNETAdminCallback callback, Versioning version, string name, string password)
+        public void AdminConnect(ITetriNETAdminCallback callback, IPAddress address, Versioning version, string name, string password)
         {
             if (HostAdminConnect != null)
-            {
-                IPAddress address = null;
-                if (callback is AdminFake)
-                    address = (callback as AdminFake).Address;
-
-                HostAdminConnect(callback, address ?? IPAddress.Any, version, name, password);
-            }
+                HostAdminConnect(callback, address, version, name, password);
         }
 
         public void AdminDisconnect(ITetriNETAdminCallback callback)

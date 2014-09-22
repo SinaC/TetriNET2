@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Net;
 using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Common.Contracts
@@ -6,7 +7,7 @@ namespace TetriNET2.Common.Contracts
     public interface ITetriNET
     {
         // Connect/disconnect/keep alive
-        void ClientConnect(ITetriNETCallback callback, Versioning version, string name, string team);
+        void ClientConnect(ITetriNETCallback callback, IPAddress address, Versioning version, string name, string team);
         void ClientDisconnect(ITetriNETCallback callback);
         void ClientHeartbeat(ITetriNETCallback callback);
 

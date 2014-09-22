@@ -5,7 +5,6 @@ using System.Net;
 using System.Threading;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
-using TetriNET2.Server.Interfaces;
 using TetriNET2.Server.Interfaces.IHost;
 
 namespace TetriNET2.Tests.Server.ClientSide
@@ -39,7 +38,7 @@ namespace TetriNET2.Tests.Server.ClientSide
 
         public void ClientConnect()
         {
-            Host.ClientConnect(this, Versioning, Name, Team);
+            Host.ClientConnect(this, Address, Versioning, Name, Team);
         }
 
         public void ClientDisconnect()
