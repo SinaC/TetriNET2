@@ -1018,13 +1018,97 @@ namespace TetriNET2.Tests.Server
         [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ChangeOptions")]
         [TestMethod]
+        public void TestChangeOptionsNullClient()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            game.Start(new CancellationTokenSource());
+
+            try
+            {
+                game.ChangeOptions(null, new GameOptions());
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch(ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
+        [TestCategory("Server.IGameRoom.ChangeOptions")]
+        [TestMethod]
         public void TestChangeOptionsFailedIfNotWaitingGameStart()
         {
             GameOptions originalOptions = new GameOptions();
             IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            game.Start(new CancellationTokenSource());
+            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
+            game.Join(client1, false);
+            game.StartGame(client1);
 
             GameOptions newOptions = new GameOptions();
-            bool succeed = game.ChangeOptions(newOptions);
+            bool succeed = game.ChangeOptions(client1, newOptions);
+
+            Assert.AreEqual(originalOptions, game.Options);
+            Assert.IsFalse(succeed);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
+        [TestCategory("Server.IGameRoom.ChangeOptions")]
+        [TestMethod]
+        public void TestChangeOptionsFailedIfNotInGame()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            game.Start(new CancellationTokenSource());
+            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
+
+            GameOptions newOptions = new GameOptions();
+            bool succeed = game.ChangeOptions(client1, newOptions);
+
+            Assert.AreEqual(originalOptions, game.Options);
+            Assert.IsFalse(succeed);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
+        [TestCategory("Server.IGameRoom.ChangeOptions")]
+        [TestMethod]
+        public void TestChangeOptionsFailedIfNotPlayer()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            game.Start(new CancellationTokenSource());
+            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
+            game.Join(client1, true);
+
+            GameOptions newOptions = new GameOptions();
+            bool succeed = game.ChangeOptions(client1, newOptions);
+
+            Assert.AreEqual(originalOptions, game.Options);
+            Assert.IsFalse(succeed);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
+        [TestCategory("Server.IGameRoom.ChangeOptions")]
+        [TestMethod]
+        public void TestChangeOptionsFailedIfNotGameMaster()
+        {
+            GameOptions originalOptions = new GameOptions();
+            IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
+            game.Start(new CancellationTokenSource());
+            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
+            game.Join(client1, false);
+            IClient client2 = CreateClient("client2", new CountCallTetriNETCallback());
+            game.Join(client2, false);
+
+            GameOptions newOptions = new GameOptions();
+            bool succeed = game.ChangeOptions(client2, newOptions);
 
             Assert.AreEqual(originalOptions, game.Options);
             Assert.IsFalse(succeed);
@@ -1039,9 +1123,11 @@ namespace TetriNET2.Tests.Server
             GameOptions originalOptions = new GameOptions();
             IGameRoom game = CreateGameRoom("game1", 5, 10, GameRules.Custom, originalOptions);
             game.Start(new CancellationTokenSource());
+            IClient client1 = CreateClient("client1", new CountCallTetriNETCallback());
+            game.Join(client1, false);
 
             GameOptions newOptions = new GameOptions();
-            game.ChangeOptions(newOptions);
+            game.ChangeOptions(client1, newOptions);
 
             Assert.AreEqual(newOptions, game.Options);
         }
@@ -1066,7 +1152,7 @@ namespace TetriNET2.Tests.Server
             game.Join(client3, false);
 
             GameOptions newOptions = new GameOptions();
-            game.ChangeOptions(newOptions);
+            game.ChangeOptions(client1, newOptions);
 
             Assert.AreEqual(1, callback1.GetCallCount("OnGameOptionsChanged"));
             Assert.AreEqual(1, callback2.GetCallCount("OnGameOptionsChanged"));
@@ -1081,21 +1167,98 @@ namespace TetriNET2.Tests.Server
         [TestCategory("Server.IGameRoom")]
         [TestCategory("Server.IGameRoom.ResetWinList")]
         [TestMethod]
-        public void TestResetWinListClientsInformed()
+        public void TestResetWinListNullClient()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
+
+            try
+            {
+                game.ResetWinList(null);
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch(ArgumentNullException ex)
+            {
+                Assert.AreEqual("client", ex.ParamName);
+            }
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
+        [TestCategory("Server.IGameRoom.ResetWinList")]
+        [TestMethod]
+        public void TestResetWinListFailedIfNotPlayer()
         {
             IGameRoom game = CreateGameRoom("game1", 5, 10);
             game.Start(new CancellationTokenSource());
             CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
             IClient client1 = CreateClient("client1", callback1);
             game.Join(client1, true);
+            
+            bool succeed = game.ResetWinList(client1);
+
+            Assert.IsFalse(succeed);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
+        [TestCategory("Server.IGameRoom.ResetWinList")]
+        [TestMethod]
+        public void TestResetWinListFailedIfNotInGame()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+
+            bool succeed = game.ResetWinList(client1);
+
+            Assert.IsFalse(succeed);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
+        [TestCategory("Server.IGameRoom.ResetWinList")]
+        [TestMethod]
+        public void TestResetWinListFailedIfNotGameMaster()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
             CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
             IClient client2 = CreateClient("client2", callback2);
-            game.Join(client2, true);
+            game.Join(client2, false);
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
 
-            game.ResetWinList();
+            bool succeed = game.ResetWinList(client2);
+
+            Assert.IsFalse(succeed);
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IGameRoom")]
+        [TestCategory("Server.IGameRoom.ResetWinList")]
+        [TestMethod]
+        public void TestResetWinListClientsInformed()
+        {
+            IGameRoom game = CreateGameRoom("game1", 5, 10);
+            game.Start(new CancellationTokenSource());
+            CountCallTetriNETCallback callback1 = new CountCallTetriNETCallback();
+            IClient client1 = CreateClient("client1", callback1);
+            game.Join(client1, false);
+            CountCallTetriNETCallback callback2 = new CountCallTetriNETCallback();
+            IClient client2 = CreateClient("client2", callback2);
+            game.Join(client2, false);
+            CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
+            IClient client3 = CreateClient("client3", callback3);
+            game.Join(client3, false);
+
+            game.ResetWinList(client1);
 
             Assert.AreEqual(1, callback1.GetCallCount("OnWinListModified"));
             Assert.AreEqual(1, callback2.GetCallCount("OnWinListModified"));
@@ -1119,9 +1282,9 @@ namespace TetriNET2.Tests.Server
             CountCallTetriNETCallback callback3 = new CountCallTetriNETCallback();
             IClient client3 = CreateClient("client3", callback3);
             game.Join(client3, false);
-            game.StartGame();
+            game.StartGame(client1);
 
-            bool succeed = game.ResetWinList();
+            bool succeed = game.ResetWinList(client1);
 
             Assert.AreEqual(0, callback1.GetCallCount("OnWinListModified"));
             Assert.IsFalse(succeed);

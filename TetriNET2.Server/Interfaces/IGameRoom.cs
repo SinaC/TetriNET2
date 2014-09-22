@@ -37,8 +37,8 @@ namespace TetriNET2.Server.Interfaces
 
         bool VoteKick(IClient client, IClient target, string reason);
         bool VoteKickAnswer(IClient client, bool accepted);
-        bool ChangeOptions(GameOptions options);
-        bool ResetWinList();
+        bool ChangeOptions(IClient client, GameOptions options);
+        bool ResetWinList(IClient client);
 
         bool PlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid);
         bool ModifyGrid(IClient client, byte[] grid);
@@ -48,9 +48,9 @@ namespace TetriNET2.Server.Interfaces
         bool FinishContinuousSpecial(IClient client, Specials special);
         bool EarnAchievement(IClient client, int achievementId, string achievementTitle);
 
-        bool StartGame();
-        bool StopGame();
-        bool PauseGame();
-        bool ResumeGame();
+        bool StartGame(IClient client);
+        bool StopGame(IClient client);
+        bool PauseGame(IClient client);
+        bool ResumeGame(IClient client);
     }
 }

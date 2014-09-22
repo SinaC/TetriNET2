@@ -418,35 +418,69 @@ namespace TetriNET2.Server
             return true;
         }
 
-        public bool ChangeOptions(GameOptions options)
+        public bool ChangeOptions(IClient client, GameOptions options)
         {
+            if (client == null)
+                throw new ArgumentNullException("client");
             if (State != GameRoomStates.WaitStartGame)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, game {0} is started", Name);
                 return false;
             }
+            if (!client.IsPlayer)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, {0} is not flagged as player", client.Name);
+                return false;
+            }
+            if (client.Game != this)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, {0} is not in game room {1}", client.Name, Name);
+                return false;
+            }
+            if (!client.IsGameMaster)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, client {0} is not game master", client.Name);
+                return false;
+            }
             //
             Options = options;
             // Inform clients
-            foreach (IClient client in Clients)
-                client.OnGameOptionsChanged(options);
+            foreach (IClient target in Clients)
+                target.OnGameOptionsChanged(options);
 
             Log.Default.WriteLine(LogLevels.Info, "Game options changed");
             return true;
         }
 
-        public bool ResetWinList()
+        public bool ResetWinList(IClient client)
         {
+            if (client == null)
+                throw new ArgumentNullException("client");
             if (State != GameRoomStates.WaitStartGame)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, game {0} is started", Name);
                 return false;
             }
+            if (!client.IsPlayer)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, {0} is not flagged as player", client.Name);
+                return false;
+            }
+            if (client.Game != this)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, {0} is not in game room {1}", client.Name, Name);
+                return false;
+            }
+            if (!client.IsGameMaster)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, client {0} is not game master", client.Name);
+                return false;
+            }
             //
             _winList.Clear();
             // Inform clients
-            foreach(IClient client in Clients)
-                client.OnWinListModified(_winList);
+            foreach(IClient target in Clients)
+                target.OnWinListModified(_winList);
 
             Log.Default.WriteLine(LogLevels.Info, "Win list resetted");
             return true;
@@ -619,8 +653,10 @@ namespace TetriNET2.Server
             return true;
         }
 
-        public bool StartGame()
+        public bool StartGame(IClient client)
         {
+            if (client == null)
+                throw new ArgumentNullException("client");
             if (State != GameRoomStates.WaitStartGame)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Game {0} already started", Name);

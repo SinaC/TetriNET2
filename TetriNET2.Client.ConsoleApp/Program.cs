@@ -14,6 +14,9 @@ namespace TetriNET2.Client.ConsoleApp
         static void DisplayHelp()
         {
             Console.WriteLine("Commands:");
+            Console.WriteLine("x: Stop client");
+            Console.WriteLine("j: Create and join game as player");
+            Console.WriteLine("s: Start game");
         }
 
         private static void Main(string[] args)
@@ -53,6 +56,9 @@ namespace TetriNET2.Client.ConsoleApp
                             break;
                         case ConsoleKey.J:
                             proxy.ClientCreateAndJoinGame("GAME1", null, GameRules.Standard, false);
+                            break;
+                        case ConsoleKey.S:
+                            proxy.ClientStartGame();
                             break;
                     }
                 }
