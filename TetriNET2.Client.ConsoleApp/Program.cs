@@ -17,6 +17,7 @@ namespace TetriNET2.Client.ConsoleApp
             Console.WriteLine("x: Stop client");
             Console.WriteLine("j: Create and join game as player");
             Console.WriteLine("s: Start game");
+            Console.WriteLine("t: Stop game");
         }
 
         private static void Main(string[] args)
@@ -59,6 +60,9 @@ namespace TetriNET2.Client.ConsoleApp
                             break;
                         case ConsoleKey.S:
                             proxy.ClientStartGame();
+                            break;
+                        case ConsoleKey.T:
+                            proxy.ClientStopGame();
                             break;
                     }
                 }
@@ -146,7 +150,7 @@ namespace TetriNET2.Client.ConsoleApp
 
         public void OnHeartbeatReceived()
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            //UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
         public void OnServerStopped()
@@ -194,9 +198,9 @@ namespace TetriNET2.Client.ConsoleApp
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, game);
         }
 
-        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options)
+        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, gameId, options);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, gameId, options, isGameMaster);
         }
 
         public void OnGameLeft()
@@ -212,6 +216,11 @@ namespace TetriNET2.Client.ConsoleApp
         public void OnClientGameLeft(Guid clientId)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId);
+        }
+
+        public void OnGameMasterModified(Guid playerId)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, playerId);
         }
 
         public void OnGameStarted(List<Pieces> pieces)
