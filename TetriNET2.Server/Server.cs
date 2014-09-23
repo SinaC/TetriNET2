@@ -439,7 +439,7 @@ namespace TetriNET2.Server
                 }
             }
             if (result != GameJoinResults.Successfull)
-                client.OnGameJoined(result, game.Id, null);
+                client.OnGameJoined(result, game.Id, null, false);
         }
 
         private void OnClientJoinRandomGame(IClient client, bool asSpectator)
@@ -471,7 +471,7 @@ namespace TetriNET2.Server
                 }
             }
             if (result != GameJoinResults.Successfull)
-                client.OnGameJoined(result, Guid.Empty, null);
+                client.OnGameJoined(result, Guid.Empty, null, false);
         }
 
         private void OnClientCreateAndJoinGame(IClient client, string name, string password, GameRules rule, bool asSpectator)
@@ -564,7 +564,7 @@ namespace TetriNET2.Server
                 return;
             }
             //
-            game.StartGame(); // StartGame is responsible for using Callback
+            game.StartGame(client); // StartGame is responsible for using Callback
         }
 
         private void OnClientStopGame(IClient client)
@@ -583,7 +583,7 @@ namespace TetriNET2.Server
                 return;
             }
             //
-            game.StopGame(); // StopGame is responsible for using Callback
+            game.StopGame(client); // StopGame is responsible for using Callback
         }
 
         private void OnClientPauseGame(IClient client)
@@ -602,7 +602,7 @@ namespace TetriNET2.Server
                 return;
             }
             //
-            game.PauseGame(); // PauseGame is responsible for using Callback
+            game.PauseGame(client); // PauseGame is responsible for using Callback
         }
 
         private void OnClientResumeGame(IClient client)
@@ -621,7 +621,7 @@ namespace TetriNET2.Server
                 return;
             }
             //
-            game.ResumeGame(); // ResumeGame is responsible for using Callback
+            game.ResumeGame(client); // ResumeGame is responsible for using Callback
         }
 
         private void OnClientChangeOptions(IClient client, GameOptions options)
@@ -646,9 +646,28 @@ namespace TetriNET2.Server
             // Check options before accepting them
             bool accepted = options.IsValid;
             if (accepted)
-                game.ChangeOptions(options); // ChangeOptions is responsible for using Callback
+                game.ChangeOptions(client, options); // ChangeOptions is responsible for using Callback
             else
                 Log.Default.WriteLine(LogLevels.Info, "Invalid options");
+        }
+
+        private void OnClientResetWinList(IClient client)
+        {
+            Log.Default.WriteLine(LogLevels.Info, "Client reset winlist: {0}", client.Name);
+
+            IGameRoom game = client.Game;
+            if (game == null)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, client {0} is not in a game room", client.Name);
+                return;
+            }
+            if (!client.IsGameMaster)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, client {0} is not game master", client.Name);
+                return;
+            }
+            //
+            game.ResetWinList(client); // ResetWinList is responsible for using Callback
         }
 
         private void OnClientVoteKick(IClient client, IClient target, string reason)
@@ -687,25 +706,6 @@ namespace TetriNET2.Server
             }
             //
             game.VoteKickAnswer(client, accepted); // VoteKickAnswer is responsible for using Callback
-        }
-
-        private void OnClientResetWinList(IClient client)
-        {
-            Log.Default.WriteLine(LogLevels.Info, "Client reset winlist: {0}", client.Name);
-
-            IGameRoom game = client.Game;
-            if (game == null)
-            {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, client {0} is not in a game room", client.Name);
-                return;
-            }
-            if (!client.IsGameMaster)
-            {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, client {0} is not game master", client.Name);
-                return;
-            }
-            //
-            game.ResetWinList(); // ResetWinList is responsible for using Callback
         }
 
         private void OnClientLeaveGame(IClient client)

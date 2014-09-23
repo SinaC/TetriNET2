@@ -27,9 +27,9 @@ namespace TetriNET2.Server.Interfaces.IHost
     public delegate void HostClientPauseGameEventHandler(IClient client);
     public delegate void HostClientResumeGameEventHandler(IClient client);
     public delegate void HostClientChangeOptionsEventHandler(IClient client, GameOptions options);
+    public delegate void HostClientResetWinListEventHandler(IClient client);
     public delegate void HostClientVoteKickEventHandler(IClient client, IClient target, string reason);
     public delegate void HostClientVoteKickResponseEventHandler(IClient client, bool accepted);
-    public delegate void HostClientResetWinListEventHandler(IClient client);
 
     // Game room as player or spectator
     public delegate void HostClientLeaveGameEventHandler(IClient client);
@@ -68,9 +68,9 @@ namespace TetriNET2.Server.Interfaces.IHost
         event HostClientPauseGameEventHandler HostClientPauseGame;
         event HostClientResumeGameEventHandler HostClientResumeGame;
         event HostClientChangeOptionsEventHandler HostClientChangeOptions;
+        event HostClientResetWinListEventHandler HostClientResetWinList;
         event HostClientVoteKickEventHandler HostClientVoteKick;
         event HostClientVoteKickResponseEventHandler HostClientVoteKickAnswer;
-        event HostClientResetWinListEventHandler HostClientResetWinList;
 
         // Game room as player or spectator
         event HostClientLeaveGameEventHandler HostClientLeaveGame;

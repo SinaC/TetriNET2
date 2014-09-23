@@ -55,7 +55,7 @@ namespace TetriNET2.Tests.Server.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options)
+        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster)
         {
             throw new NotImplementedException();
         }
@@ -68,6 +68,10 @@ namespace TetriNET2.Tests.Server.Mocking
             throw new NotImplementedException();
         }
         public void OnClientGameLeft(Guid clientId)
+        {
+            throw new NotImplementedException();
+        }
+        public void OnGameMasterModified(Guid playerId)
         {
             throw new NotImplementedException();
         }

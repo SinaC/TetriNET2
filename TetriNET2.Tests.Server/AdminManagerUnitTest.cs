@@ -311,7 +311,7 @@ namespace TetriNET2.Tests.Server
         [TestCategory("Server.IAdminManager")]
         [TestCategory("Server.IAdminManager.Indexers")]
         [TestMethod]
-        public void TestIndexertNameFindExistingAdmin()
+        public void TestIndexerNameFindExistingAdmin()
         {
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback());
@@ -331,7 +331,7 @@ namespace TetriNET2.Tests.Server
         [TestCategory("Server.IAdminManager")]
         [TestCategory("Server.IAdminManager.Indexers")]
         [TestMethod]
-        public void TesIndexertNameFindNonExistingAdmin()
+        public void TesIndexerNameFindNonExistingAdmin()
         {
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback());

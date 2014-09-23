@@ -23,7 +23,7 @@ namespace TetriNET2.Server.Interfaces
         DateTime GameStartTime { get; }
         GameOptions Options { get; }
         GameRules Rule { get; }
-        
+
         IEnumerable<IClient> Clients { get; }
         IEnumerable<IClient> Players { get; }
         IEnumerable<IClient> Spectators { get; }
@@ -37,8 +37,6 @@ namespace TetriNET2.Server.Interfaces
 
         bool VoteKick(IClient client, IClient target, string reason);
         bool VoteKickAnswer(IClient client, bool accepted);
-        bool ChangeOptions(IClient client, GameOptions options);
-        bool ResetWinList(IClient client);
 
         bool PlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid);
         bool ModifyGrid(IClient client, byte[] grid);
@@ -48,9 +46,12 @@ namespace TetriNET2.Server.Interfaces
         bool FinishContinuousSpecial(IClient client, Specials special);
         bool EarnAchievement(IClient client, int achievementId, string achievementTitle);
 
+        // Following methods may be called by a client (game master) or by server (client is null in this case)
         bool StartGame(IClient client);
         bool StopGame(IClient client);
         bool PauseGame(IClient client);
         bool ResumeGame(IClient client);
+        bool ChangeOptions(IClient client, GameOptions options);
+        bool ResetWinList(IClient client);
     }
 }

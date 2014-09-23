@@ -46,6 +46,7 @@ namespace TetriNET2.Server
             Id = Guid.NewGuid();
             _actionQueue = actionQueue;
             _pieceProvider = pieceProvider;
+            _pieceProvider.Occurancies = () => options.PieceOccurancies;
             Name = name;
             CreationTime = DateTime.Now;
             MaxPlayers = maxPlayers;
@@ -213,6 +214,8 @@ namespace TetriNET2.Server
                 return false;
             }
 
+            IClient previousMaster = Players.FirstOrDefault();
+
             //
             _clients.Add(client);
 
@@ -226,12 +229,27 @@ namespace TetriNET2.Server
             client.Game = this;
             client.LastVoteKickAnswer = null;
 
+            if (client.IsPlayer && client == Players.FirstOrDefault()) // set game master
+            {
+                // Clear previous game master
+                if (previousMaster != null)
+                    previousMaster.Roles &= ~ClientRoles.GameMaster;
+                // Set game master
+                client.Roles |= ClientRoles.GameMaster;
+            }
+
             // Inform client
-            client.OnGameJoined(GameJoinResults.Successfull, Id, Options);
+            client.OnGameJoined(GameJoinResults.Successfull, Id, Options, client.IsGameMaster);
 
             // Inform other clients in game
             foreach (IClient target in Clients.Where(c => c != client))
                 target.OnClientGameJoined(client.Id, asSpectator);
+            // Inform other clients about game master modification
+            if (client.IsGameMaster)
+            {
+                foreach (IClient target in Clients.Where(c => c != client))
+                    target.OnGameMasterModified(client.Id);
+            }
             return true;
         }
 
@@ -261,10 +279,19 @@ namespace TetriNET2.Server
             bool wasPlaying = client.State == ClientStates.Playing;
 
             // Change role, state and game
-            client.Roles &= ~(ClientRoles.Player | ClientRoles.Spectator); // remove player+spectator
+            client.Roles &= ~(ClientRoles.Player | ClientRoles.Spectator | ClientRoles.GameMaster); // remove player+spectator+GameMaster
             client.State = ClientStates.Connected;
             client.Game = null;
             client.LastVoteKickAnswer = null;
+
+            // Search new game master
+            bool gameMasterModified = false;
+            IClient newMaster = Players.FirstOrDefault();
+            if (newMaster != null && !newMaster.IsGameMaster)
+            {
+                gameMasterModified = true;
+                newMaster.Roles |= ClientRoles.GameMaster;
+            }
 
             // Inform client
             client.OnGameLeft();
@@ -272,6 +299,12 @@ namespace TetriNET2.Server
             // Inform other clients in game
             foreach (IClient target in Clients.Where(c => c != client))
                 target.OnClientGameLeft(client.Id);
+            // Inform other clients about game master modification
+            if (gameMasterModified)
+            {
+                foreach (IClient target in Clients.Where(c => c != client))
+                    target.OnGameMasterModified(client.Id);
+            }
 
             // If game was running and player was playing, check if only one player left
             if ((State == GameRoomStates.GameStarted || State == GameRoomStates.GamePaused) && wasPlaying)
@@ -415,74 +448,6 @@ namespace TetriNET2.Server
             }
 
             Log.Default.WriteLine(LogLevels.Info, "Vote kick answer {0} from {1}", accepted, client.Name);
-            return true;
-        }
-
-        public bool ChangeOptions(IClient client, GameOptions options)
-        {
-            if (client == null)
-                throw new ArgumentNullException("client");
-            if (State != GameRoomStates.WaitStartGame)
-            {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, game {0} is started", Name);
-                return false;
-            }
-            if (!client.IsPlayer)
-            {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, {0} is not flagged as player", client.Name);
-                return false;
-            }
-            if (client.Game != this)
-            {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, {0} is not in game room {1}", client.Name, Name);
-                return false;
-            }
-            if (!client.IsGameMaster)
-            {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, client {0} is not game master", client.Name);
-                return false;
-            }
-            //
-            Options = options;
-            // Inform clients
-            foreach (IClient target in Clients)
-                target.OnGameOptionsChanged(options);
-
-            Log.Default.WriteLine(LogLevels.Info, "Game options changed");
-            return true;
-        }
-
-        public bool ResetWinList(IClient client)
-        {
-            if (client == null)
-                throw new ArgumentNullException("client");
-            if (State != GameRoomStates.WaitStartGame)
-            {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, game {0} is started", Name);
-                return false;
-            }
-            if (!client.IsPlayer)
-            {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, {0} is not flagged as player", client.Name);
-                return false;
-            }
-            if (client.Game != this)
-            {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, {0} is not in game room {1}", client.Name, Name);
-                return false;
-            }
-            if (!client.IsGameMaster)
-            {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, client {0} is not game master", client.Name);
-                return false;
-            }
-            //
-            _winList.Clear();
-            // Inform clients
-            foreach(IClient target in Clients)
-                target.OnWinListModified(_winList);
-
-            Log.Default.WriteLine(LogLevels.Info, "Win list resetted");
             return true;
         }
 
@@ -655,14 +620,30 @@ namespace TetriNET2.Server
 
         public bool StartGame(IClient client)
         {
-            if (client == null)
-                throw new ArgumentNullException("client");
+            Log.Default.WriteLine(LogLevels.Info, "Starting game");
             if (State != GameRoomStates.WaitStartGame)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Game {0} already started", Name);
                 return false;
             }
-
+            if (client != null)
+            {
+                if (!client.IsPlayer)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot start game, {0} is not flagged as player", client.Name);
+                    return false;
+                }
+                if (client.Game != this)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot start game, {0} is not in game room {1}", client.Name, Name);
+                    return false;
+                }
+                if (!client.IsGameMaster)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot start game, client {0} is not game master", client.Name);
+                    return false;
+                }
+            }
             if (PlayerCount <= 0)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Game {0} cannot be started, no players", Name);
@@ -712,19 +693,35 @@ namespace TetriNET2.Server
             
             State = GameRoomStates.GameStarted;
 
-            Log.Default.WriteLine(LogLevels.Info, "Game started");
+            Log.Default.WriteLine(LogLevels.Info, "Game started by {0}", client == null ? "[SERVER]" : client.Name);
 
             return true;
         }
 
-        public bool StopGame()
+        public bool StopGame(IClient client)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Stopping game");
-
             if (State != GameRoomStates.GameStarted && State != GameRoomStates.GamePaused)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Cannot stop game");
                 return false;
+            }
+            if (client != null)
+            {
+                if (!client.IsPlayer)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot stop game, {0} is not flagged as player", client.Name);
+                    return false;
+                }
+                if (client.Game != this)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot stop game, {0} is not in game room {1}", client.Name, Name);
+                    return false;
+                }
+                if (!client.IsGameMaster)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot stop game, client {0} is not game master", client.Name);
+                    return false;
+                }
             }
             //
             State = GameRoomStates.GameFinished;
@@ -750,11 +747,11 @@ namespace TetriNET2.Server
 
             State = GameRoomStates.WaitStartGame;
 
-            Log.Default.WriteLine(LogLevels.Info, "Game stopped");
+            Log.Default.WriteLine(LogLevels.Info, "Game stopped by {0}", client == null ? "[SERVER]" : client.Name);
             return true;
         }
 
-        public bool PauseGame()
+        public bool PauseGame(IClient client)
         {
             Log.Default.WriteLine(LogLevels.Info, "Pausing game");
 
@@ -763,17 +760,35 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Info, "Cannot pause game");
                 return false;
             }
+            if (client != null)
+            {
+                if (!client.IsPlayer)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot pause game, {0} is not flagged as player", client.Name);
+                    return false;
+                }
+                if (client.Game != this)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot pause game, {0} is not in game room {1}", client.Name, Name);
+                    return false;
+                }
+                if (!client.IsGameMaster)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot pause game, client {0} is not game master", client.Name);
+                    return false;
+                }
+            }
             State = GameRoomStates.GamePaused;
 
             // Send game paused to players and spectators
-            foreach (IClient client in Clients)
-                client.OnGamePaused();
+            foreach (IClient target in Clients)
+                target.OnGamePaused();
 
-            Log.Default.WriteLine(LogLevels.Info, "Game paused");
+            Log.Default.WriteLine(LogLevels.Info, "Game paused by {0}", client == null ? "[SERVER]" : client.Name);
             return true;
         }
 
-        public bool ResumeGame()
+        public bool ResumeGame(IClient client)
         {
             Log.Default.WriteLine(LogLevels.Info, "Resuming game");
             if (State != GameRoomStates.GamePaused)
@@ -781,13 +796,108 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Info, "Cannot resume game");
                 return false;
             }
+            if (client != null)
+            {
+                if (!client.IsPlayer)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot pause game, {0} is not flagged as player", client.Name);
+                    return false;
+                }
+                if (client.Game != this)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot pause game, {0} is not in game room {1}", client.Name, Name);
+                    return false;
+                }
+                if (!client.IsGameMaster)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot pause game, client {0} is not game master", client.Name);
+                    return false;
+                }
+            }
+            //
             State = GameRoomStates.GameStarted;
 
             // Send game resumed to players and spectators
-            foreach (IClient client in Clients)
-                client.OnGameResumed();
+            foreach (IClient target in Clients)
+                target.OnGameResumed();
 
-            Log.Default.WriteLine(LogLevels.Info, "Game resumed");
+            Log.Default.WriteLine(LogLevels.Info, "Game resumed by {0}", client == null ? "[SERVER]" : client.Name);
+            return true;
+        }
+
+        public bool ChangeOptions(IClient client, GameOptions options)
+        {
+            if (State != GameRoomStates.WaitStartGame)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, game {0} is started", Name);
+                return false;
+            }
+            if (client != null)
+            {
+                if (!client.IsPlayer)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, {0} is not flagged as player", client.Name);
+                    return false;
+                }
+                if (client.Game != this)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, {0} is not in game room {1}", client.Name, Name);
+                    return false;
+                }
+                if (!client.IsGameMaster)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, client {0} is not game master", client.Name);
+                    return false;
+                }
+            }
+            if (!options.IsValid)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, options are not valid");
+                return false;
+            }
+            //
+            Options = options;
+            _pieceProvider.Occurancies = () => Options.PieceOccurancies;
+            // Inform clients
+            foreach (IClient target in Clients)
+                target.OnGameOptionsChanged(options);
+
+            Log.Default.WriteLine(LogLevels.Info, "Game options changed by {0}", client == null ? "[SERVER]" : client.Name);
+            return true;
+        }
+
+        public bool ResetWinList(IClient client)
+        {
+            if (State != GameRoomStates.WaitStartGame)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, game {0} is started", Name);
+                return false;
+            }
+            if (client != null)
+            {
+                if (!client.IsPlayer)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, {0} is not flagged as player", client.Name);
+                    return false;
+                }
+                if (client.Game != this)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, {0} is not in game room {1}", client.Name, Name);
+                    return false;
+                }
+                if (!client.IsGameMaster)
+                {
+                    Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, client {0} is not game master", client.Name);
+                    return false;
+                }
+            }
+            //
+            _winList.Clear();
+            // Inform clients
+            foreach (IClient target in Clients)
+                target.OnWinListModified(_winList);
+
+            Log.Default.WriteLine(LogLevels.Info, "Win list resetted by {0}", client == null ? "[SERVER]" : client.Name);
             return true;
         }
 

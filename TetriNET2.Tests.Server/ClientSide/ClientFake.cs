@@ -225,9 +225,9 @@ namespace TetriNET2.Tests.Server.ClientSide
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, game);
         }
 
-        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options)
+        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, gameId, options);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, gameId, options, isGameMaster);
         }
 
         public void OnGameLeft()
@@ -243,6 +243,11 @@ namespace TetriNET2.Tests.Server.ClientSide
         public void OnClientGameLeft(Guid clientId)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId);
+        }
+
+        public void OnGameMasterModified(Guid playerId)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, playerId);
         }
 
         public void OnGameStarted(List<Pieces> pieces)

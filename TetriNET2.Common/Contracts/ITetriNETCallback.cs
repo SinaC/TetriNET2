@@ -36,13 +36,15 @@ namespace TetriNET2.Common.Contracts
         void OnGameCreated(GameCreateResults result, GameDescription game);
 
         [OperationContract(IsOneWay = true)]
-        void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options);
+        void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster);
         [OperationContract(IsOneWay = true)]
         void OnGameLeft();
         [OperationContract(IsOneWay = true)]
         void OnClientGameJoined(Guid clientId, bool asSpectator);
         [OperationContract(IsOneWay = true)]
         void OnClientGameLeft(Guid clientId);
+        [OperationContract(IsOneWay = true)]
+        void OnGameMasterModified(Guid playerId);
         [OperationContract(IsOneWay = true)]
         void OnGameStarted(List<Pieces> pieces);
         [OperationContract(IsOneWay = true)]

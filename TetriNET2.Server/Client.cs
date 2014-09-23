@@ -173,9 +173,9 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnGameCreated(result, game));
         }
 
-        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options)
+        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster)
         {
-            ExceptionFreeAction(() => Callback.OnGameJoined(result, gameId, options));
+            ExceptionFreeAction(() => Callback.OnGameJoined(result, gameId, options, isGameMaster));
         }
 
         public void OnGameLeft()
@@ -191,6 +191,11 @@ namespace TetriNET2.Server
         public void OnClientGameLeft(Guid clientId)
         {
             ExceptionFreeAction(() => Callback.OnClientGameLeft(clientId));
+        }
+
+        public void OnGameMasterModified(Guid playerId)
+        {
+            ExceptionFreeAction(() => Callback.OnGameMasterModified(playerId));
         }
 
         public void OnGameStarted(List<Pieces> pieces)
