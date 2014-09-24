@@ -11,26 +11,5 @@ namespace TetriNET2.Common.DataContracts
 
         [DataMember]
         public string Name { get; set; }
-
-        [DataMember]
-        public ClientStates State { get; set; }
-
-        [DataMember]
-        public ClientRoles Roles { get; set; }
-
-        [DataMember]
-        public DateTime ConnectTime { get; set; }
-
-        [DataMember]
-        public DateTime LastActionToClient { get; set; }
-
-        [DataMember]
-        public DateTime LastActionFromClient { get; set; }
-
-        [DataMember]
-        public int TimeoutCount { get; set; }
-
-        [DataMember]
-        public string Address { get; set; }
     }
 }

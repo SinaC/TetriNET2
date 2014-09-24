@@ -91,17 +91,17 @@ namespace TetriNET2.Tests.Server.Mocking
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnClientListReceived(List<ClientData> clients)
+        public void OnClientListReceived(List<ClientAdminData> clients)
         {
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnClientListInRoomReceived(Guid roomId, List<ClientData> clients)
+        public void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients)
         {
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnRoomListReceived(List<GameRoomData> rooms)
+        public void OnRoomListReceived(List<GameRoomAdminData> rooms)
         {
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }

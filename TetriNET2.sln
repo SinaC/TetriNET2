@@ -11,6 +11,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TetriNET2.Tests.Server", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TetriNET2.Client.ConsoleApp", "TetriNET2.Client.ConsoleApp\TetriNET2.Client.ConsoleApp.csproj", "{1A420379-8B09-4DF8-9F37-A9E52574336E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TetriNET2.Admin.ConsoleApp", "TetriNET.Admin.ConsoleApp\TetriNET2.Admin.ConsoleApp.csproj", "{39921BE3-5A87-489F-999A-73F1FE20ADDC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -37,6 +39,10 @@ Global
 		{1A420379-8B09-4DF8-9F37-A9E52574336E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1A420379-8B09-4DF8-9F37-A9E52574336E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1A420379-8B09-4DF8-9F37-A9E52574336E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{39921BE3-5A87-489F-999A-73F1FE20ADDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{39921BE3-5A87-489F-999A-73F1FE20ADDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{39921BE3-5A87-489F-999A-73F1FE20ADDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{39921BE3-5A87-489F-999A-73F1FE20ADDC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

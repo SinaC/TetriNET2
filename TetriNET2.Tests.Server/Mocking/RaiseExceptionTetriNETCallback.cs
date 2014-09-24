@@ -23,6 +23,10 @@ namespace TetriNET2.Tests.Server.Mocking
         {
             throw new NotImplementedException();
         }
+        public void OnRoomListReceived(List<GameRoomData> rooms)
+        {
+            throw new NotImplementedException();
+        }
         public void OnClientConnected(Guid clientId, string name, string team)
         {
             throw new NotImplementedException();

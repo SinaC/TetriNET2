@@ -18,6 +18,9 @@ namespace TetriNET2.Common.Contracts
         void OnServerStopped();
 
         [OperationContract(IsOneWay = true)]
+        void OnRoomListReceived(List<GameRoomData> rooms);
+
+        [OperationContract(IsOneWay = true)]
         void OnClientConnected(Guid clientId, string name, string team);
         [OperationContract(IsOneWay = true)]
         void OnClientDisconnected(Guid clientId, LeaveReasons reason);

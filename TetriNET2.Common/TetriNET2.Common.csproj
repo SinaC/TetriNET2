@@ -60,6 +60,7 @@
     <Compile Include="Contracts\WCF\IWCFTetriNET.cs" />
     <Compile Include="DataContracts\AdminData.cs" />
     <Compile Include="DataContracts\BanEntryData.cs" />
+    <Compile Include="DataContracts\ClientAdminData.cs" />
     <Compile Include="DataContracts\ClientData.cs" />
     <Compile Include="DataContracts\ClientRoles.cs" />
     <Compile Include="DataContracts\ClientStates.cs" />
@@ -69,6 +70,7 @@
     <Compile Include="DataContracts\GameFinishedReasons.cs" />
     <Compile Include="DataContracts\GameJoinResults.cs" />
     <Compile Include="DataContracts\GameOptions.cs" />
+    <Compile Include="DataContracts\GameRoomAdminData.cs" />
     <Compile Include="DataContracts\GameRoomData.cs" />
     <Compile Include="DataContracts\GameRoomStates.cs" />
     <Compile Include="DataContracts\GameRules.cs" />

@@ -18,12 +18,15 @@ namespace TetriNET2.Tests.Server
     [TestClass]
     public abstract class AbstractServerUnitTest
     {
+        protected const string BanFilename = @"d:\temp\banmanagerunittest.lst";
+
+        protected IPasswordManager PasswordManager;
         protected IBanManager BanManager;
         protected IClientManager ClientManager;
         protected IAdminManager AdminManager;
         protected IGameRoomManager GameRoomManager;
 
-        protected abstract IServer CreateServer();
+        protected abstract IServer CreateServer(bool passwordCheckSucceedIfNotFound = true);
         protected abstract HostMock CreateHost();
         protected abstract IGameRoom CreateGameRoom(string name);
         protected abstract ClientFake CreateClientFake(IHost host, string name, Versioning version, IPAddress address = null, string team = null);
@@ -394,7 +397,7 @@ namespace TetriNET2.Tests.Server
         [TestCategory("Server.IServer")]
         [TestCategory("Server.IServer.ClientConnect")]
         [TestMethod]
-        public void TestClientConnectFailedInvalidName()
+        public void TestClientConnectFailedInvalidNameTooLong()
         {
             IServer server = CreateServer();
             IHost host = CreateHost();
@@ -406,6 +409,29 @@ namespace TetriNET2.Tests.Server
             server.Start();
 
             ClientFake clientFake1 = CreateClientFake(host, "012345678901234567890123456789", server.Version);
+            clientFake1.ClientConnect();
+
+            Assert.AreEqual(1, clientFake1.GetCallCount("OnConnected"));
+            Assert.AreEqual(ConnectResults.FailedInvalidName, clientFake1.GetCallParameters("OnConnected", 0)[0]);
+        }
+
+
+        [TestCategory("Server")]
+        [TestCategory("Server.IServer")]
+        [TestCategory("Server.IServer.ClientConnect")]
+        [TestMethod]
+        public void TestClientConnectFailedInvalidNameInvalidCharacters()
+        {
+            IServer server = CreateServer();
+            IHost host = CreateHost();
+            IGameRoom gameRoom = CreateGameRoom("room1");
+            gameRoom.Start(new CancellationTokenSource());
+            GameRoomManager.Add(gameRoom);
+            server.SetVersion(1, 1);
+            server.AddHost(host);
+            server.Start();
+
+            ClientFake clientFake1 = CreateClientFake(host, "client//1", server.Version);
             clientFake1.ClientConnect();
 
             Assert.AreEqual(1, clientFake1.GetCallCount("OnConnected"));
@@ -439,7 +465,7 @@ namespace TetriNET2.Tests.Server
 
         #endregion
 
-        // TODO: test remaining IHost event handlers
+        // TODO: test remaining IHost event handlers / SetAdminPassword+AdminConnect
     }
 
     [TestClass]
@@ -463,13 +489,17 @@ namespace TetriNET2.Tests.Server
             }
         }
 
-        protected override IServer CreateServer()
+        protected override IServer CreateServer(bool passwordCheckSucceedIfNotFound = true)
         {
-            BanManager = new BanManager(@"d:\temp\banmanagerunittest.lst");
+            PasswordManager = new PasswordManager
+                {
+                    CheckSucceedIfNotFound = passwordCheckSucceedIfNotFound
+                };
+            BanManager = new BanManager(BanFilename);
             ClientManager = new ClientManager(10);
             AdminManager = new AdminManager(10);
             GameRoomManager = new GameRoomManager(10);
-            return new TetriNET2.Server.Server(new Factory(), BanManager, ClientManager, AdminManager, GameRoomManager);
+            return new TetriNET2.Server.Server(new Factory(), PasswordManager, BanManager, ClientManager, AdminManager, GameRoomManager);
         }
 
         protected override HostMock CreateHost()
@@ -512,7 +542,7 @@ namespace TetriNET2.Tests.Server
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(null, new BanManager(@"d:\temp\banmanagerunittest.lst"), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+                IServer server = new TetriNET2.Server.Server(null, new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -526,11 +556,29 @@ namespace TetriNET2.Tests.Server
         [TestCategory("Server.Server")]
         [TestCategory("Server.Server.ctor")]
         [TestMethod]
+        public void TestNullPasswordManager()
+        {
+            try
+            {
+                IServer server = new TetriNET2.Server.Server(new Factory(), null, new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+
+                Assert.Fail("Exception not thrown");
+            }
+            catch (ArgumentNullException ex)
+            {
+                Assert.AreEqual("passwordManager", ex.ParamName);
+            }
+        }
+
+        [TestCategory("Server")]
+        [TestCategory("Server.Server")]
+        [TestCategory("Server.Server.ctor")]
+        [TestMethod]
         public void TestNullBanManager()
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(new Factory(), null, new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+                IServer server = new TetriNET2.Server.Server(new Factory(), new PasswordManager(), null, new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -548,7 +596,7 @@ namespace TetriNET2.Tests.Server
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(new Factory(), new BanManager(@"d:\temp\banmanagerunittest.lst"), null, new AdminManager(10), new GameRoomManager(10));
+                IServer server = new TetriNET2.Server.Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), null, new AdminManager(10), new GameRoomManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -566,7 +614,7 @@ namespace TetriNET2.Tests.Server
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(new Factory(), new BanManager(@"d:\temp\banmanagerunittest.lst"), new ClientManager(10), null, new GameRoomManager(10));
+                IServer server = new TetriNET2.Server.Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), null, new GameRoomManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -584,7 +632,7 @@ namespace TetriNET2.Tests.Server
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(new Factory(), new BanManager(@"d:\temp\banmanagerunittest.lst"), new ClientManager(10), new AdminManager(10), null);
+                IServer server = new TetriNET2.Server.Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), null);
 
                 Assert.Fail("Exception not thrown");
             }
@@ -600,7 +648,7 @@ namespace TetriNET2.Tests.Server
         [TestMethod]
         public void TestConstructorSetProperties()
         {
-            IServer server = new TetriNET2.Server.Server(new Factory(), new BanManager(@"d:\temp\banmanagerunittest.lst"), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+            IServer server = new TetriNET2.Server.Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
 
             Assert.AreEqual(ServerStates.Waiting, server.State);
         }

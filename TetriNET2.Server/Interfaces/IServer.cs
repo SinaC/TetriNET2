@@ -22,6 +22,7 @@ namespace TetriNET2.Server.Interfaces
         bool AddHost(IHost.IHost host);
 
         bool SetVersion(int major, int minor);
+        bool SetAdminPassword(string name, string cryptedPassword);
 
         bool Start();
         bool Stop();

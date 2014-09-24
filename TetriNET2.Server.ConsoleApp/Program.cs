@@ -18,10 +18,6 @@ namespace TetriNET2.Server.ConsoleApp
         {
             Console.WriteLine("Commands:");
             Console.WriteLine("x: Stop server");
-            Console.WriteLine("s: Start game");
-            Console.WriteLine("t: Stop game");
-            Console.WriteLine("p: Pause game");
-            Console.WriteLine("r: Resume game");
             Console.WriteLine("+: Add dummy player");
             Console.WriteLine("-: Remove dummy player");
             Console.WriteLine("d: Dump client list");
@@ -33,6 +29,7 @@ namespace TetriNET2.Server.ConsoleApp
             Log.Default.Initialize(@"D:\TEMP\LOG\", "TETRINET2_SERVER.LOG");
 
             IFactory factory = new Factory();
+            IPasswordManager passwordManager = new PasswordManager();
             IBanManager banManager = new BanManager(@"D:\TEMP\ban.lst");
             IClientManager clientManager = new ClientManager(50);
             IAdminManager adminManager = new AdminManager(5);
@@ -46,10 +43,13 @@ namespace TetriNET2.Server.ConsoleApp
                     Port = 7788
                 };
 
-            IServer server = new Server(factory, banManager, clientManager, adminManager, gameRoomManager);
+            IServer server = new Server(factory, passwordManager, banManager, clientManager, adminManager, gameRoomManager);
             
             server.AddHost(dummyHost);
             server.AddHost(wcfHost);
+
+            server.SetVersion(1, 0);
+            server.SetAdminPassword("admin1", "123456");
 
             server.PerformRestartServer += ServerOnPerformRestartServer;
 
@@ -78,18 +78,6 @@ namespace TetriNET2.Server.ConsoleApp
                         case ConsoleKey.X:
                             server.Stop();
                             stopped = true;
-                            break;
-                        case ConsoleKey.S:
-                            //
-                            break;
-                        case ConsoleKey.T:
-                            //
-                            break;
-                        case ConsoleKey.P:
-                            //
-                            break;
-                        case ConsoleKey.R:
-                            //
                             break;
                         case ConsoleKey.Add:
                         {

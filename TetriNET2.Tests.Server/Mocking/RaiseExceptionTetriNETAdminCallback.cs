@@ -55,15 +55,15 @@ namespace TetriNET2.Tests.Server.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnClientListReceived(List<ClientData> clients)
+        public void OnClientListReceived(List<ClientAdminData> clients)
         {
             throw new NotImplementedException();
         }
-        public void OnClientListInRoomReceived(Guid roomId, List<ClientData> clients)
+        public void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients)
         {
             throw new NotImplementedException();
         }
-        public void OnRoomListReceived(List<GameRoomData> rooms)
+        public void OnRoomListReceived(List<GameRoomAdminData> rooms)
         {
             throw new NotImplementedException();
         }

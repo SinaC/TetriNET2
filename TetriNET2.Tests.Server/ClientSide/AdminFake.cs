@@ -154,17 +154,17 @@ namespace TetriNET2.Tests.Server.ClientSide
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnClientListReceived(List<ClientData> clients)
+        public void OnClientListReceived(List<ClientAdminData> clients)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnClientListInRoomReceived(Guid roomId, List<ClientData> clients)
+        public void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnRoomListReceived(List<GameRoomData> rooms)
+        public void OnRoomListReceived(List<GameRoomAdminData> rooms)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }

@@ -131,6 +131,8 @@ namespace TetriNET2.Server
             //
             State = GameRoomStates.WaitStartGame;
             _actionQueue.Start(cancellationTokenSource);
+
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: Started", Name);
             return true;
         }
 
@@ -186,6 +188,8 @@ namespace TetriNET2.Server
 
             // Change state
             State = GameRoomStates.Created;
+
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: Stopped", Name);
             return true;
         }
 
@@ -229,7 +233,8 @@ namespace TetriNET2.Server
             client.Game = this;
             client.LastVoteKickAnswer = null;
 
-            if (client.IsPlayer && client == Players.FirstOrDefault()) // set game master
+            IClient newMaster = Players.FirstOrDefault();
+            if (client.IsPlayer && client == newMaster) // set game master
             {
                 // Clear previous game master
                 if (previousMaster != null)
@@ -249,7 +254,10 @@ namespace TetriNET2.Server
             {
                 foreach (IClient target in Clients.Where(c => c != client))
                     target.OnGameMasterModified(client.Id);
+                Log.Default.WriteLine(LogLevels.Info, "Game room {0}: Game master modified: {1}", Name, client.Id);
             }
+
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: client {1} joined", Name, client.Name);
             return true;
         }
 
@@ -279,7 +287,7 @@ namespace TetriNET2.Server
             bool wasPlaying = client.State == ClientStates.Playing;
 
             // Change role, state and game
-            client.Roles &= ~(ClientRoles.Player | ClientRoles.Spectator | ClientRoles.GameMaster); // remove player+spectator+GameMaster
+            client.Roles &= ~(ClientRoles.Player | ClientRoles.Spectator | ClientRoles.GameMaster); // remove Player+Spectator+GameMaster
             client.State = ClientStates.Connected;
             client.Game = null;
             client.LastVoteKickAnswer = null;
@@ -294,7 +302,7 @@ namespace TetriNET2.Server
             }
 
             // Inform client
-            client.OnGameLeft();
+            client.OnGameLeft(); // TODO: is this statement really usefull ???
 
             // Inform other clients in game
             foreach (IClient target in Clients.Where(c => c != client))
@@ -303,7 +311,8 @@ namespace TetriNET2.Server
             if (gameMasterModified)
             {
                 foreach (IClient target in Clients.Where(c => c != client))
-                    target.OnGameMasterModified(client.Id);
+                    target.OnGameMasterModified(newMaster.Id);
+                Log.Default.WriteLine(LogLevels.Info, "Game room {0}: Game master modified: {1}", Name, newMaster.Id);
             }
 
             // If game was running and player was playing, check if only one player left
@@ -327,6 +336,8 @@ namespace TetriNET2.Server
                     State = GameRoomStates.WaitStartGame;
                 }
             }
+
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: client {1} left", Name, client.Name);
             return true;
         }
 
@@ -381,7 +392,7 @@ namespace TetriNET2.Server
             // Start timeout timer
             _voteKickTimer.Change(TimeSpan.FromMilliseconds(VoteKickTimeout), Timeout.InfiniteTimeSpan);
             
-            Log.Default.WriteLine(LogLevels.Warning, "Vote kick started on {0} from {1}", target.Name, client.Name);
+            Log.Default.WriteLine(LogLevels.Warning, "Game room {0}: vote kick started on {1} from {2}", Name, target.Name, client.Name);
             return true;
         }
 
@@ -447,7 +458,7 @@ namespace TetriNET2.Server
 
             }
 
-            Log.Default.WriteLine(LogLevels.Info, "Vote kick answer {0} from {1}", accepted, client.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: vote kick answer {0} from {1}", accepted, client.Name);
             return true;
         }
 
@@ -472,7 +483,6 @@ namespace TetriNET2.Server
             }
             //
             _actionQueue.Enqueue(() => PlacePieceAction(client, pieceIndex, highestIndex, piece, orientation, posX, posY, grid));
-            //
             return true;
         }
 
@@ -611,10 +621,10 @@ namespace TetriNET2.Server
                 return false;
             }
             //
-            Log.Default.WriteLine(LogLevels.Info, "EarnAchievement:{0} {1} {2}", client.Name, achievementId, achievementTitle);
-
             foreach (IClient target in Clients.Where(x => x != client))
                 target.OnAchievementEarned(client.Id, achievementId, achievementTitle);
+
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: EarnAchievement:{1} {2} {3}", Name, client.Name, achievementId, achievementTitle);
             return true;
         }
 
@@ -671,7 +681,7 @@ namespace TetriNET2.Server
             _isSuddenDeathActive = false;
             if (Options.DelayBeforeSuddenDeath > 0)
             {
-                _suddenDeathTimer.Change(Options.DelayBeforeSuddenDeath*1000, Options.SuddenDeathTick*1000);
+                _suddenDeathTimer.Change(Options.DelayBeforeSuddenDeath*60*1000, Options.SuddenDeathTick*1000);
                 _isSuddenDeathActive = true;
                 Log.Default.WriteLine(LogLevels.Info, "Sudden death will be activated after {0} minutes and send lines every {1} seconds", Options.DelayBeforeSuddenDeath, Options.SuddenDeathTick);
             }
@@ -693,7 +703,7 @@ namespace TetriNET2.Server
             
             State = GameRoomStates.GameStarted;
 
-            Log.Default.WriteLine(LogLevels.Info, "Game started by {0}", client == null ? "[SERVER]" : client.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: game started by {1}", Name, client == null ? "[SERVER]" : client.Name);
 
             return true;
         }
@@ -747,7 +757,7 @@ namespace TetriNET2.Server
 
             State = GameRoomStates.WaitStartGame;
 
-            Log.Default.WriteLine(LogLevels.Info, "Game stopped by {0}", client == null ? "[SERVER]" : client.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: game stopped by {1}", Name, client == null ? "[SERVER]" : client.Name);
             return true;
         }
 
@@ -784,7 +794,7 @@ namespace TetriNET2.Server
             foreach (IClient target in Clients)
                 target.OnGamePaused();
 
-            Log.Default.WriteLine(LogLevels.Info, "Game paused by {0}", client == null ? "[SERVER]" : client.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: game paused by {1}", Name, client == null ? "[SERVER]" : client.Name);
             return true;
         }
 
@@ -821,7 +831,7 @@ namespace TetriNET2.Server
             foreach (IClient target in Clients)
                 target.OnGameResumed();
 
-            Log.Default.WriteLine(LogLevels.Info, "Game resumed by {0}", client == null ? "[SERVER]" : client.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: game resumed by {1}", Name, client == null ? "[SERVER]" : client.Name);
             return true;
         }
 
@@ -862,7 +872,7 @@ namespace TetriNET2.Server
             foreach (IClient target in Clients)
                 target.OnGameOptionsChanged(options);
 
-            Log.Default.WriteLine(LogLevels.Info, "Game options changed by {0}", client == null ? "[SERVER]" : client.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: game options changed by {1}", Name, client == null ? "[SERVER]" : client.Name);
             return true;
         }
 
@@ -897,7 +907,7 @@ namespace TetriNET2.Server
             foreach (IClient target in Clients)
                 target.OnWinListModified(_winList);
 
-            Log.Default.WriteLine(LogLevels.Info, "Win list resetted by {0}", client == null ? "[SERVER]" : client.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Game room {0}: win list resetted by {1}", Name, client == null ? "[SERVER]" : client.Name);
             return true;
         }
 
@@ -967,7 +977,7 @@ namespace TetriNET2.Server
 
         private void PlacePieceAction(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
         {
-            Log.Default.WriteLine(LogLevels.Info, "PlacePieceAction[{0}]{1}:{2} {3} {4} at {5},{6} {7}", client.Name, pieceIndex, highestIndex, piece, orientation, posX, posY, grid == null ? -1 : grid.Count(x => x > 0));
+            Log.Default.WriteLine(LogLevels.Debug, "Game room {0}: PlacePieceAction[{1}]{2}:{3} {4} {5} at {6},{7} {8}", Name, client.Name, pieceIndex, highestIndex, piece, orientation, posX, posY, grid == null ? -1 : grid.Count(x => x > 0));
 
             //if (index != player.PieceIndex)
             //    Log.Default.WriteLine(LogLevels.Error, "!!!! piece index different for player {0} local {1} remote {2}", player.Name, player.PieceIndex, index);
@@ -978,7 +988,7 @@ namespace TetriNET2.Server
             // Get next piece
             client.PieceIndex = pieceIndex;
             List<Pieces> nextPiecesToSend = new List<Pieces>();
-            Log.Default.WriteLine(LogLevels.Info, "{0} {1} indexes: {2} {3}", client.Id, client.Name, highestIndex, pieceIndex);
+            Log.Default.WriteLine(LogLevels.Debug, "{0} {1} indexes: {2} {3}", client.Id, client.Name, highestIndex, pieceIndex);
             if (highestIndex < pieceIndex)
                 Log.Default.WriteLine(LogLevels.Error, "PROBLEM WITH INDEXES!!!!!");
             if (highestIndex < pieceIndex + PiecesSendOnPlacePiece) // send many pieces when needed
@@ -1008,7 +1018,7 @@ namespace TetriNET2.Server
 
         private void ModifyGridAction(IClient client, byte[] grid)
         {
-            Log.Default.WriteLine(LogLevels.Info, "ModifyGridAction[{0}]", client.Name);
+            Log.Default.WriteLine(LogLevels.Debug, "Game room {0}: ModifyGridAction[{1}]", Name, client.Name);
 
             // Set grid
             client.Grid = grid;
@@ -1019,7 +1029,7 @@ namespace TetriNET2.Server
 
         private void UseSpecialAction(IClient client, IClient target, Specials special)
         {
-            Log.Default.WriteLine(LogLevels.Info, "UseSpecial[{0}][{1}]{2}", client.Name, target.Name, special);
+            Log.Default.WriteLine(LogLevels.Debug, "Game room {0}: UseSpecial[{1}][{2}]:{3}", Name, client.Name, target.Name, special);
 
             if (target.State != ClientStates.Playing)
             {
@@ -1054,7 +1064,7 @@ namespace TetriNET2.Server
 
         private void SendLinesAction(IClient client, int count)
         {
-            Log.Default.WriteLine(LogLevels.Info, "SendLines[{0}]:{1}", client.Name, count);
+            Log.Default.WriteLine(LogLevels.Debug, "Game room {0}: SendLines[{1}]: {2}", Name, client.Name, count);
 
             // Store special id locally
             int specialId = _specialId;
@@ -1067,7 +1077,7 @@ namespace TetriNET2.Server
         
         private void GameLostAction(IClient client)
         {
-            Log.Default.WriteLine(LogLevels.Info, "GameLost[{0}]  {1}", client.Name, State);
+            Log.Default.WriteLine(LogLevels.Debug, "Game room {0}: GameLost[{1}]: {2}", Name, client.Name, State);
 
             if (client.State != ClientStates.Playing)
             {
@@ -1130,7 +1140,7 @@ namespace TetriNET2.Server
 
         private void FinishContinuousSpecialAction(IClient client, Specials special)
         {
-            Log.Default.WriteLine(LogLevels.Info, "FinishContinuousSpecial[{0}]: {1}", client.Name, special);
+            Log.Default.WriteLine(LogLevels.Debug, "Game room {0}: FinishContinuousSpecial[{1}]: {2}", Name, client.Name, special);
 
             // Send to everyone except sender
             foreach (IClient target in Clients.Where(x => x != client))
@@ -1163,7 +1173,7 @@ namespace TetriNET2.Server
         {
             if (State == GameRoomStates.GameStarted && _isSuddenDeathActive)
             {
-                Log.Default.WriteLine(LogLevels.Info, "Sudden death tick");
+                Log.Default.WriteLine(LogLevels.Info, "Game room {0}: Sudden death tick", Name);
                 // Delay elapsed, send lines
                 foreach (IClient player in Players.Where(p => p.State == ClientStates.Playing))
                     player.OnServerLinesAdded(1);
@@ -1174,7 +1184,7 @@ namespace TetriNET2.Server
         {
             if (_voteKickTarget != null)
             {
-                Log.Default.WriteLine(LogLevels.Info, "Vote kick timeout reached, cancel vote");
+                Log.Default.WriteLine(LogLevels.Info, "Game room {0}: vote kick timeout reached, cancel vote", Name);
 
                 // Reset target
                 _voteKickTarget = null;

@@ -15,7 +15,9 @@ namespace TetriNET2.Client.ConsoleApp
         {
             Console.WriteLine("Commands:");
             Console.WriteLine("x: Stop client");
-            Console.WriteLine("j: Create and join game as player");
+            Console.WriteLine("l: Get room list");
+            Console.WriteLine("c: Create and join game as player");
+            Console.WriteLine("r: Join random game");
             Console.WriteLine("s: Start game");
             Console.WriteLine("t: Stop game");
         }
@@ -39,7 +41,7 @@ namespace TetriNET2.Client.ConsoleApp
                         Major = 1,
                         Minor = 0
                     },
-                "client1", "team1");
+                "client1" + Guid.NewGuid().ToString().Substring(0, 5), "team1");
 
             bool stopped = false;
             while (!stopped)
@@ -53,10 +55,17 @@ namespace TetriNET2.Client.ConsoleApp
                             DisplayHelp();
                             break;
                         case ConsoleKey.X:
+                            proxy.ClientDisconnect();
                             stopped = true;
                             break;
+                        case ConsoleKey.L:
+                            proxy.ClientGetRoomList();
+                            break;
                         case ConsoleKey.J:
-                            proxy.ClientCreateAndJoinGame("GAME1", null, GameRules.Standard, false);
+                            proxy.ClientCreateAndJoinGame("GAME1" + Guid.NewGuid().ToString().Substring(0, 5), null, GameRules.Standard, false);
+                            break;
+                        case ConsoleKey.R:
+                            proxy.ClientJoinRandomGame(false);
                             break;
                         case ConsoleKey.S:
                             proxy.ClientStartGame();
@@ -156,6 +165,11 @@ namespace TetriNET2.Client.ConsoleApp
         public void OnServerStopped()
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+        }
+
+        public void OnRoomListReceived(List<GameRoomData> rooms)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, rooms);
         }
 
         public void OnClientConnected(Guid clientId, string name, string team)

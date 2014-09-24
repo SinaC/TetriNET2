@@ -83,6 +83,11 @@ namespace TetriNET2.Tests.Server.Mocking
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
+        public void OnRoomListReceived(List<GameRoomData> rooms)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, rooms);
+        }
+
         public void OnClientConnected(Guid clientId, string name, string team)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, name, team);

@@ -28,6 +28,7 @@ namespace TetriNET2.Server.ConsoleApp
         public event HostClientJoinGameEventHandler HostClientJoinGame;
         public event HostClientJoinRandomGameEventHandler HostClientJoinRandomGame;
         public event HostClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
+        public event HostClientGetRoomListEventHandler HostClientGetRoomList;
         public event HostClientStartGameEventHandler HostClientStartGame;
         public event HostClientStopGameEventHandler HostClientStopGame;
         public event HostClientPauseGameEventHandler HostClientPauseGame;
@@ -169,6 +170,13 @@ namespace TetriNET2.Server.ConsoleApp
             IClient client = ClientManager[callback];
             if (client != null && HostClientCreateAndJoinGame != null)
                 HostClientCreateAndJoinGame(client, name, password, rule, asSpectator);
+        }
+
+        public void ClientGetRoomList(ITetriNETCallback callback)
+        {
+            IClient client = ClientManager[callback];
+            if (client != null && HostClientGetRoomList != null)
+                HostClientGetRoomList(client);
         }
 
         public void ClientStartGame(ITetriNETCallback callback)

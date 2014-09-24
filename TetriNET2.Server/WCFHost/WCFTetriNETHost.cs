@@ -101,6 +101,11 @@ namespace TetriNET2.Server.WCFHost
                 _host.ClientCreateAndJoinGame(Callback, name, password, rule, asSpectator);
             }
 
+            public void ClientGetRoomList()
+            {
+                _host.ClientGetRoomList(Callback);
+            }
+
             public void ClientStartGame()
             {
                 _host.ClientStartGame(Callback);
@@ -227,12 +232,16 @@ namespace TetriNET2.Server.WCFHost
         public event HostClientConnectEventHandler HostClientConnect;
         public event HostClientDisconnectEventHandler HostClientDisconnect;
         public event HostClientHeartbeatEventHandler HostClientHeartbeat;
+
         public event HostClientSendPrivateMessageEventHandler HostClientSendPrivateMessage;
         public event HostClientSendBroadcastMessageEventHandler HostClientSendBroadcastMessage;
+
         public event HostClientChangeTeamEventHandler HostClientChangeTeam;
         public event HostClientJoinGameEventHandler HostClientJoinGame;
         public event HostClientJoinRandomGameEventHandler HostClientJoinRandomGame;
         public event HostClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
+        public event HostClientGetRoomListEventHandler HostClientGetRoomList;
+
         public event HostClientStartGameEventHandler HostClientStartGame;
         public event HostClientStopGameEventHandler HostClientStopGame;
         public event HostClientPauseGameEventHandler HostClientPauseGame;
@@ -241,7 +250,9 @@ namespace TetriNET2.Server.WCFHost
         public event HostClientVoteKickEventHandler HostClientVoteKick;
         public event HostClientVoteKickResponseEventHandler HostClientVoteKickAnswer;
         public event HostClientResetWinListEventHandler HostClientResetWinList;
+
         public event HostClientLeaveGameEventHandler HostClientLeaveGame;
+
         public event HostClientPlacePieceEventHandler HostClientPlacePiece;
         public event HostClientModifyGridEventHandler HostClientModifyGrid;
         public event HostClientUseSpecialEventHandler HostClientUseSpecial;
@@ -339,6 +350,15 @@ namespace TetriNET2.Server.WCFHost
                 HostClientCreateAndJoinGame.Do(x => x(client, name, password, rule, asSpectator));
             else
                 Log.Default.WriteLine(LogLevels.Warning, "ClientCreateAndJoinGame from unknown client");
+        }
+
+        public void ClientGetRoomList(ITetriNETCallback callback)
+        {
+            IClient client = ClientManager[callback];
+            if (client != null)
+                HostClientGetRoomList.Do(x => x(client));
+            else
+                Log.Default.WriteLine(LogLevels.Warning, "ClientGetRoomList from unknown client");
         }
 
         public void ClientStartGame(ITetriNETCallback callback)

@@ -166,16 +166,20 @@ namespace TetriNET2.Server.WCFHost
 
         public event HostAdminConnectEventHandler HostAdminConnect;
         public event HostAdminDisconnectEventHandler HostAdminDisconnect;
+
         public event HostAdminSendPrivateAdminMessageEventHandler HostAdminSendPrivateAdminMessage;
         public event HostAdminSendPrivateMessageEventHandler HostAdminSendPrivateMessage;
         public event HostAdminSendBroadcastMessageEventHandler HostAdminSendBroadcastMessage;
+
         public event HostAdminGetAdminListEventHandler HostAdminGetAdminList;
         public event HostAdminGetClientListEventHandler HostAdminGetClientList;
         public event HostAdminGetClientListInRoomEventHandler HostAdminGetClientListInRoom;
         public event HostAdminGetRoomListEventHandler HostAdminGetRoomList;
         public event HostAdminGetBannedListEventHandler HostAdminGetBannedList;
+
         public event HostAdminKickEventHandler HostAdminKick;
         public event HostAdminBanEventHandler HostAdminBan;
+
         public event HostAdminRestartServerEventHandler HostAdminRestartServer;
 
         #region ITetriNETAdmin

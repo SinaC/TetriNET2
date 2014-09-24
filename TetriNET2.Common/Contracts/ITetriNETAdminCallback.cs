@@ -38,11 +38,11 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void OnAdminListReceived(List<AdminData> admins);
         [OperationContract(IsOneWay = true)]
-        void OnClientListReceived(List<ClientData> clients);
+        void OnClientListReceived(List<ClientAdminData> clients);
         [OperationContract(IsOneWay = true)]
-        void OnClientListInRoomReceived(Guid roomId, List<ClientData> clients);
+        void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients);
         [OperationContract(IsOneWay = true)]
-        void OnRoomListReceived(List<GameRoomData> rooms);
+        void OnRoomListReceived(List<GameRoomAdminData> rooms);
         [OperationContract(IsOneWay = true)]
         void OnBannedListReceived(List<BanEntryData> entries);
     }

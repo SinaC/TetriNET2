@@ -20,11 +20,12 @@ namespace TetriNET2.Server
         private const int HeartbeatDelay = 300; // in ms
         private const int TimeoutDelay = 500; // in ms
         private const int MaxTimeoutCountBeforeDisconnection = 3;
-        private const bool IsTimeoutDetectionActive = true;
+        private const bool IsTimeoutDetectionActive = false;
         private const int MinRestartDelay = 30; // in seconds
 
         private readonly List<IHost> _hosts = new List<IHost>();
         private readonly IFactory _factory;
+        private readonly IPasswordManager _passwordManager;
         private readonly IBanManager _banManager;
         private readonly IClientManager _clientManager;
         private readonly IAdminManager _adminManager;
@@ -36,10 +37,12 @@ namespace TetriNET2.Server
         private int _restartSecondLeft;
         private bool _isRestartRunning;
 
-        public Server(IFactory factory, IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
+        public Server(IFactory factory, IPasswordManager passwordManager, IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
         {
             if (factory == null)
                 throw new ArgumentNullException("factory");
+            if (passwordManager == null)
+                throw new ArgumentNullException("passwordManager");
             if (banManager == null)
                 throw new ArgumentNullException("banManager");
             if (clientManager == null)
@@ -50,6 +53,7 @@ namespace TetriNET2.Server
                 throw new ArgumentNullException("gameRoomManager");
 
             _factory = factory;
+            _passwordManager = passwordManager;
             _banManager = banManager;
             _clientManager = clientManager;
             _adminManager = adminManager;
@@ -112,6 +116,7 @@ namespace TetriNET2.Server
             host.HostClientJoinGame += OnClientJoinGame;
             host.HostClientJoinRandomGame += OnClientJoinRandomGame;
             host.HostClientCreateAndJoinGame += OnClientCreateAndJoinGame;
+            host.HostClientGetRoomList += OnClientGetRoomList;
 
             // Game room as game master (player or spectator)
             host.HostClientStartGame += OnClientStartGame;
@@ -179,6 +184,11 @@ namespace TetriNET2.Server
                     Minor = minor
                 };
             return true;
+        }
+
+        public bool SetAdminPassword(string name, string cryptedPassword)
+        {
+            return _passwordManager.Add(DomainTypes.Admin, name, cryptedPassword);
         }
 
         public bool Start()
@@ -303,7 +313,7 @@ namespace TetriNET2.Server
                         result = ConnectResults.FailedTooManyClients;
                         Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because too many clients already connected", name, address == null ? "???" : address.ToString());
                     }
-                    else if (String.IsNullOrEmpty(name) || name.Length > 20)
+                    else if (String.IsNullOrEmpty(name) || name.Length > 20 || name.Any(x => !Char.IsLetterOrDigit(x)))
                     {
                         result = ConnectResults.FailedInvalidName;
                         Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because name is invalid", name, address == null ? "???" : address.ToString());
@@ -455,7 +465,7 @@ namespace TetriNET2.Server
             if (game == null)
             {
                 result = GameJoinResults.FailedNoRoomAvailable;
-                Log.Default.WriteLine(LogLevels.Info, "Client {0} cannot find a suitable random game");
+                Log.Default.WriteLine(LogLevels.Info, "Client {0} cannot find a suitable random game", client.Name);
             }
             else
             {
@@ -546,6 +556,29 @@ namespace TetriNET2.Server
             }
             if (result != GameCreateResults.Successfull)
                 client.OnGameCreated(result, null);
+        }
+
+        private void OnClientGetRoomList(IClient client)
+        {
+            Log.Default.WriteLine(LogLevels.Info, "Client get room list: {0}", client.Name);
+
+            // Build list
+            List<GameRoomData> list;
+            lock (_gameRoomManager)
+                list = _gameRoomManager.Rooms.Select(x => new GameRoomData
+                {
+                    Id = x.Id,
+                    Name = x.Name,
+                    Rule = x.Rule,
+                    Options = x.Options,
+                    Clients = x.Clients.Select(c => new ClientData
+                        {
+                            Id = x.Id,
+                            Name = x.Name
+                        }).ToList()
+                }).ToList();
+            // Send list
+            client.OnRoomListReceived(list);
         }
 
         private void OnClientStartGame(IClient client)
@@ -823,8 +856,6 @@ namespace TetriNET2.Server
         // Admin
         private void OnAdminConnect(ITetriNETAdminCallback callback, IPAddress address, Versioning version, string name, string password)
         {
-            // TODO: check password
-
             Log.Default.WriteLine(LogLevels.Info, "Connect admin {0}[1] {2}.{3}", name, address == null ? "???" : address.ToString(), version == null ? -1 : version.Major, version == null ? -1 : version.Minor);
 
             ConnectResults result = ConnectResults.Successfull;
@@ -845,7 +876,7 @@ namespace TetriNET2.Server
                         result = ConnectResults.FailedTooManyAdmins;
                         Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because too many admins already connected", name, address == null ? "???" : address.ToString());
                     }
-                    else if (String.IsNullOrEmpty(name) || name.Length > 20)
+                    else if (String.IsNullOrEmpty(name) || name.Length > 20 || name.Any(x => !Char.IsLetterOrDigit(x)))
                     {
                         result = ConnectResults.FailedInvalidName;
                         Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because name is invalid", name, address == null ? "???" : address.ToString());
@@ -854,6 +885,11 @@ namespace TetriNET2.Server
                     {
                         result = ConnectResults.FailedBanned;
                         Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because admin is banned", name, address == null ? "???" : address.ToString());
+                    }
+                    else if (!_passwordManager.Check(DomainTypes.Admin, name, password))
+                    {
+                        result = ConnectResults.FailedWrongAdminPassword;
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because wrong password", name, address == null ? "???" : address.ToString());
                     }
                     else
                     {
@@ -946,9 +982,9 @@ namespace TetriNET2.Server
             Log.Default.WriteLine(LogLevels.Info, "Admin asks for client list:{0}", admin.Name);
 
             // Build list
-            List<ClientData> list;
+            List<ClientAdminData> list;
             lock (_clientManager.LockObject)
-                list = _clientManager.Clients.Select(x => new ClientData
+                list = _clientManager.Clients.Select(x => new ClientAdminData
                 {
                     Id = x.Id,
                     Name = x.Name,
@@ -969,7 +1005,7 @@ namespace TetriNET2.Server
             Log.Default.WriteLine(LogLevels.Info, "Admin asks for client list in room:{0} {1}", admin.Name, room.Name);
 
             // Build list
-            List<ClientData> list = BuildClientDatas(room);
+            List<ClientAdminData> list = BuildClientDatas(room);
             // Send list
             admin.OnClientListReceived(list);
         }
@@ -979,9 +1015,9 @@ namespace TetriNET2.Server
             Log.Default.WriteLine(LogLevels.Info, "Admin asks for room list:{0}", admin.Name);
 
             // Build list
-            List<GameRoomData> list;
+            List<GameRoomAdminData> list;
             lock (_gameRoomManager)
-                list = _gameRoomManager.Rooms.Select(x => new GameRoomData
+                list = _gameRoomManager.Rooms.Select(x => new GameRoomAdminData
                 {
                     Id = x.Id,
                     Name = x.Name,
@@ -1278,10 +1314,10 @@ namespace TetriNET2.Server
                 : String.Format("***Server will restart in {0} seconds***", seconds);
         }
 
-        private static List<ClientData> BuildClientDatas(IGameRoom room)
+        private static List<ClientAdminData> BuildClientDatas(IGameRoom room)
         {
             lock (room)
-                return room.Clients.Select(c => new ClientData
+                return room.Clients.Select(c => new ClientAdminData
                 {
                     Id = c.Id,
                     Name = c.Name,

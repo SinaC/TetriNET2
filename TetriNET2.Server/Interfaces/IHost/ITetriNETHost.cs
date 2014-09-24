@@ -20,6 +20,7 @@ namespace TetriNET2.Server.Interfaces.IHost
     public delegate void HostClientJoinGameEventHandler(IClient client, IGameRoom game, string password, bool asSpectator);
     public delegate void HostClientJoinRandomGameEventHandler(IClient client, bool asSpectator);
     public delegate void HostClientCreateAndJoinGameEventHandler(IClient client, string name, string password, GameRules rule, bool asSpectator);
+    public delegate void HostClientGetRoomListEventHandler(IClient client);
 
     // Game room as game master (player or spectator)
     public delegate void HostClientStartGameEventHandler(IClient client);
@@ -61,6 +62,7 @@ namespace TetriNET2.Server.Interfaces.IHost
         event HostClientJoinGameEventHandler HostClientJoinGame;
         event HostClientJoinRandomGameEventHandler HostClientJoinRandomGame;
         event HostClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
+        event HostClientGetRoomListEventHandler HostClientGetRoomList;
 
         // Game room as game master (player or spectator)
         event HostClientStartGameEventHandler HostClientStartGame;

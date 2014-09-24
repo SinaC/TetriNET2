@@ -41,5 +41,9 @@ namespace TetriNET2.Common.DataContracts
         [EnumMember]
         [Description("Incompatible version")]
         FailedIncompatibleVersion,
+
+        [EnumMember]
+        [Description("Wrong password")]
+        FailedWrongAdminPassword,
     }
 }

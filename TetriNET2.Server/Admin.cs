@@ -13,6 +13,8 @@ namespace TetriNET2.Server
 {
     public sealed class Admin : IAdmin
     {
+        private bool _disconnected;
+
         public Admin(string name, IPAddress address, ITetriNETAdminCallback callback)
         {
             if (name == null)
@@ -27,20 +29,24 @@ namespace TetriNET2.Server
             Address = address;
             Callback = callback;
             ConnectTime = DateTime.Now;
+            _disconnected = false;
         }
 
         private void ExceptionFreeAction(Action action, [CallerMemberName]string actionName = null)
         {
             try
             {
-                action();
+                if (!_disconnected)
+                    action();
             }
             catch (CommunicationObjectAbortedException)
             {
+                _disconnected = true;
                 ConnectionLost.Do(x => x(this));
             }
             catch (Exception ex)
             {
+                _disconnected = true;
                 Log.Default.WriteLine(LogLevels.Error, "Exception:{0} {1}", actionName, ex);
                 ConnectionLost.Do(x => x(this));
             }
@@ -120,17 +126,17 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnAdminListReceived(admins));
         }
 
-        public void OnClientListReceived(List<Common.DataContracts.ClientData> clients)
+        public void OnClientListReceived(List<Common.DataContracts.ClientAdminData> clients)
         {
             ExceptionFreeAction(() => Callback.OnClientListReceived(clients));
         }
 
-        public void OnClientListInRoomReceived(Guid roomId, List<Common.DataContracts.ClientData> clients)
+        public void OnClientListInRoomReceived(Guid roomId, List<Common.DataContracts.ClientAdminData> clients)
         {
             ExceptionFreeAction(() => Callback.OnClientListInRoomReceived(roomId, clients));
         }
 
-        public void OnRoomListReceived(List<Common.DataContracts.GameRoomData> rooms)
+        public void OnRoomListReceived(List<Common.DataContracts.GameRoomAdminData> rooms)
         {
             ExceptionFreeAction(() => Callback.OnRoomListReceived(rooms));
         }

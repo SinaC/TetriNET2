@@ -13,6 +13,8 @@ namespace TetriNET2.Server
 {
     public class Client : IClient
     {
+        private bool _disconnected;
+
         public Client(string name, IPAddress address, ITetriNETCallback callback, string team = null)
         {
             if (name == null)
@@ -37,21 +39,25 @@ namespace TetriNET2.Server
             LastActionToClient = DateTime.Now;
             LastActionFromClient = DateTime.Now;
             TimeoutCount = 0;
+            _disconnected = false;
         }
 
         private void ExceptionFreeAction(Action action, [CallerMemberName]string actionName = null)
         {
             try
             {
-                action();
+                if (!_disconnected)
+                    action();
                 LastActionToClient = DateTime.Now;
             }
             catch (CommunicationObjectAbortedException)
             {
+                _disconnected = true;
                 ConnectionLost.Do(x => x(this));
             }
             catch (Exception ex)
             {
+                _disconnected = true;
                 Log.Default.WriteLine(LogLevels.Error, "Exception:{0} {1}", actionName, ex);
                 ConnectionLost.Do(x => x(this));
             }
@@ -131,6 +137,11 @@ namespace TetriNET2.Server
         public void OnServerStopped()
         {
             ExceptionFreeAction(() => Callback.OnServerStopped());
+        }
+
+        public void OnRoomListReceived(List<GameRoomData> rooms)
+        {
+            ExceptionFreeAction(() => Callback.OnRoomListReceived(rooms));
         }
 
         public void OnClientConnected(Guid clientId, string name, string team)

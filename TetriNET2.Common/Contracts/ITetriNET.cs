@@ -20,6 +20,7 @@ namespace TetriNET2.Common.Contracts
         void ClientJoinGame(ITetriNETCallback callback, Guid gameId, string password, bool asSpectator);
         void ClientJoinRandomGame(ITetriNETCallback callback, bool asSpectator);
         void ClientCreateAndJoinGame(ITetriNETCallback callback, string name, string password, GameRules rule, bool asSpectator);
+        void ClientGetRoomList(ITetriNETCallback callback);
 
         // Game room as game master (player or spectator)
         void ClientStartGame(ITetriNETCallback callback);

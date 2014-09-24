@@ -42,7 +42,7 @@ namespace TetriNET2.Common.ActionQueue
 
         private void GameActionsTask()
         {
-            Log.Default.WriteLine(LogLevels.Info, "GameActionsTask started");
+            Log.Default.WriteLine(LogLevels.Info, "GameActionsTask: Started");
 
             try
             {
@@ -50,7 +50,7 @@ namespace TetriNET2.Common.ActionQueue
                 {
                     if (_cancellationTokenSource.IsCancellationRequested)
                     {
-                        Log.Default.WriteLine(LogLevels.Info, "Stop background task event raised");
+                        Log.Default.WriteLine(LogLevels.Info, "GameActionsTask: Stop event raised");
                         break;
                     }
                     try
@@ -61,31 +61,29 @@ namespace TetriNET2.Common.ActionQueue
                         {
                             try
                             {
-                                Log.Default.WriteLine(LogLevels.Debug, "Dequeue, item in queue {0}", _gameActionBlockingCollection.Count);
+                                Log.Default.WriteLine(LogLevels.Debug, "GameActionsTask: Dequeue, item in queue {0}", _gameActionBlockingCollection.Count);
                                 action();
                             }
                             catch (Exception ex)
                             {
-                                Log.Default.WriteLine(LogLevels.Error, "Exception raised in GameActionsTask. Exception:{0}", ex);
+                                Log.Default.WriteLine(LogLevels.Error, "GameActionsTask: Exception:{0}", ex);
                             }
                         }
                     }
                     catch (OperationCanceledException)
                     {
-                        Log.Default.WriteLine(LogLevels.Info, "Taking cancelled");
+                        Log.Default.WriteLine(LogLevels.Info, "GameActionsTask: TryTake cancelled");
                         break;
                     }
                 }
             }
             catch (TaskCanceledException ex)
             {
-                Log.Default.WriteLine(LogLevels.Error, "GameActionsTask cancelled exception. Exception: {0}", ex);
+                Log.Default.WriteLine(LogLevels.Error, "GameActionsTask: Cancelled exception. Exception: {0}", ex);
             }
 
-
-            Log.Default.WriteLine(LogLevels.Info, "GameActionsTask stopped");
+            Log.Default.WriteLine(LogLevels.Info, "GameActionsTask: Stopped");
         }
-
 
         #region IDisposable
 

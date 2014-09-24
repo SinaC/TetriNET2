@@ -81,6 +81,11 @@ namespace TetriNET2.Tests.Server.ClientSide
             Host.ClientCreateAndJoinGame(this, name, password, rule, asSpectator);
         }
 
+        public void ClientGetRoomList()
+        {
+            Host.ClientGetRoomList(this);
+        }
+
         public void ClientStartGame()
         {
             Host.ClientStartGame(this);
@@ -183,6 +188,11 @@ namespace TetriNET2.Tests.Server.ClientSide
         public void OnServerStopped()
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+        }
+
+        public void OnRoomListReceived(List<GameRoomData> rooms)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, rooms);
         }
 
         public void OnClientConnected(Guid clientId, string name, string team)
