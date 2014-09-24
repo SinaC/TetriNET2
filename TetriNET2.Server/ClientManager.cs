@@ -8,7 +8,7 @@ using TetriNET2.Server.Interfaces;
 
 namespace TetriNET2.Server
 {
-    public class ClientManager : IClientManager
+    public sealed class ClientManager : IClientManager
     {
         private readonly Dictionary<ITetriNETCallback, IClient> _clients = new Dictionary<ITetriNETCallback, IClient>();
         private readonly object _lockObject = new object();

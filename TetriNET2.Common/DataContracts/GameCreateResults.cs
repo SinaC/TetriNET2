@@ -21,5 +21,9 @@ namespace TetriNET2.Common.DataContracts
         [EnumMember]
         [Description("Internal error")]
         FailedInternalError,
+
+        [EnumMember]
+        [Description("Already in a game")]
+        FailedAlreadyInGame,
     }
 }

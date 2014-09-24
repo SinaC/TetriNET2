@@ -5,11 +5,11 @@ using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces;
 using TetriNET2.Server.Interfaces.IHost;
 
-namespace TetriNET2.Server.ConsoleApp
+namespace TetriNET2.Server.Tests.Mocking
 {
-    public class DummyHost : IHost
+    public sealed class HostMock : IHost
     {
-        public DummyHost(IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
+        public HostMock(IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
         {
             BanManager = banManager;
             ClientManager = clientManager;
@@ -29,6 +29,7 @@ namespace TetriNET2.Server.ConsoleApp
         public event HostClientJoinRandomGameEventHandler HostClientJoinRandomGame;
         public event HostClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
         public event HostClientGetRoomListEventHandler HostClientGetRoomList;
+        public event HostClientGetClientListEventHandler HostClientGetClientList;
         public event HostClientStartGameEventHandler HostClientStartGame;
         public event HostClientStopGameEventHandler HostClientStopGame;
         public event HostClientPauseGameEventHandler HostClientPauseGame;
@@ -38,6 +39,7 @@ namespace TetriNET2.Server.ConsoleApp
         public event HostClientVoteKickResponseEventHandler HostClientVoteKickAnswer;
         public event HostClientResetWinListEventHandler HostClientResetWinList;
         public event HostClientLeaveGameEventHandler HostClientLeaveGame;
+        public event HostClientGetGameClientListEventHandler HostClientGetGameClientList;
         public event HostClientPlacePieceEventHandler HostClientPlacePiece;
         public event HostClientModifyGridEventHandler HostClientModifyGrid;
         public event HostClientUseSpecialEventHandler HostClientUseSpecial;
@@ -111,7 +113,9 @@ namespace TetriNET2.Server.ConsoleApp
         public void ClientConnect(ITetriNETCallback callback, IPAddress address, Versioning version, string name, string team)
         {
             if (HostClientConnect != null)
+            {
                 HostClientConnect(callback, address, version, name, team);
+            }
         }
 
         public void ClientDisconnect(ITetriNETCallback callback)
@@ -179,6 +183,13 @@ namespace TetriNET2.Server.ConsoleApp
                 HostClientGetRoomList(client);
         }
 
+        public void ClientGetClientList(ITetriNETCallback callback)
+        {
+            IClient client = ClientManager[callback];
+            if (client != null && HostClientGetClientList != null)
+                HostClientGetClientList(client);
+        }
+
         public void ClientStartGame(ITetriNETCallback callback)
         {
             IClient client = ClientManager[callback];
@@ -241,6 +252,13 @@ namespace TetriNET2.Server.ConsoleApp
             IClient client = ClientManager[callback];
             if (client != null && HostClientLeaveGame != null)
                 HostClientLeaveGame(client);
+        }
+
+        public void ClientGetGameClientList(ITetriNETCallback callback)
+        {
+            IClient client = ClientManager[callback];
+            if (client != null && HostClientGetGameClientList != null)
+                HostClientGetGameClientList(client);
         }
 
         public void ClientPlacePiece(ITetriNETCallback callback, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)

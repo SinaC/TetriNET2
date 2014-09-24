@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace TetriNET2.Common.DataContracts
 {
     [DataContract]
-    public class GameStatistics
+    public sealed class GameStatistics
     {
         [DataMember]
         public DateTime GameStarted { get; set; }

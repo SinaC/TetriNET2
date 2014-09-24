@@ -3,7 +3,7 @@
 namespace TetriNET2.Common.DataContracts
 {
     [DataContract]
-    public class WinEntry
+    public sealed class WinEntry
     {
         [DataMember]
         public string PlayerName { get; set; }

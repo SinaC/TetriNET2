@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces;
 
-namespace TetriNET2.Tests.Server.Mocking
+namespace TetriNET2.Server.Tests.Mocking
 {
     public class PieceProviderMock : IPieceProvider
     {

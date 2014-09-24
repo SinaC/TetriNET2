@@ -29,5 +29,9 @@ namespace TetriNET2.Common.DataContracts
         [EnumMember]
         [Description("No room available")]
         FailedNoRoomAvailable,
+
+        [EnumMember]
+        [Description("Already in a game")]
+        FailedAlreadyInGame,
     }
 }

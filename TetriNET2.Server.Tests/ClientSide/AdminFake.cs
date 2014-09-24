@@ -6,7 +6,7 @@ using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces.IHost;
 
-namespace TetriNET2.Tests.Server.ClientSide
+namespace TetriNET2.Server.Tests.ClientSide
 {
     public class AdminFake : ITetriNETAdminCallback
     {

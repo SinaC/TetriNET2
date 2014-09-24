@@ -17,7 +17,7 @@ namespace TetriNET2.Common.Logger
     //    }
     //}
 
-    public class Log : ILog
+    public sealed class Log : ILog
     {
         #region Singleton
 

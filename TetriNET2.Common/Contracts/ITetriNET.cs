@@ -21,6 +21,7 @@ namespace TetriNET2.Common.Contracts
         void ClientJoinRandomGame(ITetriNETCallback callback, bool asSpectator);
         void ClientCreateAndJoinGame(ITetriNETCallback callback, string name, string password, GameRules rule, bool asSpectator);
         void ClientGetRoomList(ITetriNETCallback callback);
+        void ClientGetClientList(ITetriNETCallback callback);
 
         // Game room as game master (player or spectator)
         void ClientStartGame(ITetriNETCallback callback);
@@ -34,6 +35,7 @@ namespace TetriNET2.Common.Contracts
 
         // Game room as player or spectator
         void ClientLeaveGame(ITetriNETCallback callback);
+        void ClientGetGameClientList(ITetriNETCallback callback);
 
         // Game room as player
         void ClientPlacePiece(ITetriNETCallback callback, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid);

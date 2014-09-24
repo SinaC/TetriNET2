@@ -4,7 +4,7 @@ using TetriNET2.Server.Interfaces;
 
 namespace TetriNET2.Server
 {
-    public class PasswordManager : IPasswordManager
+    public sealed class PasswordManager : IPasswordManager
     {
         private sealed class PasswordEntry
         {

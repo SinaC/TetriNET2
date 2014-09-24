@@ -2,7 +2,7 @@
 
 namespace TetriNET2.Common.Logger
 {
-    public class NLogger : ILog
+    public sealed class NLogger : ILog
     {
         private readonly NLog.Logger _logger = NLog.LogManager.GetLogger("TetriNET2");
 

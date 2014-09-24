@@ -7,7 +7,7 @@ using TetriNET2.Common.Randomizer;
 namespace TetriNET2.Common.DataContracts
 {
     [DataContract]
-    public class GameOptions
+    public sealed class GameOptions
     {
         [DataMember]
         public List<PieceOccurancy> PieceOccurancies { get; set; } // in %, number of entries must match Pieces enum length

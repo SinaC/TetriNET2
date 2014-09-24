@@ -12,7 +12,7 @@ using TetriNET2.Server.Interfaces.IHost;
 
 namespace TetriNET2.Server.WCFHost
 {
-    public partial class WCFHost : IHost
+    public sealed partial class WCFHost : IHost
     {
         [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Reentrant, InstanceContextMode = InstanceContextMode.Single)]
         public sealed class WCFAdminServiceHost : IWCFTetriNETAdmin, IDisposable

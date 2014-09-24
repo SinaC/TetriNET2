@@ -33,6 +33,8 @@ namespace TetriNET2.Common.Contracts.WCF
         void ClientCreateAndJoinGame(string name, string password, GameRules rule, bool asSpectator);
         [OperationContract(IsOneWay = true)]
         void ClientGetRoomList();
+        [OperationContract(IsOneWay = true)]
+        void ClientGetClientList();
 
         // Game room as game master (player or spectator)
         [OperationContract(IsOneWay = true)]
@@ -55,6 +57,8 @@ namespace TetriNET2.Common.Contracts.WCF
         // Game room as player or spectator
         [OperationContract(IsOneWay = true)]
         void ClientLeaveGame();
+        [OperationContract(IsOneWay = true)]
+        void ClientGetGameClientList();
 
         // Game room as player
         [OperationContract(IsOneWay = true)]

@@ -19,6 +19,10 @@ namespace TetriNET2.Common.Contracts
 
         [OperationContract(IsOneWay = true)]
         void OnRoomListReceived(List<GameRoomData> rooms);
+        [OperationContract(IsOneWay = true)]
+        void OnClientListReceived(List<ClientData> clients);
+        [OperationContract(IsOneWay = true)]
+        void OnGameClientListReceived(List<ClientData> clients);
 
         [OperationContract(IsOneWay = true)]
         void OnClientConnected(Guid clientId, string name, string team);

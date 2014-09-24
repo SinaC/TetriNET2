@@ -117,6 +117,7 @@ namespace TetriNET2.Server
             host.HostClientJoinRandomGame += OnClientJoinRandomGame;
             host.HostClientCreateAndJoinGame += OnClientCreateAndJoinGame;
             host.HostClientGetRoomList += OnClientGetRoomList;
+            host.HostClientGetClientList += OnClientGetClientList;
 
             // Game room as game master (player or spectator)
             host.HostClientStartGame += OnClientStartGame;
@@ -130,6 +131,7 @@ namespace TetriNET2.Server
 
             // Game room as player or spectator
             host.HostClientLeaveGame += OnClientLeaveGame;
+            host.HostClientGetGameClientList += OnClientGetGameClientList;
 
             // Game room as player
             host.HostClientPlacePiece += OnClientPlacePiece;
@@ -420,7 +422,12 @@ namespace TetriNET2.Server
             Log.Default.WriteLine(LogLevels.Info, "Client join game:{0} {1} {2}", client.Name, game.Name, asSpectator);
 
             GameJoinResults result = GameJoinResults.Successfull;
-            if (game.Password != null && game.Password != password)
+            if (client.Game != null)
+            {
+                result = GameJoinResults.FailedAlreadyInGame;
+                Log.Default.WriteLine(LogLevels.Warning, "Client {0} is already in game {1}", client.Name, client.Game.Name);
+            }
+            else if (game.Password != null && game.Password != password)
             {
                 result = GameJoinResults.FailedWrongPassword;
                 Log.Default.WriteLine(LogLevels.Warning, "Wrong password from {0} for joining game {1}", client.Name, game.Name);
@@ -457,26 +464,39 @@ namespace TetriNET2.Server
             Log.Default.WriteLine(LogLevels.Info, "Client join random game:{0} {1}", client.Name, asSpectator);
 
             GameJoinResults result = GameJoinResults.Successfull;
-            // Search a suitable room
-            IGameRoom game;
-            lock (_gameRoomManager.LockObject)
-                game = _gameRoomManager.Rooms.FirstOrDefault(x => x.Password == null && ((!asSpectator && x.PlayerCount < x.MaxPlayers) || (asSpectator && x.SpectatorCount < x.MaxSpectators)));
 
-            if (game == null)
+            if (client.Game != null)
             {
-                result = GameJoinResults.FailedNoRoomAvailable;
-                Log.Default.WriteLine(LogLevels.Info, "Client {0} cannot find a suitable random game", client.Name);
+                result = GameJoinResults.FailedAlreadyInGame;
+                Log.Default.WriteLine(LogLevels.Warning, "Client {0} is already in game {1}", client.Name, client.Game.Name);
             }
             else
             {
-                lock (game.LockObject)
+                // Search a suitable room
+                IGameRoom game;
+                lock (_gameRoomManager.LockObject)
+                    game = _gameRoomManager.Rooms.FirstOrDefault(x =>
+                        x.Password == null
+                        && ((!asSpectator && x.PlayerCount < x.MaxPlayers)
+                            ||
+                            (asSpectator && x.SpectatorCount < x.MaxSpectators)));
+
+                if (game == null)
                 {
-                    // Add client in game
-                    bool joined = game.Join(client, asSpectator);
-                    if (!joined)
+                    result = GameJoinResults.FailedNoRoomAvailable;
+                    Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot find a suitable random game", client.Name);
+                }
+                else
+                {
+                    lock (game.LockObject)
                     {
-                        result = GameJoinResults.FailedInternalError;
-                        Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot join game {1}", client.Name, game.Name);
+                        // Add client in game
+                        bool joined = game.Join(client, asSpectator);
+                        if (!joined)
+                        {
+                            result = GameJoinResults.FailedInternalError;
+                            Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot join game {1}", client.Name, game.Name);
+                        }
                     }
                 }
             }
@@ -490,66 +510,74 @@ namespace TetriNET2.Server
 
             GameCreateResults result = GameCreateResults.Successfull;
 
-            lock(_gameRoomManager.LockObject)
+            if (client.Game != null)
             {
-                if (_gameRoomManager.RoomCount >= _gameRoomManager.MaxRooms)
+                result = GameCreateResults.FailedAlreadyInGame;
+                Log.Default.WriteLine(LogLevels.Warning, "Client {0} is already in game {1}", client.Name, client.Game.Name);
+            }
+            else
+            {
+                lock (_gameRoomManager.LockObject)
                 {
-                    result = GameCreateResults.FailedTooManyRooms;
-                    Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot create game {1} because there is too many rooms", client.Name, name);
-                }
-                else if (_gameRoomManager[name] != null)
-                {
-                    result = GameCreateResults.FailedAlreadyExists;
-                    Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot create game {1} because it already exists", client.Name, name);
-                }
-                else
-                {
-                    GameOptions options = new GameOptions();
-                    options.Initialize(rule);
-                    IGameRoom game = _factory.CreateGameRoom(name, 6, 10, rule, options, password);
-                    bool added = _gameRoomManager.Add(game);
-                    if (!added)
+                    if (_gameRoomManager.RoomCount >= _gameRoomManager.MaxRooms)
                     {
-                        result = GameCreateResults.FailedInternalError;
-                        Log.Default.WriteLine(LogLevels.Warning, "Created game {0} by {1} cannot be added", name, client.Name);
+                        result = GameCreateResults.FailedTooManyRooms;
+                        Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot create game {1} because there is too many rooms", client.Name, name);
+                    }
+                    else if (_gameRoomManager[name] != null)
+                    {
+                        result = GameCreateResults.FailedAlreadyExists;
+                        Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot create game {1} because it already exists", client.Name, name);
                     }
                     else
                     {
-                        //
-                        GameDescription description = new GameDescription
-                        {
-                            Id = game.Id,
-                            Name = game.Name,
-                            Rule = game.Rule,
-                            Players = null
-                        };
-
-                        // Inform client
-                        client.OnGameCreated(result, description);
-
-                        // Inform other clients
-                        lock (_clientManager.LockObject)
-                            foreach (IClient target in _clientManager.Clients.Where(c => c != client))
-                                target.OnClientGameCreated(client.Id, description);
-
-                        // Inform admins
-                        lock (_adminManager.LockObject)
-                            foreach (IAdmin target in _adminManager.Admins)
-                                target.OnGameCreated(client.Id, description);
-
-                        // Hosts
-                        foreach (IHost host in _hosts)
-                            host.AddGameRoom(game);
-
-                        // Start room
-                        game.Start(_cancellationTokenSource);
-
-                        // Add client in game
-                        bool joined = game.Join(client, asSpectator);
-                        if (!joined)
+                        GameOptions options = new GameOptions();
+                        options.Initialize(rule);
+                        IGameRoom game = _factory.CreateGameRoom(name, 6, 10, rule, options, password);
+                        bool added = _gameRoomManager.Add(game);
+                        if (!added)
                         {
                             result = GameCreateResults.FailedInternalError;
-                            Log.Default.WriteLine(LogLevels.Warning, "Game {0} created by {1} but client cannot join", name, client.Name);
+                            Log.Default.WriteLine(LogLevels.Warning, "Created game {0} by {1} cannot be added", name, client.Name);
+                        }
+                        else
+                        {
+                            //
+                            GameDescription description = new GameDescription
+                            {
+                                Id = game.Id,
+                                Name = game.Name,
+                                Rule = game.Rule,
+                                Players = null
+                            };
+
+                            // Inform client
+                            client.OnGameCreated(result, description);
+
+                            // Inform other clients
+                            lock (_clientManager.LockObject)
+                                foreach (IClient target in _clientManager.Clients.Where(c => c != client))
+                                    target.OnClientGameCreated(client.Id, description);
+
+                            // Inform admins
+                            lock (_adminManager.LockObject)
+                                foreach (IAdmin target in _adminManager.Admins)
+                                    target.OnGameCreated(client.Id, description);
+
+                            // Hosts
+                            foreach (IHost host in _hosts)
+                                host.AddGameRoom(game);
+
+                            // Start room
+                            game.Start(_cancellationTokenSource);
+
+                            // Add client in game
+                            bool joined = game.Join(client, asSpectator);
+                            if (!joined)
+                            {
+                                result = GameCreateResults.FailedInternalError;
+                                Log.Default.WriteLine(LogLevels.Warning, "Game {0} created by {1} but client cannot join", name, client.Name);
+                            }
                         }
                     }
                 }
@@ -571,14 +599,22 @@ namespace TetriNET2.Server
                     Name = x.Name,
                     Rule = x.Rule,
                     Options = x.Options,
-                    Clients = x.Clients.Select(c => new ClientData
-                        {
-                            Id = x.Id,
-                            Name = x.Name
-                        }).ToList()
+                    Clients = BuildClientDatas(x)
                 }).ToList();
             // Send list
             client.OnRoomListReceived(list);
+        }
+
+        private void OnClientGetClientList(IClient client)
+        {
+            Log.Default.WriteLine(LogLevels.Info, "Client get client list", client.Name);
+
+            // Build list
+            List<ClientData> list;
+            lock (_clientManager.LockObject)
+                list = _clientManager.Clients.Select(BuildClientData).ToList();
+            // Send list
+            client.OnClientListReceived(list);
         }
 
         private void OnClientStartGame(IClient client)
@@ -753,6 +789,21 @@ namespace TetriNET2.Server
             }
             //
             game.Leave(client); // Leave is responsible for using Callback
+        }
+
+        private void OnClientGetGameClientList(IClient client)
+        {
+            Log.Default.WriteLine(LogLevels.Info, "Client get game client list", client.Name);
+
+            if (client.Game == null)
+            {
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot get game client list, {0} is not in a game room", client.Name);
+                return;
+            }
+            // Build list
+            List<ClientData> list = BuildClientDatas(client.Game);
+            // Send list
+            client.OnGameClientListReceived(list);
         }
 
         private void OnClientPlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
@@ -984,18 +1035,7 @@ namespace TetriNET2.Server
             // Build list
             List<ClientAdminData> list;
             lock (_clientManager.LockObject)
-                list = _clientManager.Clients.Select(x => new ClientAdminData
-                {
-                    Id = x.Id,
-                    Name = x.Name,
-                    Address = x.Address.ToString(),
-                    State = x.State,
-                    Roles = x.Roles,
-                    ConnectTime = x.ConnectTime,
-                    LastActionFromClient = x.LastActionFromClient,
-                    LastActionToClient = x.LastActionToClient,
-                    TimeoutCount = x.TimeoutCount,
-                }).ToList();
+                list = _clientManager.Clients.Select(BuildClientAdminData).ToList();
             // Send list
             admin.OnClientListReceived(list);
         }
@@ -1005,7 +1045,7 @@ namespace TetriNET2.Server
             Log.Default.WriteLine(LogLevels.Info, "Admin asks for client list in room:{0} {1}", admin.Name, room.Name);
 
             // Build list
-            List<ClientAdminData> list = BuildClientDatas(room);
+            List<ClientAdminData> list = BuildClientAdminDatas(room);
             // Send list
             admin.OnClientListReceived(list);
         }
@@ -1023,7 +1063,7 @@ namespace TetriNET2.Server
                     Name = x.Name,
                     Rule = x.Rule,
                     Options = x.Options,
-                    Clients = BuildClientDatas(x)
+                    Clients = BuildClientAdminDatas(x)
                 }).ToList();
             // Send list
             admin.OnRoomListReceived(list);
@@ -1314,21 +1354,45 @@ namespace TetriNET2.Server
                 : String.Format("***Server will restart in {0} seconds***", seconds);
         }
 
-        private static List<ClientAdminData> BuildClientDatas(IGameRoom room)
+        private static List<ClientAdminData> BuildClientAdminDatas(IGameRoom room)
         {
             lock (room)
-                return room.Clients.Select(c => new ClientAdminData
-                {
-                    Id = c.Id,
-                    Name = c.Name,
-                    Address = c.Address.ToString(),
-                    State = c.State,
-                    Roles = c.Roles,
-                    ConnectTime = c.ConnectTime,
-                    LastActionFromClient = c.LastActionFromClient,
-                    LastActionToClient = c.LastActionToClient,
-                    TimeoutCount = c.TimeoutCount,
-                }).ToList();
+                return room.Clients.Select(BuildClientAdminData).ToList();
+        }
+
+        private static ClientAdminData BuildClientAdminData(IClient client)
+        {
+            return new ClientAdminData
+            {
+                Id = client.Id,
+                Name = client.Name,
+                Address = client.Address.ToString(),
+                State = client.State,
+                Roles = client.Roles,
+                ConnectTime = client.ConnectTime,
+                LastActionFromClient = client.LastActionFromClient,
+                LastActionToClient = client.LastActionToClient,
+                TimeoutCount = client.TimeoutCount,
+            };
+        }
+        
+        private static List<ClientData> BuildClientDatas(IGameRoom room)
+        {
+            lock (room)
+                return room.Clients.Select(BuildClientData).ToList();
+        }
+
+        private static ClientData BuildClientData(IClient client)
+        {
+            return new ClientData
+            {
+                Id = client.Id,
+                Name = client.Name,
+                GameId = client.Game == null ? Guid.Empty : client.Game.Id,
+                IsPlayer = client.IsPlayer,
+                IsSpectator = client.IsSpectator,
+                IsGameMaster = client.IsGameMaster
+            };
         }
 
         // Check if every events of instance are handled

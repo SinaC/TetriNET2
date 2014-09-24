@@ -4,7 +4,7 @@ using System.Linq;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 
-namespace TetriNET2.Tests.Server.Mocking
+namespace TetriNET2.Server.Tests.Mocking
 {
     public class CountCallTetriNETCallback : ITetriNETCallback
     {
@@ -86,6 +86,16 @@ namespace TetriNET2.Tests.Server.Mocking
         public void OnRoomListReceived(List<GameRoomData> rooms)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, rooms);
+        }
+
+        public void OnClientListReceived(List<ClientData> clients)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clients);
+        }
+
+        public void OnGameClientListReceived(List<ClientData> clients)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clients);
         }
 
         public void OnClientConnected(Guid clientId, string name, string team)

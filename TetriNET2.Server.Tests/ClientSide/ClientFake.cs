@@ -7,21 +7,21 @@ using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces.IHost;
 
-namespace TetriNET2.Server.ConsoleApp
+namespace TetriNET2.Server.Tests.ClientSide
 {
-    public class DummyClient : ITetriNETCallback, IDisposable
+    public class ClientFake : ITetriNETCallback, IDisposable
     {
+        public IHost Host { get; set; }
+        
         public readonly string Name;
         public readonly string Team;
         public readonly Versioning Versioning;
         public readonly IPAddress Address;
 
-        private readonly IHost _host;
         private readonly Timer _timer;
 
-        public DummyClient(IHost host, string name, string team, Versioning version, IPAddress address)
+        public ClientFake(string name, string team, Versioning version, IPAddress address)
         {
-            _host = host;
             Name = name;
             Team = team;
             Versioning = version;
@@ -36,134 +36,144 @@ namespace TetriNET2.Server.ConsoleApp
 
         #region ITetriNET
 
-        public void ClientConnect(Versioning version, string name, string team)
+        public void ClientConnect()
         {
-            _host.ClientConnect(this, Address, Versioning, Name, Team);
+            Host.ClientConnect(this, Address, Versioning, Name, Team);
         }
 
         public void ClientDisconnect()
         {
-            _host.ClientDisconnect(this);
+            Host.ClientDisconnect(this);
         }
 
         public void ClientHeartbeat()
         {
-            _host.ClientHeartbeat(this);
+            Host.ClientHeartbeat(this);
         }
 
         public void ClientSendPrivateMessage(Guid targetId, string message)
         {
-            _host.ClientSendPrivateMessage(this, targetId, message);
+            Host.ClientSendPrivateMessage(this, targetId, message);
         }
 
         public void ClientSendBroadcastMessage(string message)
         {
-            _host.ClientSendBroadcastMessage(this, message);
+            Host.ClientSendBroadcastMessage(this, message);
         }
 
         public void ClientChangeTeam(string team)
         {
-            _host.ClientChangeTeam(this, team);
+            Host.ClientChangeTeam(this, team);
         }
 
         public void ClientJoinGame(Guid gameId, string password, bool asSpectator)
         {
-            _host.ClientJoinGame(this, gameId, password, asSpectator);
+            Host.ClientJoinGame(this, gameId, password, asSpectator);
         }
 
         public void ClientJoinRandomGame(bool asSpectator)
         {
-            _host.ClientJoinRandomGame(this, asSpectator);
+            Host.ClientJoinRandomGame(this, asSpectator);
         }
 
         public void ClientCreateAndJoinGame(string name, string password, GameRules rule, bool asSpectator)
         {
-            _host.ClientCreateAndJoinGame(this, name, password, rule, asSpectator);
+            Host.ClientCreateAndJoinGame(this, name, password, rule, asSpectator);
         }
 
         public void ClientGetRoomList()
         {
-            _host.ClientGetRoomList(this);
+            Host.ClientGetRoomList(this);
+        }
+
+        public void ClientGetClientList()
+        {
+            Host.ClientGetClientList(this);
         }
 
         public void ClientStartGame()
         {
-            _host.ClientStartGame(this);
+            Host.ClientStartGame(this);
         }
 
         public void ClientStopGame()
         {
-            _host.ClientStopGame(this);
+            Host.ClientStopGame(this);
         }
 
         public void ClientPauseGame()
         {
-            _host.ClientPauseGame(this);
+            Host.ClientPauseGame(this);
         }
 
         public void ClientResumeGame()
         {
-            _host.ClientResumeGame(this);
+            Host.ClientResumeGame(this);
         }
 
         public void ClientChangeOptions(GameOptions options)
         {
-            _host.ClientChangeOptions(this, options);
+            Host.ClientChangeOptions(this, options);
         }
 
         public void ClientVoteKick(Guid targetId, string reason)
         {
-            _host.ClientVoteKick(this, targetId, reason);
+            Host.ClientVoteKick(this, targetId, reason);
         }
 
         public void ClientVoteKickResponse(bool accepted)
         {
-            _host.ClientVoteKickResponse(this, accepted);
+            Host.ClientVoteKickResponse(this, accepted);
         }
 
         public void ClientResetWinList()
         {
-            _host.ClientResetWinList(this);
+            Host.ClientResetWinList(this);
         }
 
         public void ClientLeaveGame()
         {
-            _host.ClientLeaveGame(this);
+            Host.ClientLeaveGame(this);
+        }
+
+        void ClientGetGameClientList()
+        {
+            Host.ClientGetGameClientList(this);
         }
 
         public void ClientPlacePiece(int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
         {
-            _host.ClientPlacePiece(this, pieceIndex, highestIndex, piece, orientation, posX, posX, grid);
+            Host.ClientPlacePiece(this, pieceIndex, highestIndex, piece, orientation, posX, posX, grid);
         }
 
         public void ClientModifyGrid(byte[] grid)
         {
-            _host.ClientModifyGrid(this, grid);
+            Host.ClientModifyGrid(this, grid);
         }
 
         public void ClientUseSpecial(Guid targetId, Specials special)
         {
-            _host.ClientUseSpecial(this, targetId, special);
+            Host.ClientUseSpecial(this, targetId, special);
         }
 
         public void ClientClearLines(int count)
         {
-            _host.ClientClearLines(this, count);
+            Host.ClientClearLines(this, count);
         }
 
         public void ClientGameLost()
         {
-            _host.ClientGameLost(this);
+            Host.ClientGameLost(this);
         }
 
         public void ClientFinishContinuousSpecial(Specials special)
         {
-            _host.ClientFinishContinuousSpecial(this, special);
+            Host.ClientFinishContinuousSpecial(this, special);
         }
 
         public void ClientEarnAchievement(int achievementId, string achievementTitle)
         {
-            _host.ClientEarnAchievement(this, achievementId, achievementTitle);
+            Host.ClientEarnAchievement(this, achievementId, achievementTitle);
         }
 
         #endregion
@@ -193,6 +203,16 @@ namespace TetriNET2.Server.ConsoleApp
         public void OnRoomListReceived(List<GameRoomData> rooms)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, rooms);
+        }
+
+        public void OnClientListReceived(List<ClientData> clients)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clients);
+        }
+
+        public void OnGameClientListReceived(List<ClientData> clients)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clients);
         }
 
         public void OnClientConnected(Guid clientId, string name, string team)

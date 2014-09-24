@@ -1,6 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Net;
 using TetriNET2.Common.ActionQueue;
 using TetriNET2.Common.Contracts;
@@ -18,8 +16,6 @@ namespace TetriNET2.Server.ConsoleApp
         {
             Console.WriteLine("Commands:");
             Console.WriteLine("x: Stop server");
-            Console.WriteLine("+: Add dummy player");
-            Console.WriteLine("-: Remove dummy player");
             Console.WriteLine("d: Dump client list");
         }
 
@@ -35,9 +31,6 @@ namespace TetriNET2.Server.ConsoleApp
             IAdminManager adminManager = new AdminManager(5);
             IGameRoomManager gameRoomManager = new GameRoomManager(10);
 
-            IHost dummyHost = new DummyHost(banManager, clientManager, adminManager, gameRoomManager);
-            List<DummyClient> dummyClients = new List<DummyClient>();
-
             IHost wcfHost = new WCFHost.WCFHost(banManager, clientManager, adminManager, gameRoomManager)
                 {
                     Port = 7788
@@ -45,7 +38,6 @@ namespace TetriNET2.Server.ConsoleApp
 
             IServer server = new Server(factory, passwordManager, banManager, clientManager, adminManager, gameRoomManager);
             
-            server.AddHost(dummyHost);
             server.AddHost(wcfHost);
 
             server.SetVersion(1, 0);
@@ -79,27 +71,6 @@ namespace TetriNET2.Server.ConsoleApp
                             server.Stop();
                             stopped = true;
                             break;
-                        case ConsoleKey.Add:
-                        {
-                            DummyClient dummyClient = new DummyClient(dummyHost, "BuiltIn-" + Guid.NewGuid().ToString().Substring(0, 5), "DUMMY", new Versioning { Major = 1, Minor = 0}, IPAddress.Any);
-                            dummyHost.ClientConnect(dummyClient, dummyClient.Address, dummyClient.Versioning, dummyClient.Name, dummyClient.Team);
-                            dummyClients.Add(dummyClient);
-                            break;
-                        }
-                        case ConsoleKey.Subtract:
-                        {
-                            IClient client = clientManager.Clients.LastOrDefault(x => x.Name.Contains("BuiltIn-"));
-                            if (client != null)
-                            {
-                                DummyClient dummyClient = dummyClients.FirstOrDefault(x => x == client.Callback);
-                                if (dummyClient != null)
-                                {
-                                    dummyClient.ClientDisconnect();
-                                    dummyClients.Remove(dummyClient);
-                                }
-                            }
-                            break;
-                        }
                         case ConsoleKey.D:
                             Console.WriteLine("Clients:");
                             foreach (IClient client in clientManager.Clients)

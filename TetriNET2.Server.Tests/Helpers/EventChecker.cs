@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Reflection;
 
-namespace TetriNET2.Tests.Server.Helpers
+namespace TetriNET2.Server.Tests.Helpers
 {
     public static class EventChecker
     {

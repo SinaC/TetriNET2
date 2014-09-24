@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 
-namespace TetriNET2.Tests.Server.Mocking
+namespace TetriNET2.Server.Tests.Mocking
 {
     public class RaiseExceptionTetriNETCallback : ITetriNETCallback
     {
@@ -24,6 +24,14 @@ namespace TetriNET2.Tests.Server.Mocking
             throw new NotImplementedException();
         }
         public void OnRoomListReceived(List<GameRoomData> rooms)
+        {
+            throw new NotImplementedException();
+        }
+        public void OnClientListReceived(List<ClientData> clients)
+        {
+            throw new NotImplementedException();
+        }
+        public void OnGameClientListReceived(List<ClientData> clients)
         {
             throw new NotImplementedException();
         }

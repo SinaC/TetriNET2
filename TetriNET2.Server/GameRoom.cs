@@ -13,7 +13,7 @@ namespace TetriNET2.Server
     {
         private const int PiecesSendOnGameStarted = 5;
         private const int PiecesSendOnPlacePiece = 4;
-        private const int VoteKickTimeout = 10*1000; // in ms
+        private const int VoteKickTimeout = 10; // in seconds
 
         private readonly IPieceProvider _pieceProvider;
         private readonly List<IClient> _clients = new List<IClient>();
@@ -322,7 +322,12 @@ namespace TetriNET2.Server
                 if (playingCount == 0 || playingCount == 1)
                 {
                     Log.Default.WriteLine(LogLevels.Info, "Game finished by forfeit no winner");
+                    //
                     State = GameRoomStates.GameFinished;
+                    // Disable sudden death
+                    _isSuddenDeathActive = false;
+                    _suddenDeathTimer.Change(Timeout.Infinite, Timeout.Infinite);
+                    //
                     GameStatistics statistics = PrepareGameStatistics();
                     // Send game finished (no winner)
                     foreach(IClient target in Clients.Where(c => c != client))
@@ -333,6 +338,7 @@ namespace TetriNET2.Server
                         IClient last = Players.Single(p => p.State == ClientStates.Playing);
                         last.State = ClientStates.WaitInGameRoom;
                     }
+                    //
                     State = GameRoomStates.WaitStartGame;
                 }
             }
@@ -390,7 +396,7 @@ namespace TetriNET2.Server
             foreach(IClient other in Players.Where(p => p != client && p != target))
                 other.OnVoteKickAsked(client.Id, target.Id, reason);
             // Start timeout timer
-            _voteKickTimer.Change(TimeSpan.FromMilliseconds(VoteKickTimeout), Timeout.InfiniteTimeSpan);
+            _voteKickTimer.Change(TimeSpan.FromSeconds(VoteKickTimeout), Timeout.InfiniteTimeSpan);
             
             Log.Default.WriteLine(LogLevels.Warning, "Game room {0}: vote kick started on {1} from {2}", Name, target.Name, client.Name);
             return true;
@@ -681,7 +687,7 @@ namespace TetriNET2.Server
             _isSuddenDeathActive = false;
             if (Options.DelayBeforeSuddenDeath > 0)
             {
-                _suddenDeathTimer.Change(Options.DelayBeforeSuddenDeath*60*1000, Options.SuddenDeathTick*1000);
+                _suddenDeathTimer.Change(TimeSpan.FromMinutes(Options.DelayBeforeSuddenDeath), TimeSpan.FromSeconds(Options.SuddenDeathTick));
                 _isSuddenDeathActive = true;
                 Log.Default.WriteLine(LogLevels.Info, "Sudden death will be activated after {0} minutes and send lines every {1} seconds", Options.DelayBeforeSuddenDeath, Options.SuddenDeathTick);
             }
@@ -737,12 +743,10 @@ namespace TetriNET2.Server
             State = GameRoomStates.GameFinished;
 
             // Stop sudden death timer
-            if (_isSuddenDeathActive)
-            {
-                _isSuddenDeathActive = false;
-                _suddenDeathTimer.Change(Timeout.Infinite, Timeout.Infinite);
-            }
+            _isSuddenDeathActive = false;
+            _suddenDeathTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
+            //
             GameStatistics statistics = PrepareGameStatistics();
 
             // Send game finished to players
@@ -1099,17 +1103,26 @@ namespace TetriNET2.Server
             if (playingCount == 0) // there were only one playing player
             {
                 Log.Default.WriteLine(LogLevels.Info, "Game finished with only one player playing, no winner");
+                //
                 State = GameRoomStates.GameFinished;
+                // Disable sudden death
+                _isSuddenDeathActive = false;
+                _suddenDeathTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 // Send game finished (no winner) to players and spectators
                 GameStatistics statistics = PrepareGameStatistics();
                 foreach (IClient target in Clients)
                     target.OnGameFinished(GameFinishedReasons.NotEnoughPlayers, statistics);
+                //
                 State = GameRoomStates.WaitStartGame;
             }
             else if (playingCount == 1) // only one playing left
             {
                 Log.Default.WriteLine(LogLevels.Info, "Game finished checking winner");
+                //
                 State = GameRoomStates.GameFinished;
+                // Disable sudden death
+                _isSuddenDeathActive = false;
+                _suddenDeathTimer.Change(Timeout.Infinite, Timeout.Infinite);
                 // Game won
                 IClient winner = Players.Single(p => p.State == ClientStates.Playing);
                 winner.State = ClientStates.WaitInGameRoom;
@@ -1134,6 +1147,7 @@ namespace TetriNET2.Server
                     target.OnGameFinished(GameFinishedReasons.Won, statistics);
                     target.OnWinListModified(_winList);
                 }
+                //
                 State = GameRoomStates.WaitStartGame;
             }
         }

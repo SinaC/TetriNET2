@@ -6,7 +6,7 @@ using TetriNET2.Server.Interfaces;
 
 namespace TetriNET2.Server
 {
-    public class GameRoomManager : IGameRoomManager
+    public sealed  class GameRoomManager : IGameRoomManager
     {
         private readonly Dictionary<Guid, IGameRoom> _rooms = new Dictionary<Guid, IGameRoom>();
         private readonly object _lockObject = new object();

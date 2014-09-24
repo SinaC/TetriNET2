@@ -21,6 +21,7 @@ namespace TetriNET2.Server.Interfaces.IHost
     public delegate void HostClientJoinRandomGameEventHandler(IClient client, bool asSpectator);
     public delegate void HostClientCreateAndJoinGameEventHandler(IClient client, string name, string password, GameRules rule, bool asSpectator);
     public delegate void HostClientGetRoomListEventHandler(IClient client);
+    public delegate void HostClientGetClientListEventHandler(IClient client);
 
     // Game room as game master (player or spectator)
     public delegate void HostClientStartGameEventHandler(IClient client);
@@ -34,6 +35,7 @@ namespace TetriNET2.Server.Interfaces.IHost
 
     // Game room as player or spectator
     public delegate void HostClientLeaveGameEventHandler(IClient client);
+    public delegate void HostClientGetGameClientListEventHandler(IClient client);
 
     // Game room as player
     public delegate void HostClientPlacePieceEventHandler(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid);
@@ -63,6 +65,7 @@ namespace TetriNET2.Server.Interfaces.IHost
         event HostClientJoinRandomGameEventHandler HostClientJoinRandomGame;
         event HostClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
         event HostClientGetRoomListEventHandler HostClientGetRoomList;
+        event HostClientGetClientListEventHandler HostClientGetClientList;
 
         // Game room as game master (player or spectator)
         event HostClientStartGameEventHandler HostClientStartGame;
@@ -76,6 +79,7 @@ namespace TetriNET2.Server.Interfaces.IHost
 
         // Game room as player or spectator
         event HostClientLeaveGameEventHandler HostClientLeaveGame;
+        event HostClientGetGameClientListEventHandler HostClientGetGameClientList;
 
         // Game room as player
         event HostClientPlacePieceEventHandler HostClientPlacePiece;

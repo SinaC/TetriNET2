@@ -1,7 +1,7 @@
 ﻿using System;
 using TetriNET2.Common.Logger;
 
-namespace TetriNET2.Tests.Server.Mocking
+namespace TetriNET2.Server.Tests.Mocking
 {
     public class LogMock : ILog
     {

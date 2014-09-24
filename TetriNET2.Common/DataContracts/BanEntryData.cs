@@ -3,7 +3,7 @@
 namespace TetriNET2.Common.DataContracts
 {
     [DataContract]
-    public class BanEntryData
+    public sealed class BanEntryData
     {
         [DataMember]
         public string Name { get; set; }

@@ -2,7 +2,7 @@
 
 namespace TetriNET2.Common.Randomizer
 {
-    public class Randomizer : IRandomizer
+    public sealed class Randomizer : IRandomizer
     {
         private readonly Random _random = new Random();
 

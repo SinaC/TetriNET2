@@ -4,7 +4,7 @@ using TetriNET2.Server.Interfaces.IHost;
 
 namespace TetriNET2.Server.WCFHost
 {
-    public partial class WCFHost : IHost, IDisposable
+    public sealed partial class WCFHost : IHost, IDisposable
     {
         private readonly WCFClientServiceHost _clientHost;
         private readonly WCFAdminServiceHost _adminHost;

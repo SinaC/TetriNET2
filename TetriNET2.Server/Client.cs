@@ -11,7 +11,7 @@ using TetriNET2.Server.Interfaces;
 
 namespace TetriNET2.Server
 {
-    public class Client : IClient
+    public sealed class Client : IClient
     {
         private bool _disconnected;
 
@@ -142,6 +142,16 @@ namespace TetriNET2.Server
         public void OnRoomListReceived(List<GameRoomData> rooms)
         {
             ExceptionFreeAction(() => Callback.OnRoomListReceived(rooms));
+        }
+
+        public void OnClientListReceived(List<ClientData> clients)
+        {
+            ExceptionFreeAction(() => Callback.OnClientListReceived(clients));
+        }
+
+        public void OnGameClientListReceived(List<ClientData> clients)
+        {
+            ExceptionFreeAction(() => Callback.OnGameClientListReceived(clients));
         }
 
         public void OnClientConnected(Guid clientId, string name, string team)

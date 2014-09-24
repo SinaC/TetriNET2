@@ -15,9 +15,11 @@ namespace TetriNET2.Client.ConsoleApp
         {
             Console.WriteLine("Commands:");
             Console.WriteLine("x: Stop client");
-            Console.WriteLine("l: Get room list");
-            Console.WriteLine("c: Create and join game as player");
-            Console.WriteLine("r: Join random game");
+            Console.WriteLine("r: Get room list");
+            Console.WriteLine("c: Get client list");
+            Console.WriteLine("l: Get game client list");
+            Console.WriteLine("j: Create and join game as player");
+            Console.WriteLine("g: Join random game");
             Console.WriteLine("s: Start game");
             Console.WriteLine("t: Stop game");
         }
@@ -58,13 +60,19 @@ namespace TetriNET2.Client.ConsoleApp
                             proxy.ClientDisconnect();
                             stopped = true;
                             break;
-                        case ConsoleKey.L:
+                        case ConsoleKey.R:
                             proxy.ClientGetRoomList();
+                            break;
+                        case ConsoleKey.C:
+                            proxy.ClientGetClientList();
+                            break;
+                        case ConsoleKey.L:
+                            proxy.ClientGetGameClientList();
                             break;
                         case ConsoleKey.J:
                             proxy.ClientCreateAndJoinGame("GAME1" + Guid.NewGuid().ToString().Substring(0, 5), null, GameRules.Standard, false);
                             break;
-                        case ConsoleKey.R:
+                        case ConsoleKey.G:
                             proxy.ClientJoinRandomGame(false);
                             break;
                         case ConsoleKey.S:
@@ -170,6 +178,34 @@ namespace TetriNET2.Client.ConsoleApp
         public void OnRoomListReceived(List<GameRoomData> rooms)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, rooms);
+            Console.WriteLine("Rooms: {0}", rooms == null ? 0 : rooms.Count);
+            if (rooms != null)
+                foreach (GameRoomData room in rooms)
+                {
+                    Console.WriteLine("Room: {0} {1} {2}", room.Id, room.Name, room.Rule);
+                    Console.WriteLine("\tClients: {0}", room.Clients == null ? 0 : room.Clients.Count);
+                    if (room.Clients != null)
+                        foreach (ClientData client in room.Clients)
+                            Console.WriteLine("\tClient: {0} {1} {2} {3} {4} {5}", client.Id, client.Name, client.GameId, client.IsPlayer, client.IsSpectator, client.IsGameMaster);
+                }
+        }
+
+        public void OnClientListReceived(List<ClientData> clients)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clients);
+            Console.WriteLine("Clients: {0}", clients == null ? 0 : clients.Count);
+            if (clients != null)
+                foreach (ClientData client in clients)
+                    Console.WriteLine("Client: {0} {1} {2} {3} {4} {5}", client.Id, client.Name, client.GameId, client.IsPlayer, client.IsSpectator, client.IsGameMaster);
+        }
+
+        public void OnGameClientListReceived(List<ClientData> clients)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clients);
+            Console.WriteLine("Clients in game: {0}", clients == null ? 0 : clients.Count);
+            if (clients != null)
+                foreach (ClientData client in clients)
+                    Console.WriteLine("Client: {0} {1} {2} {3} {4} {5}", client.Id, client.Name, client.GameId, client.IsPlayer, client.IsSpectator, client.IsGameMaster);
         }
 
         public void OnClientConnected(Guid clientId, string name, string team)

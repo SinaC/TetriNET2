@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using TetriNET2.Common.ActionQueue;
 
-namespace TetriNET2.Tests.Server.Mocking
+namespace TetriNET2.Server.Tests.Mocking
 {
     public class ActionQueueMock : IActionQueue
     {

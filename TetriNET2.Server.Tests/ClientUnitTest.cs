@@ -4,11 +4,10 @@ using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.Logger;
-using TetriNET2.Server;
 using TetriNET2.Server.Interfaces;
-using TetriNET2.Tests.Server.Mocking;
+using TetriNET2.Server.Tests.Mocking;
 
-namespace TetriNET2.Tests.Server
+namespace TetriNET2.Server.Tests
 {
     [TestClass]
     public abstract class AbstractClientUnitTest

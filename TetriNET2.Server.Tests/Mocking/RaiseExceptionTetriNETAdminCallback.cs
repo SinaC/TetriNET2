@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 
-namespace TetriNET2.Tests.Server.Mocking
+namespace TetriNET2.Server.Tests.Mocking
 {
     public class RaiseExceptionTetriNETAdminCallback : ITetriNETAdminCallback
     {

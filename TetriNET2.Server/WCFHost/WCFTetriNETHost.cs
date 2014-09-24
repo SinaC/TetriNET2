@@ -12,7 +12,7 @@ using TetriNET2.Server.Interfaces.IHost;
 
 namespace TetriNET2.Server.WCFHost
 {
-    public partial class WCFHost : IHost
+    public sealed partial class WCFHost : IHost
     {
         [ServiceBehavior(ConcurrencyMode = ConcurrencyMode.Reentrant, InstanceContextMode = InstanceContextMode.Single)]
         public sealed class WCFClientServiceHost : IWCFTetriNET, IDisposable
@@ -106,6 +106,11 @@ namespace TetriNET2.Server.WCFHost
                 _host.ClientGetRoomList(Callback);
             }
 
+            public void ClientGetClientList()
+            {
+                _host.ClientGetClientList(Callback);
+            }
+
             public void ClientStartGame()
             {
                 _host.ClientStartGame(Callback);
@@ -149,6 +154,11 @@ namespace TetriNET2.Server.WCFHost
             public void ClientLeaveGame()
             {
                 _host.ClientLeaveGame(Callback);
+            }
+
+            public void ClientGetGameClientList()
+            {
+                _host.ClientGetGameClientList(Callback);
             }
 
             public void ClientPlacePiece(int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
@@ -241,6 +251,7 @@ namespace TetriNET2.Server.WCFHost
         public event HostClientJoinRandomGameEventHandler HostClientJoinRandomGame;
         public event HostClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
         public event HostClientGetRoomListEventHandler HostClientGetRoomList;
+        public event HostClientGetClientListEventHandler HostClientGetClientList;
 
         public event HostClientStartGameEventHandler HostClientStartGame;
         public event HostClientStopGameEventHandler HostClientStopGame;
@@ -252,6 +263,7 @@ namespace TetriNET2.Server.WCFHost
         public event HostClientResetWinListEventHandler HostClientResetWinList;
 
         public event HostClientLeaveGameEventHandler HostClientLeaveGame;
+        public event HostClientGetGameClientListEventHandler HostClientGetGameClientList;
 
         public event HostClientPlacePieceEventHandler HostClientPlacePiece;
         public event HostClientModifyGridEventHandler HostClientModifyGrid;
@@ -361,6 +373,15 @@ namespace TetriNET2.Server.WCFHost
                 Log.Default.WriteLine(LogLevels.Warning, "ClientGetRoomList from unknown client");
         }
 
+        public void ClientGetClientList(ITetriNETCallback callback)
+        {
+            IClient client = ClientManager[callback];
+            if (client != null)
+                HostClientGetClientList.Do(x => x(client));
+            else
+                Log.Default.WriteLine(LogLevels.Warning, "ClientGetClientList from unknown client");
+        }
+
         public void ClientStartGame(ITetriNETCallback callback)
         {
             IClient client = ClientManager[callback];
@@ -446,6 +467,15 @@ namespace TetriNET2.Server.WCFHost
                 HostClientLeaveGame.Do(x => x(client));
             else
                 Log.Default.WriteLine(LogLevels.Warning, "ClientLeaveGame from unknown client");
+        }
+
+        public void ClientGetGameClientList(ITetriNETCallback callback)
+        {
+            IClient client = ClientManager[callback];
+            if (client != null)
+                HostClientGetGameClientList.Do(x => x(client));
+            else
+                Log.Default.WriteLine(LogLevels.Warning, "ClientGetGameClientList from unknown client");
         }
 
         public void ClientPlacePiece(ITetriNETCallback callback, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
