@@ -19,7 +19,7 @@ namespace TetriNET2.Server.Tests.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnClientConnected(Guid clientId, string name, string team)
+        public void OnClientConnected(Guid clientId, string name, string team, string address)
         {
             throw new NotImplementedException();
         }
@@ -27,7 +27,7 @@ namespace TetriNET2.Server.Tests.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnAdminConnected(Guid adminId, string name)
+        public void OnAdminConnected(Guid adminId, string name, string address)
         {
             throw new NotImplementedException();
         }

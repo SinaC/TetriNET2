@@ -16,12 +16,12 @@ namespace TetriNET2.Common.Contracts
         void OnServerStopped();
 
         [OperationContract(IsOneWay = true)]
-        void OnClientConnected(Guid clientId, string name, string team);
+        void OnClientConnected(Guid clientId, string name, string team, string address);
         [OperationContract(IsOneWay = true)]
         void OnClientDisconnected(Guid clientId, LeaveReasons reason);
 
         [OperationContract(IsOneWay = true)]
-        void OnAdminConnected(Guid adminId, string name);
+        void OnAdminConnected(Guid adminId, string name, string address);
         [OperationContract(IsOneWay = true)]
         void OnAdminDisconnected(Guid adminId, LeaveReasons reason);
 

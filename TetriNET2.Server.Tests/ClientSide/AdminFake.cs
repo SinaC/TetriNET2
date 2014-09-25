@@ -120,7 +120,7 @@ namespace TetriNET2.Server.Tests.ClientSide
 
         public void OnConnected(ConnectResults result, Versioning serverVersion, Guid adminId)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, serverVersion, adminId);
         }
 
         public void OnDisconnected()
@@ -133,69 +133,69 @@ namespace TetriNET2.Server.Tests.ClientSide
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnClientConnected(Guid clientId, string name, string team)
+        public void OnClientConnected(Guid clientId, string name, string team, string address)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, name, team, address);
         }
 
         public void OnClientDisconnected(Guid clientId, LeaveReasons reason)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, reason);
         }
 
-        public void OnAdminConnected(Guid adminId, string name)
+        public void OnAdminConnected(Guid adminId, string name, string address)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, address, name, address);
         }
 
         public void OnAdminDisconnected(Guid adminId, LeaveReasons reason)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, adminId, reason);
         }
 
         public void OnGameCreated(Guid clientId, GameDescription game)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, game);
         }
 
         public void OnServerMessageReceived(string message)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, message);
         }
 
         public void OnBroadcastMessageReceived(Guid clientId, string message)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, message);
         }
 
         public void OnPrivateMessageReceived(Guid adminId, string message)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, adminId, message);
         }
 
         public void OnAdminListReceived(List<AdminData> admins)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, admins);
         }
 
         public void OnClientListReceived(List<ClientAdminData> clients)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clients);
         }
 
         public void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, roomId, clients);
         }
 
         public void OnRoomListReceived(List<GameRoomAdminData> rooms)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, rooms);
         }
 
         public void OnBannedListReceived(List<BanEntryData> entries)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, entries);
         }
 
         #endregion

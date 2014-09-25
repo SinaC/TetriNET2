@@ -81,9 +81,9 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnServerStopped());
         }
 
-        public void OnClientConnected(Guid clientId, string name, string team)
+        public void OnClientConnected(Guid clientId, string name, string team, string address)
         {
-            ExceptionFreeAction(() => Callback.OnClientConnected(clientId, name, team));
+            ExceptionFreeAction(() => Callback.OnClientConnected(clientId, name, team, address));
         }
 
         public void OnClientDisconnected(Guid clientId, LeaveReasons reason)
@@ -91,9 +91,9 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnClientDisconnected(clientId, reason));
         }
 
-        public void OnAdminConnected(Guid adminId, string name)
+        public void OnAdminConnected(Guid adminId, string name, string address)
         {
-            ExceptionFreeAction(() => Callback.OnAdminConnected(adminId, name));
+            ExceptionFreeAction(() => Callback.OnAdminConnected(adminId, name, address));
         }
 
         public void OnAdminDisconnected(Guid adminId, LeaveReasons reason)

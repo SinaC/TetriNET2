@@ -363,7 +363,7 @@ namespace TetriNET2.Server
                             // Send message to admin
                             lock (_adminManager.LockObject)
                                 foreach (IAdmin target in _adminManager.Admins)
-                                    target.OnClientConnected(client.Id, client.Name, client.Team);
+                                    target.OnClientConnected(client.Id, client.Name, client.Team, client.Address.ToString());
                             // Hosts
                             foreach (IHost host in _hosts)
                                 host.AddClient(client);
@@ -965,7 +965,7 @@ namespace TetriNET2.Server
                             // Send message to other admins
                             lock (_adminManager.LockObject)
                                 foreach (IAdmin target in _adminManager.Admins.Where(a => a != admin))
-                                    target.OnAdminConnected(admin.Id, admin.Name);
+                                    target.OnAdminConnected(admin.Id, admin.Name, admin.Address.ToString());
                             // Hosts
                             foreach (IHost host in _hosts)
                                 host.AddAdmin(admin);
@@ -1372,6 +1372,7 @@ namespace TetriNET2.Server
             {
                 Id = client.Id,
                 Name = client.Name,
+                Team = client.Team,
                 Address = client.Address.ToString(),
                 State = client.State,
                 Roles = client.Roles,

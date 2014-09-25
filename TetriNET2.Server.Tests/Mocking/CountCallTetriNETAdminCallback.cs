@@ -46,7 +46,7 @@ namespace TetriNET2.Server.Tests.Mocking
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnClientConnected(Guid clientId, string name, string team)
+        public void OnClientConnected(Guid clientId, string name, string team, string address)
         {
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
@@ -56,7 +56,7 @@ namespace TetriNET2.Server.Tests.Mocking
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnAdminConnected(Guid adminId, string name)
+        public void OnAdminConnected(Guid adminId, string name, string address)
         {
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
