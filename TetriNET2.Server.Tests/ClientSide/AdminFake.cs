@@ -5,6 +5,7 @@ using System.Net;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces.IHost;
+using TetriNET2.Server.Tests.Mocking;
 
 namespace TetriNET2.Server.Tests.ClientSide
 {
@@ -23,71 +24,94 @@ namespace TetriNET2.Server.Tests.ClientSide
             Address = address;
         }
 
+        private void SetCallbackAndAddress()
+        {
+            HostMock hostMock = Host as HostMock;
+            if (hostMock != null)
+            {
+                hostMock.AdminCallback = this;
+                hostMock.Address = Address;
+            }
+        }
+
         #region ITetriNETAdmin
 
         public void AdminConnect(string password)
         {
-            Host.AdminConnect(this, Address, Versioning, Name, password);
+            SetCallbackAndAddress();
+            Host.AdminConnect(Versioning, Name, password);
         }
 
         public void AdminDisconnect()
         {
-            Host.AdminDisconnect(this);
+            SetCallbackAndAddress();
+            Host.AdminDisconnect();
         }
 
         public void AdminSendPrivateAdminMessage(Guid targetAdminId, string message)
         {
-            Host.AdminSendPrivateAdminMessage(this, targetAdminId, message);
+            SetCallbackAndAddress();
+            Host.AdminSendPrivateAdminMessage(targetAdminId, message);
         }
 
         public void AdminSendPrivateMessage(Guid targetClientId, string message)
         {
-            Host.AdminSendPrivateMessage(this, targetClientId, message);
+            SetCallbackAndAddress();
+            Host.AdminSendPrivateMessage(targetClientId, message);
         }
 
         public void AdminSendBroadcastMessage(string message)
         {
-            Host.AdminSendBroadcastMessage(this, message);
+            SetCallbackAndAddress();
+            Host.AdminSendBroadcastMessage(message);
         }
 
         public void AdminGetAdminList()
         {
-            Host.AdminGetAdminList(this);
+            SetCallbackAndAddress();
+            Host.AdminGetAdminList();
         }
 
         public void AdminGetClientList()
         {
-            Host.AdminGetClientList(this);
+            SetCallbackAndAddress();
+            Host.AdminGetClientList();
         }
 
         public void AdminGetClientListInRoom(Guid roomId)
         {
-            Host.AdminGetClientListInRoom(this, roomId);
+            SetCallbackAndAddress();
+            Host.AdminGetClientListInRoom(roomId);
         }
 
         public void AdminGetRoomList()
         {
-            Host.AdminGetRoomList(this);
+            SetCallbackAndAddress();
+            Host.AdminGetRoomList();
         }
 
         public void AdminGetBannedList()
         {
-            Host.AdminGetBannedList(this);
+            SetCallbackAndAddress();
+            Host.AdminGetBannedList();
         }
 
         public void AdminKick(Guid targetId, string reason)
         {
-            Host.AdminKick(this, targetId, reason);
+            SetCallbackAndAddress();
+            Host.AdminKick(targetId, reason);
         }
 
         public void AdminBan(Guid targetId, string reason)
         {
-            Host.AdminBan(this, targetId, reason);
+            SetCallbackAndAddress();
+            Host.AdminBan(targetId, reason);
         }
 
         public void AdminRestartServer(int seconds)
         {
-            Host.AdminRestartServer(this, seconds);
+            SetCallbackAndAddress();
+            Host.AdminRestartServer(seconds);
         }
 
         #endregion

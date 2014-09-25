@@ -4,7 +4,6 @@ using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using TetriNET2.Common.Contracts;
-using TetriNET2.Common.Contracts.WCF;
 using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Client.ConsoleApp
@@ -28,13 +27,13 @@ namespace TetriNET2.Client.ConsoleApp
         {
             CountCallTetriNETCallback callbackInstance = new CountCallTetriNETCallback();
 
-            DuplexChannelFactory<IWCFTetriNET> factory;
-            IWCFTetriNET proxy;
+            DuplexChannelFactory<ITetriNETClient> factory;
+            ITetriNETClient proxy;
 
-            EndpointAddress endpointAddress = new EndpointAddress("net.tcp://localhost:7788/TetriNET2");
+            EndpointAddress endpointAddress = new EndpointAddress("net.tcp://localhost:7788/TetriNET2Client");
             Binding binding = new NetTcpBinding(SecurityMode.None);
             InstanceContext instanceContext = new InstanceContext(callbackInstance);
-            factory = new DuplexChannelFactory<IWCFTetriNET>(instanceContext, binding, endpointAddress);
+            factory = new DuplexChannelFactory<ITetriNETClient>(instanceContext, binding, endpointAddress);
             proxy = factory.CreateChannel(instanceContext);
 
             proxy.ClientConnect(
@@ -93,7 +92,7 @@ namespace TetriNET2.Client.ConsoleApp
         }
     }
 
-    public class CountCallTetriNETCallback : ITetriNETCallback
+    public class CountCallTetriNETCallback : ITetriNETClientCallback
     {
         private class CallInfo
         {

@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Net;
+using System.Reflection;
+using System.Runtime.CompilerServices;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces;
@@ -16,6 +19,12 @@ namespace TetriNET2.Server.Tests.Mocking
             AdminManager = adminManager;
             GameRoomManager = gameRoomManager;
         }
+
+        public IPAddress Address { private get; set; }
+
+        public ITetriNETClientCallback ClientCallback { private get; set; }
+
+        public ITetriNETAdminCallback AdminCallback { private get; set; }
 
         #region IHost
 
@@ -110,203 +119,202 @@ namespace TetriNET2.Server.Tests.Mocking
 
         #region ITetriNET
 
-        public void ClientConnect(ITetriNETCallback callback, IPAddress address, Versioning version, string name, string team)
+        [MethodImplAttribute(MethodImplOptions.NoInlining)]
+        public void ClientConnect(Versioning version, string name, string team)
         {
             if (HostClientConnect != null)
-            {
-                HostClientConnect(callback, address, version, name, team);
-            }
+                HostClientConnect(ClientCallback, Address, version, name, team);
         }
 
-        public void ClientDisconnect(ITetriNETCallback callback)
+        public void ClientDisconnect()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientDisconnect != null)
                 HostClientDisconnect(client);
         }
 
-        public void ClientHeartbeat(ITetriNETCallback callback)
+        public void ClientHeartbeat()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientHeartbeat != null)
                 HostClientHeartbeat(client);
         }
 
-        public void ClientSendPrivateMessage(ITetriNETCallback callback, Guid targetId, string message)
+        public void ClientSendPrivateMessage(Guid targetId, string message)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             IClient target = ClientManager[targetId];
             if (client != null && target != null && HostClientSendPrivateMessage != null)
                 HostClientSendPrivateMessage(client, target, message);
         }
 
-        public void ClientSendBroadcastMessage(ITetriNETCallback callback, string message)
+        public void ClientSendBroadcastMessage(string message)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientSendBroadcastMessage != null)
                 HostClientSendBroadcastMessage(client, message);
         }
 
-        public void ClientChangeTeam(ITetriNETCallback callback, string team)
+        public void ClientChangeTeam(string team)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientChangeTeam != null)
                 HostClientChangeTeam(client, team);
         }
 
-        public void ClientJoinGame(ITetriNETCallback callback, Guid gameId, string password, bool asSpectator)
+        public void ClientJoinGame(Guid gameId, string password, bool asSpectator)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             IGameRoom game = GameRoomManager[gameId];
             if (client != null && game != null && HostClientJoinGame != null)
                 HostClientJoinGame(client, game, password, asSpectator);
         }
 
-        public void ClientJoinRandomGame(ITetriNETCallback callback, bool asSpectator)
+        public void ClientJoinRandomGame(bool asSpectator)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientJoinRandomGame != null)
                 HostClientJoinRandomGame(client, asSpectator);
         }
 
-        public void ClientCreateAndJoinGame(ITetriNETCallback callback, string name, string password, GameRules rule, bool asSpectator)
+        public void ClientCreateAndJoinGame(string name, string password, GameRules rule, bool asSpectator)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientCreateAndJoinGame != null)
                 HostClientCreateAndJoinGame(client, name, password, rule, asSpectator);
         }
 
-        public void ClientGetRoomList(ITetriNETCallback callback)
+        public void ClientGetRoomList()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientGetRoomList != null)
                 HostClientGetRoomList(client);
         }
 
-        public void ClientGetClientList(ITetriNETCallback callback)
+        public void ClientGetClientList()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientGetClientList != null)
                 HostClientGetClientList(client);
         }
 
-        public void ClientStartGame(ITetriNETCallback callback)
+        public void ClientStartGame()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientStartGame != null)
                 HostClientStartGame(client);
         }
 
-        public void ClientStopGame(ITetriNETCallback callback)
+        public void ClientStopGame()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientStopGame != null)
                 HostClientStopGame(client);
         }
 
-        public void ClientPauseGame(ITetriNETCallback callback)
+        public void ClientPauseGame()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientPauseGame != null)
                 HostClientPauseGame(client);
         }
 
-        public void ClientResumeGame(ITetriNETCallback callback)
+        public void ClientResumeGame()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientResumeGame != null)
                 HostClientResumeGame(client);
         }
 
-        public void ClientChangeOptions(ITetriNETCallback callback, GameOptions options)
+        public void ClientChangeOptions(GameOptions options)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientChangeOptions != null)
                 HostClientChangeOptions(client, options);
         }
 
-        public void ClientVoteKick(ITetriNETCallback callback, Guid targetId, string reason)
+        public void ClientVoteKick(Guid targetId, string reason)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             IClient target = ClientManager[targetId];
             if (client != null && target != null && HostClientVoteKick != null)
                 HostClientVoteKick(client, target, reason);
         }
 
-        public void ClientVoteKickResponse(ITetriNETCallback callback, bool accepted)
+        public void ClientVoteKickResponse(bool accepted)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientVoteKickAnswer != null)
                 HostClientVoteKickAnswer(client, accepted);
         }
 
-        public void ClientResetWinList(ITetriNETCallback callback)
+        public void ClientResetWinList()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientResetWinList != null)
                 HostClientResetWinList(client);
         }
 
-        public void ClientLeaveGame(ITetriNETCallback callback)
+        public void ClientLeaveGame()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientLeaveGame != null)
                 HostClientLeaveGame(client);
         }
 
-        public void ClientGetGameClientList(ITetriNETCallback callback)
+        public void ClientGetGameClientList()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientGetGameClientList != null)
                 HostClientGetGameClientList(client);
         }
 
-        public void ClientPlacePiece(ITetriNETCallback callback, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
+        public void ClientPlacePiece(int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientPlacePiece != null)
                 HostClientPlacePiece(client, pieceIndex, highestIndex, piece, orientation, posX, posY, grid);
         }
 
-        public void ClientModifyGrid(ITetriNETCallback callback, byte[] grid)
+        public void ClientModifyGrid(byte[] grid)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientModifyGrid != null)
                 HostClientModifyGrid(client, grid);
         }
 
-        public void ClientUseSpecial(ITetriNETCallback callback, Guid targetId, Specials special)
+        public void ClientUseSpecial(Guid targetId, Specials special)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             IClient target = ClientManager[targetId];
             if (client != null && HostClientUseSpecial != null)
                 HostClientUseSpecial(client, target, special);
         }
 
-        public void ClientClearLines(ITetriNETCallback callback, int count)
+        public void ClientClearLines(int count)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientClearLines != null)
                 HostClientClearLines(client, count);
         }
 
-        public void ClientGameLost(ITetriNETCallback callback)
+        public void ClientGameLost()
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientGameLost != null)
                 HostClientGameLost(client);
         }
 
-        public void ClientFinishContinuousSpecial(ITetriNETCallback callback, Specials special)
+        public void ClientFinishContinuousSpecial(Specials special)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientFinishContinuousSpecial != null)
                 HostClientFinishContinuousSpecial(client, special);
         }
 
-        public void ClientEarnAchievement(ITetriNETCallback callback, int achievementId, string achievementTitle)
+        public void ClientEarnAchievement(int achievementId, string achievementTitle)
         {
-            IClient client = ClientManager[callback];
+            IClient client = ClientManager[ClientCallback];
             if (client != null && HostClientEarnAchievement != null)
                 HostClientEarnAchievement(client, achievementId, achievementTitle);
         }
@@ -315,97 +323,97 @@ namespace TetriNET2.Server.Tests.Mocking
 
         #region ITetriNETAdmin
 
-        public void AdminConnect(ITetriNETAdminCallback callback, IPAddress address, Versioning version, string name, string password)
+        public void AdminConnect(Versioning version, string name, string password)
         {
             if (HostAdminConnect != null)
-                HostAdminConnect(callback, address, version, name, password);
+                HostAdminConnect(AdminCallback, Address, version, name, password);
         }
 
-        public void AdminDisconnect(ITetriNETAdminCallback callback)
+        public void AdminDisconnect()
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             if (admin != null && HostAdminDisconnect != null)
                 HostAdminDisconnect(admin);
         }
 
-        public void AdminSendPrivateAdminMessage(ITetriNETAdminCallback callback, Guid targetAdminId, string message)
+        public void AdminSendPrivateAdminMessage(Guid targetAdminId, string message)
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             IAdmin target = AdminManager[targetAdminId];
             if (admin != null && target != null && HostAdminSendPrivateAdminMessage != null)
                 HostAdminSendPrivateAdminMessage(admin, target, message);
         }
 
-        public void AdminSendPrivateMessage(ITetriNETAdminCallback callback, Guid targetClientId, string message)
+        public void AdminSendPrivateMessage(Guid targetClientId, string message)
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             IClient target = ClientManager[targetClientId];
             if (admin != null && HostAdminSendPrivateMessage != null)
                 HostAdminSendPrivateMessage(admin, target, message);
         }
 
-        public void AdminSendBroadcastMessage(ITetriNETAdminCallback callback, string message)
+        public void AdminSendBroadcastMessage(string message)
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             if (admin != null && HostAdminSendBroadcastMessage != null)
                 HostAdminSendBroadcastMessage(admin, message);
         }
 
-        public void AdminGetAdminList(ITetriNETAdminCallback callback)
+        public void AdminGetAdminList()
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             if (admin != null && HostAdminGetAdminList != null)
                 HostAdminGetAdminList(admin);
         }
 
-        public void AdminGetClientList(ITetriNETAdminCallback callback)
+        public void AdminGetClientList()
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             if (admin != null && HostAdminGetClientList != null)
                 HostAdminGetClientList(admin);
         }
 
-        public void AdminGetClientListInRoom(ITetriNETAdminCallback callback, Guid roomId)
+        public void AdminGetClientListInRoom(Guid roomId)
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             IGameRoom game = GameRoomManager[roomId];
             if (admin != null && game != null && HostAdminGetClientListInRoom != null)
                 HostAdminGetClientListInRoom(admin, game);
         }
 
-        public void AdminGetRoomList(ITetriNETAdminCallback callback)
+        public void AdminGetRoomList()
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             if (admin != null && HostAdminGetRoomList != null)
                 HostAdminGetRoomList(admin);
         }
 
-        public void AdminGetBannedList(ITetriNETAdminCallback callback)
+        public void AdminGetBannedList()
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             if (admin != null && HostAdminGetBannedList != null)
                 HostAdminGetBannedList(admin);
         }
 
-        public void AdminKick(ITetriNETAdminCallback callback, Guid targetId, string reason)
+        public void AdminKick(Guid targetId, string reason)
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             IClient target = ClientManager[targetId];
             if (admin != null && target != null && HostAdminKick != null)
                 HostAdminKick(admin, target, reason);
         }
 
-        public void AdminBan(ITetriNETAdminCallback callback, Guid targetId, string reason)
+        public void AdminBan(Guid targetId, string reason)
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             IClient target = ClientManager[targetId];
             if (admin != null && target != null && HostAdminBan != null)
                 HostAdminBan(admin, target, reason);
         }
 
-        public void AdminRestartServer(ITetriNETAdminCallback callback, int seconds)
+        public void AdminRestartServer(int seconds)
         {
-            IAdmin admin = AdminManager[callback];
+            IAdmin admin = AdminManager[AdminCallback];
             if (admin != null && HostAdminRestartServer != null)
                 HostAdminRestartServer(admin, seconds);
         }

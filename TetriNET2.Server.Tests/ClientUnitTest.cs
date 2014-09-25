@@ -12,7 +12,7 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public abstract class AbstractClientUnitTest
     {
-        protected abstract IClient CreateClient(string name, IPAddress address, ITetriNETCallback callback, string team = null);
+        protected abstract IClient CreateClient(string name, IPAddress address, ITetriNETClientCallback callback, string team = null);
 
         [TestInitialize]
         public void Initialize()
@@ -123,7 +123,7 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public class ClientUnitTest : AbstractClientUnitTest
     {
-        protected override IClient CreateClient(string name, IPAddress address, ITetriNETCallback callback, string team = null)
+        protected override IClient CreateClient(string name, IPAddress address, ITetriNETClientCallback callback, string team = null)
         {
             return new Client(name, address, callback, team);
         }
@@ -192,7 +192,7 @@ namespace TetriNET2.Server.Tests
         {
             const string name = "Client1";
             IPAddress address = IPAddress.Parse("127.0.0.1");
-            ITetriNETCallback callback = new CountCallTetriNETCallback();
+            ITetriNETClientCallback callback = new CountCallTetriNETCallback();
             const string team = "Team1";
 
             IClient client = CreateClient(name, address, callback, team);

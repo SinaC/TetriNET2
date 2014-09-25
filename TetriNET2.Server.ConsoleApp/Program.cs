@@ -37,7 +37,7 @@ namespace TetriNET2.Server.ConsoleApp
                 };
 
             IServer server = new Server(factory, passwordManager, banManager, clientManager, adminManager, gameRoomManager);
-            
+
             server.AddHost(wcfHost);
 
             server.SetVersion(1, 0);
@@ -79,7 +79,7 @@ namespace TetriNET2.Server.ConsoleApp
                             foreach (IAdmin admin in adminManager.Admins)
                                 Console.WriteLine("{0}) {1}", admin.Id, admin.Name);
                             Console.WriteLine("Rooms:");
-                            foreach(IGameRoom room in gameRoomManager.Rooms)
+                            foreach (IGameRoom room in gameRoomManager.Rooms)
                                 Console.WriteLine("{0}) {1} {2} {3} #players:{4} #spectators:{5}  password:{6} {7:HH:mm:ss}", room.Id, room.Name, room.State, room.Rule, room.PlayerCount, room.SpectatorCount, room.Password, room.CreationTime);
                             break;
                     }
@@ -98,7 +98,7 @@ namespace TetriNET2.Server.ConsoleApp
 
     public class Factory : IFactory
     {
-        public IClient CreateClient(string name, string team, IPAddress address, ITetriNETCallback callback)
+        public IClient CreateClient(string name, string team, IPAddress address, ITetriNETClientCallback callback)
         {
             return new Client(name, address, callback, team);
         }

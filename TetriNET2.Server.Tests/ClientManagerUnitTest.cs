@@ -13,7 +13,7 @@ namespace TetriNET2.Server.Tests
     public abstract class AbstractClientManagerUnitTest
     {
         protected abstract IClientManager CreateClientManager(int maxClients);
-        protected abstract IClient CreateClient(string name, IPAddress address, ITetriNETCallback callback, string team = null);
+        protected abstract IClient CreateClient(string name, IPAddress address, ITetriNETClientCallback callback, string team = null);
 
         [TestInitialize]
         public void Initialize()
@@ -120,7 +120,7 @@ namespace TetriNET2.Server.Tests
         public void TestAddSameCallback()
         {
             IClientManager clientManager = CreateClientManager(10);
-            ITetriNETCallback callback = new CountCallTetriNETCallback();
+            ITetriNETClientCallback callback = new CountCallTetriNETCallback();
             clientManager.Add(CreateClient("client1", IPAddress.Any, callback));
 
             bool inserted = clientManager.Add(CreateClient("client2", IPAddress.Any, callback));
@@ -434,7 +434,7 @@ namespace TetriNET2.Server.Tests
             return new ClientManager(maxClients);
         }
 
-        protected override IClient CreateClient(string name, IPAddress address, ITetriNETCallback callback, string team = null)
+        protected override IClient CreateClient(string name, IPAddress address, ITetriNETClientCallback callback, string team = null)
         {
             return new Client(name, address, callback, team);
         }

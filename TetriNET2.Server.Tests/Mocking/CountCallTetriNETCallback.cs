@@ -6,7 +6,7 @@ using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Server.Tests.Mocking
 {
-    public class CountCallTetriNETCallback : ITetriNETCallback
+    public class CountCallTetriNETCallback : ITetriNETClientCallback
     {
         private class CallInfo
         {

@@ -47,12 +47,10 @@
     <Compile Include="Attributes\GameRuleAttribute.cs" />
     <Compile Include="Attributes\PieceAttribute.cs" />
     <Compile Include="Attributes\SpecialAttribute.cs" />
-    <Compile Include="Contracts\ITetriNET.cs" />
+    <Compile Include="Contracts\ITetriNETClient.cs" />
     <Compile Include="Contracts\ITetriNETAdmin.cs" />
     <Compile Include="Contracts\ITetriNETAdminCallback.cs" />
-    <Compile Include="Contracts\ITetriNETCallback.cs" />
-    <Compile Include="Contracts\WCF\IWCFTetriNETAdmin.cs" />
-    <Compile Include="Contracts\WCF\IWCFTetriNET.cs" />
+    <Compile Include="Contracts\ITetriNETClientCallback.cs" />
     <Compile Include="DataContracts\AdminData.cs" />
     <Compile Include="DataContracts\BanEntryData.cs" />
     <Compile Include="DataContracts\ClientAdminData.cs" />

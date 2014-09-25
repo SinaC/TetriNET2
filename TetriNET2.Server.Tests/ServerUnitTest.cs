@@ -472,7 +472,7 @@ namespace TetriNET2.Server.Tests
     {
         private class Factory : IFactory
         {
-            public IClient CreateClient(string name, string team, IPAddress address, ITetriNETCallback callback)
+            public IClient CreateClient(string name, string team, IPAddress address, ITetriNETClientCallback callback)
             {
                 return new Client(name, address, callback, team);
             }
@@ -498,7 +498,7 @@ namespace TetriNET2.Server.Tests
             ClientManager = new ClientManager(10);
             AdminManager = new AdminManager(10);
             GameRoomManager = new GameRoomManager(10);
-            return new TetriNET2.Server.Server(new Factory(), PasswordManager, BanManager, ClientManager, AdminManager, GameRoomManager);
+            return new Server(new Factory(), PasswordManager, BanManager, ClientManager, AdminManager, GameRoomManager);
         }
 
         protected override HostMock CreateHost()
@@ -541,7 +541,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(null, new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+                IServer server = new Server(null, new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -559,7 +559,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(new Factory(), null, new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+                IServer server = new Server(new Factory(), null, new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -577,7 +577,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(new Factory(), new PasswordManager(), null, new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+                IServer server = new Server(new Factory(), new PasswordManager(), null, new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -595,7 +595,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), null, new AdminManager(10), new GameRoomManager(10));
+                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), null, new AdminManager(10), new GameRoomManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -613,7 +613,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), null, new GameRoomManager(10));
+                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), null, new GameRoomManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -631,7 +631,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new TetriNET2.Server.Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), null);
+                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), null);
 
                 Assert.Fail("Exception not thrown");
             }
@@ -647,7 +647,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestConstructorSetProperties()
         {
-            IServer server = new TetriNET2.Server.Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+            IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
 
             Assert.AreEqual(ServerStates.Waiting, server.State);
         }

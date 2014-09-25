@@ -6,10 +6,11 @@ using System.Threading;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Server.Interfaces.IHost;
+using TetriNET2.Server.Tests.Mocking;
 
 namespace TetriNET2.Server.Tests.ClientSide
 {
-    public class ClientFake : ITetriNETCallback, IDisposable
+    public class ClientFake : ITetriNETClientCallback, IDisposable
     {
         public IHost Host { get; set; }
         
@@ -26,7 +27,7 @@ namespace TetriNET2.Server.Tests.ClientSide
             Team = team;
             Versioning = version;
             Address = address;
-            _timer = new Timer(TimerCallback, null, 500, 350);
+            _timer = new Timer(TimerCallback, null, Timeout.Infinite, Timeout.Infinite);
         }
 
         private void TimerCallback(object state)
@@ -34,146 +35,186 @@ namespace TetriNET2.Server.Tests.ClientSide
             ClientHeartbeat();
         }
 
+        private void SetCallbackAndAddress()
+        {
+            HostMock hostMock = Host as HostMock;
+            if (hostMock != null)
+            {
+                hostMock.ClientCallback = this;
+                hostMock.Address = Address;
+            }
+        }
+
         #region ITetriNET
 
         public void ClientConnect()
         {
-            Host.ClientConnect(this, Address, Versioning, Name, Team);
+            SetCallbackAndAddress();
+            Host.ClientConnect(Versioning, Name, Team);
+            _timer.Change(500, 350);
         }
 
         public void ClientDisconnect()
         {
-            Host.ClientDisconnect(this);
+            SetCallbackAndAddress();
+            Host.ClientDisconnect();
+            _timer.Change(Timeout.Infinite, Timeout.Infinite);
         }
 
         public void ClientHeartbeat()
         {
-            Host.ClientHeartbeat(this);
+            SetCallbackAndAddress();
+            Host.ClientHeartbeat();
         }
 
         public void ClientSendPrivateMessage(Guid targetId, string message)
         {
-            Host.ClientSendPrivateMessage(this, targetId, message);
+            SetCallbackAndAddress();
+            Host.ClientSendPrivateMessage(targetId, message);
         }
 
         public void ClientSendBroadcastMessage(string message)
         {
-            Host.ClientSendBroadcastMessage(this, message);
+            SetCallbackAndAddress();
+            Host.ClientSendBroadcastMessage(message);
         }
 
         public void ClientChangeTeam(string team)
         {
-            Host.ClientChangeTeam(this, team);
+            SetCallbackAndAddress();
+            Host.ClientChangeTeam(team);
         }
 
         public void ClientJoinGame(Guid gameId, string password, bool asSpectator)
         {
-            Host.ClientJoinGame(this, gameId, password, asSpectator);
+            SetCallbackAndAddress();
+            Host.ClientJoinGame(gameId, password, asSpectator);
         }
 
         public void ClientJoinRandomGame(bool asSpectator)
         {
-            Host.ClientJoinRandomGame(this, asSpectator);
+            SetCallbackAndAddress();
+            Host.ClientJoinRandomGame(asSpectator);
         }
 
         public void ClientCreateAndJoinGame(string name, string password, GameRules rule, bool asSpectator)
         {
-            Host.ClientCreateAndJoinGame(this, name, password, rule, asSpectator);
+            SetCallbackAndAddress();
+            Host.ClientCreateAndJoinGame(name, password, rule, asSpectator);
         }
 
         public void ClientGetRoomList()
         {
-            Host.ClientGetRoomList(this);
+            SetCallbackAndAddress();
+            Host.ClientGetRoomList();
         }
 
         public void ClientGetClientList()
         {
-            Host.ClientGetClientList(this);
+            SetCallbackAndAddress();
+            Host.ClientGetClientList();
         }
 
         public void ClientStartGame()
         {
-            Host.ClientStartGame(this);
+            SetCallbackAndAddress();
+            Host.ClientStartGame();
         }
 
         public void ClientStopGame()
         {
-            Host.ClientStopGame(this);
+            SetCallbackAndAddress();
+            Host.ClientStopGame();
         }
 
         public void ClientPauseGame()
         {
-            Host.ClientPauseGame(this);
+            SetCallbackAndAddress();
+            Host.ClientPauseGame();
         }
 
         public void ClientResumeGame()
         {
-            Host.ClientResumeGame(this);
+            SetCallbackAndAddress();
+            Host.ClientResumeGame();
         }
 
         public void ClientChangeOptions(GameOptions options)
         {
-            Host.ClientChangeOptions(this, options);
+            SetCallbackAndAddress();
+            Host.ClientChangeOptions(options);
         }
 
         public void ClientVoteKick(Guid targetId, string reason)
         {
-            Host.ClientVoteKick(this, targetId, reason);
+            SetCallbackAndAddress();
+            Host.ClientVoteKick(targetId, reason);
         }
 
         public void ClientVoteKickResponse(bool accepted)
         {
-            Host.ClientVoteKickResponse(this, accepted);
+            SetCallbackAndAddress();
+            Host.ClientVoteKickResponse(accepted);
         }
 
         public void ClientResetWinList()
         {
-            Host.ClientResetWinList(this);
+            SetCallbackAndAddress();
+            Host.ClientResetWinList();
         }
 
         public void ClientLeaveGame()
         {
-            Host.ClientLeaveGame(this);
+            SetCallbackAndAddress();
+            Host.ClientLeaveGame();
         }
 
-        void ClientGetGameClientList()
+        public void ClientGetGameClientList()
         {
-            Host.ClientGetGameClientList(this);
+            SetCallbackAndAddress();
+            Host.ClientGetGameClientList();
         }
 
         public void ClientPlacePiece(int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
         {
-            Host.ClientPlacePiece(this, pieceIndex, highestIndex, piece, orientation, posX, posX, grid);
+            SetCallbackAndAddress();
+            Host.ClientPlacePiece(pieceIndex, highestIndex, piece, orientation, posX, posX, grid);
         }
 
         public void ClientModifyGrid(byte[] grid)
         {
-            Host.ClientModifyGrid(this, grid);
+            SetCallbackAndAddress();
+            Host.ClientModifyGrid(grid);
         }
 
         public void ClientUseSpecial(Guid targetId, Specials special)
         {
-            Host.ClientUseSpecial(this, targetId, special);
+            SetCallbackAndAddress();
+            Host.ClientUseSpecial(targetId, special);
         }
 
         public void ClientClearLines(int count)
         {
-            Host.ClientClearLines(this, count);
+            SetCallbackAndAddress();
+            Host.ClientClearLines(count);
         }
 
         public void ClientGameLost()
         {
-            Host.ClientGameLost(this);
+            SetCallbackAndAddress();
+            Host.ClientGameLost();
         }
 
         public void ClientFinishContinuousSpecial(Specials special)
         {
-            Host.ClientFinishContinuousSpecial(this, special);
+            SetCallbackAndAddress();
+            Host.ClientFinishContinuousSpecial(special);
         }
 
         public void ClientEarnAchievement(int achievementId, string achievementTitle)
         {
-            Host.ClientEarnAchievement(this, achievementId, achievementTitle);
+            SetCallbackAndAddress();
+            Host.ClientEarnAchievement(achievementId, achievementTitle);
         }
 
         #endregion

@@ -14,6 +14,9 @@ namespace TetriNET2.Common.DataContracts
         public string Name { get; set; }
 
         [DataMember]
+        public GameRoomStates State { get; set; }
+
+        [DataMember]
         public List<ClientAdminData> Clients { get; set; }
 
         [DataMember]

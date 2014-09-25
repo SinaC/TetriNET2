@@ -10,7 +10,7 @@ namespace TetriNET2.Server
 {
     public sealed class ClientManager : IClientManager
     {
-        private readonly Dictionary<ITetriNETCallback, IClient> _clients = new Dictionary<ITetriNETCallback, IClient>();
+        private readonly Dictionary<ITetriNETClientCallback, IClient> _clients = new Dictionary<ITetriNETClientCallback, IClient>();
         private readonly object _lockObject = new object();
 
         public ClientManager(int maxClients)
@@ -43,8 +43,8 @@ namespace TetriNET2.Server
         {
             get
             {
-                KeyValuePair<ITetriNETCallback, IClient> kv = _clients.FirstOrDefault(x => x.Value.Id == guid);
-                if (kv.Equals(default(KeyValuePair<ITetriNETCallback, IClient>)))
+                KeyValuePair<ITetriNETClientCallback, IClient> kv = _clients.FirstOrDefault(x => x.Value.Id == guid);
+                if (kv.Equals(default(KeyValuePair<ITetriNETClientCallback, IClient>)))
                     return null;
                 return kv.Value;
             }
@@ -54,14 +54,14 @@ namespace TetriNET2.Server
         {
             get
             {
-                KeyValuePair<ITetriNETCallback, IClient> kv = _clients.FirstOrDefault(x => x.Value.Name == name);
-                if (kv.Equals(default(KeyValuePair<ITetriNETCallback, IClient>)))
+                KeyValuePair<ITetriNETClientCallback, IClient> kv = _clients.FirstOrDefault(x => x.Value.Name == name);
+                if (kv.Equals(default(KeyValuePair<ITetriNETClientCallback, IClient>)))
                     return null;
                 return kv.Value;
             }
         }
 
-        public IClient this[ITetriNETCallback callback]
+        public IClient this[ITetriNETClientCallback callback]
         {
             get
             {
@@ -75,8 +75,8 @@ namespace TetriNET2.Server
         {
             get
             {
-                KeyValuePair<ITetriNETCallback, IClient> kv = _clients.FirstOrDefault(x => x.Value.Address.Equals(address));
-                if (kv.Equals(default(KeyValuePair<ITetriNETCallback, IClient>)))
+                KeyValuePair<ITetriNETClientCallback, IClient> kv = _clients.FirstOrDefault(x => x.Value.Address.Equals(address));
+                if (kv.Equals(default(KeyValuePair<ITetriNETClientCallback, IClient>)))
                     return null;
                 return kv.Value;
             }
@@ -126,7 +126,7 @@ namespace TetriNET2.Server
             _clients.Clear();
         }
 
-        public bool Contains(string name, ITetriNETCallback callback)
+        public bool Contains(string name, ITetriNETClientCallback callback)
         {
             bool found = _clients.Any(x => x.Value.Name == name || x.Key == callback);
             return found;

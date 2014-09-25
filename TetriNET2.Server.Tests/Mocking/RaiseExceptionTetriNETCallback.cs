@@ -5,7 +5,7 @@ using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Server.Tests.Mocking
 {
-    public class RaiseExceptionTetriNETCallback : ITetriNETCallback
+    public class RaiseExceptionTetriNETCallback : ITetriNETClientCallback
     {
         public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameDescription> games)
         {

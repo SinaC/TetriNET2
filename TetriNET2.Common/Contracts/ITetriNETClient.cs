@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Net;
 using System.ServiceModel;
 using TetriNET2.Common.DataContracts;
 
-namespace TetriNET2.Common.Contracts.WCF
+namespace TetriNET2.Common.Contracts
 {
-    [ServiceContract(SessionMode = SessionMode.Required, CallbackContract = typeof(ITetriNETCallback))]
-    public interface IWCFTetriNET
+    [ServiceContract(SessionMode = SessionMode.Required, CallbackContract = typeof(ITetriNETClientCallback))]
+    public interface ITetriNETClient
     {
         // Connect/disconnect/keep alive
         [OperationContract(IsOneWay = true)]

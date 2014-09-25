@@ -15,7 +15,7 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public abstract class AbstractGameRoomUnitTest
     {
-        protected abstract IClient CreateClient(string name, ITetriNETCallback callback);
+        protected abstract IClient CreateClient(string name, ITetriNETClientCallback callback);
         protected abstract IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators);
         protected abstract IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null);
         protected abstract void FlushActionQueue();
@@ -2916,7 +2916,7 @@ namespace TetriNET2.Server.Tests
         protected PieceProviderMock PieceProvider;
         protected ActionQueueMock ActionQueue;
 
-        protected override IClient CreateClient(string name, ITetriNETCallback callback)
+        protected override IClient CreateClient(string name, ITetriNETClientCallback callback)
         {
             return new Client(name, IPAddress.Any, callback);
         }

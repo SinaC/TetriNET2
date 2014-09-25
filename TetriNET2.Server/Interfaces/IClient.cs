@@ -7,7 +7,7 @@ namespace TetriNET2.Server.Interfaces
 {
     public delegate void ClientConnectionLostEventHandler(IClient entity);
 
-    public interface IClient : ITetriNETCallback
+    public interface IClient : ITetriNETClientCallback
     {
         event ClientConnectionLostEventHandler ConnectionLost;
 
@@ -15,7 +15,7 @@ namespace TetriNET2.Server.Interfaces
         Guid Id { get; }
         string Name { get; }
         IPAddress Address { get; }
-        ITetriNETCallback Callback { get; }
+        ITetriNETClientCallback Callback { get; }
         DateTime ConnectTime { get; }
 
         //

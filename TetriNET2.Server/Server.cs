@@ -290,12 +290,17 @@ namespace TetriNET2.Server
         #region IHost events handler
 
         // Client
-        private void OnClientConnect(ITetriNETCallback callback, IPAddress address, Versioning version, string name, string team)
+        private void OnClientConnect(ITetriNETClientCallback callback, IPAddress address, Versioning version, string name, string team)
         {
             Log.Default.WriteLine(LogLevels.Info, "Connect client {0}[{1}] {2}.{3}", name, address == null ? "???" : address.ToString(), version == null ? -1 : version.Major, version == null ? -1 : version.Minor);
 
-            ConnectResults result = ConnectResults.Successfull;
+            if (callback == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "!!!Null callback!!!");
+                return;
+            }
 
+            ConnectResults result = ConnectResults.Successfull;
             if (version == null || Version.Major != version.Major || Version.Minor != version.Minor)
             {
                 result = ConnectResults.FailedIncompatibleVersion;
@@ -1061,6 +1066,7 @@ namespace TetriNET2.Server
                 {
                     Id = x.Id,
                     Name = x.Name,
+                    State = x.State,
                     Rule = x.Rule,
                     Options = x.Options,
                     Clients = BuildClientAdminDatas(x)

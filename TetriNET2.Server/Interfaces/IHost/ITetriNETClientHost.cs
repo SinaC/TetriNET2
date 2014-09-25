@@ -7,7 +7,7 @@ namespace TetriNET2.Server.Interfaces.IHost
     // ------
     // Client
     // Connect/disconnect/keep alive
-    public delegate void HostClientConnectEventHandler(ITetriNETCallback callback, IPAddress address, Versioning version, string name, string team);
+    public delegate void HostClientConnectEventHandler(ITetriNETClientCallback callback, IPAddress address, Versioning version, string name, string team);
     public delegate void HostClientDisconnectEventHandler(IClient client);
     public delegate void HostClientHeartbeatEventHandler(IClient client);
 
@@ -46,7 +46,7 @@ namespace TetriNET2.Server.Interfaces.IHost
     public delegate void HostClientFinishContinuousSpecialEventHandler(IClient client, Specials special);
     public delegate void HostClientEarnAchievementEventHandler(IClient client, int achievementId, string achievementTitle);
 
-    public partial interface IHost : ITetriNET
+    public partial interface IHost : ITetriNETClient
     {
         // ------
         // Client

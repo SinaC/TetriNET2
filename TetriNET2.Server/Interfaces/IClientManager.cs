@@ -15,12 +15,12 @@ namespace TetriNET2.Server.Interfaces
 
         IClient this[Guid guid] { get; }
         IClient this[string name] { get; }
-        IClient this[ITetriNETCallback callback] { get; }
+        IClient this[ITetriNETClientCallback callback] { get; }
         IClient this[IPAddress address] { get; }
 
         bool Add(IClient client);
         bool Remove(IClient client);
         void Clear();
-        bool Contains(string name, ITetriNETCallback callback);
+        bool Contains(string name, ITetriNETClientCallback callback);
     }
 }

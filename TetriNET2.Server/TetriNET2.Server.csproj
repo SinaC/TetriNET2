@@ -43,7 +43,7 @@
   <ItemGroup>
     <Compile Include="Interfaces\IHost\IHost.cs" />
     <Compile Include="Interfaces\IHost\ITetriNETAdminHost.cs" />
-    <Compile Include="Interfaces\IHost\ITetriNETHost.cs" />
+    <Compile Include="Interfaces\IHost\ITetriNETClientHost.cs" />
     <Compile Include="Interfaces\IPasswordManager.cs" />
     <Compile Include="PasswordManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
@@ -69,7 +69,7 @@
     <Compile Include="WCFHost\IPFilterServiceBehavior.cs" />
     <Compile Include="WCFHost\WCFHost.cs" />
     <Compile Include="WCFHost\WCFTetriNETAdminHost.cs" />
-    <Compile Include="WCFHost\WCFTetriNETHost.cs" />
+    <Compile Include="WCFHost\WCFTetriNETClientHost.cs" />
   </ItemGroup>
   <ItemGroup />
   <ItemGroup>

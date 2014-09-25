@@ -15,7 +15,7 @@ namespace TetriNET2.Server
     {
         private bool _disconnected;
 
-        public Client(string name, IPAddress address, ITetriNETCallback callback, string team = null)
+        public Client(string name, IPAddress address, ITetriNETClientCallback callback, string team = null)
         {
             if (name == null)
                 throw new ArgumentNullException("name");
@@ -70,7 +70,7 @@ namespace TetriNET2.Server
         public Guid Id { get; private set; }
         public string Name { get; private set; }
         public IPAddress Address { get; private set; }
-        public ITetriNETCallback Callback { get; private set; }
+        public ITetriNETClientCallback Callback { get; private set; }
         public DateTime ConnectTime { get; private set; }
 
         public ClientStates State { get; set; }

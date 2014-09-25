@@ -5,7 +5,7 @@ using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Common.Contracts
 {
-    public interface ITetriNETCallback
+    public interface ITetriNETClientCallback
     {
         [OperationContract(IsOneWay = true)]
         void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameDescription> games);

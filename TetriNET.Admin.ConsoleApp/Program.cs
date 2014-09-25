@@ -4,7 +4,6 @@ using System.Linq;
 using System.ServiceModel;
 using System.ServiceModel.Channels;
 using TetriNET2.Common.Contracts;
-using TetriNET2.Common.Contracts.WCF;
 using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Admin.ConsoleApp
@@ -29,13 +28,13 @@ namespace TetriNET2.Admin.ConsoleApp
         {
             CountCallTetriNETAdminCallback callbackInstance = new CountCallTetriNETAdminCallback();
 
-            DuplexChannelFactory<IWCFTetriNETAdmin> factory;
-            IWCFTetriNETAdmin proxy;
+            DuplexChannelFactory<ITetriNETAdmin> factory;
+            ITetriNETAdmin proxy;
 
             EndpointAddress endpointAddress = new EndpointAddress("net.tcp://localhost:7788/TetriNET2Admin");
             Binding binding = new NetTcpBinding(SecurityMode.None);
             InstanceContext instanceContext = new InstanceContext(callbackInstance);
-            factory = new DuplexChannelFactory<IWCFTetriNETAdmin>(instanceContext, binding, endpointAddress);
+            factory = new DuplexChannelFactory<ITetriNETAdmin>(instanceContext, binding, endpointAddress);
             proxy = factory.CreateChannel(instanceContext);
 
             proxy.AdminConnect(
