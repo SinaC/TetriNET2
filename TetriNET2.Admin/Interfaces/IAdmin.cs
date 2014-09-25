@@ -39,6 +39,7 @@ namespace TetriNET2.Admin.Interfaces
         IEnumerable<ClientAdminData> Clients { get; }
         IEnumerable<AdminData> Admins { get; }
         IEnumerable<GameRoomAdminData> Rooms { get; }
+        IEnumerable<BanEntryData> Banned { get; }
 
         //
         void SetVersion(int major, int minor);
@@ -71,7 +72,7 @@ namespace TetriNET2.Admin.Interfaces
         event AdminOnBannedListReceivedEventHandler AdminOnBannedListReceived;
 
         // Connect/disconnect
-        bool Connect(string address, Versioning version, string name, string password);
+        bool Connect(string address, string name, string password);
         bool Disconnect();
 
         // Messaging

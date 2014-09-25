@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 using TetriNET2.Admin.Interfaces;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Common.Helpers;
@@ -13,6 +15,7 @@ namespace TetriNET2.Admin
         private readonly List<ClientAdminData> _clients;
         private readonly List<AdminData> _admins;
         private readonly List<GameRoomAdminData> _rooms;
+        private readonly List<BanEntryData> _banned;
 
         private IProxy _proxy;
 
@@ -25,6 +28,18 @@ namespace TetriNET2.Admin
             _clients = new List<ClientAdminData>();
             _admins = new List<AdminData>();
             _rooms = new List<GameRoomAdminData>();
+            _banned = new List<BanEntryData>();
+
+            Assembly entryAssembly = Assembly.GetEntryAssembly();
+            if (entryAssembly != null)
+            {
+                Version version = entryAssembly.GetName().Version;
+                Version = new Versioning
+                {
+                    Major = version.Major,
+                    Minor = version.Minor,
+                };
+            }// else, we suppose SetVersion will be called later, before connecting
         }
 
         #region IAdmin
@@ -63,35 +78,93 @@ namespace TetriNET2.Admin
 
         public void OnClientConnected(Guid clientId, string name, string team, string address)
         {
-            _clients.Add(new ClientAdminData
-                {
-                    Id = clientId,
-                    Name = name,
-                    Team = team,
-                    ConnectTime = DateTime.Now,
-                    Address = address,
-                });
+            ClientAdminData client = _clients.FirstOrDefault(x => x.Id == clientId);
+            if (client == null)
+                _clients.Add(new ClientAdminData
+                    {
+                        Id = clientId,
+                        Name = name,
+                        Team = team,
+                        ConnectTime = DateTime.Now,
+                        Address = address,
+                        //LastActionFromClient = 
+                        //LastActionToClient = 
+                        //Roles = 
+                        //State = 
+                        //TimeoutCount = 
+                    });
+            else
+            {
+                client.Name = name;
+                client.Team = team;
+                client.Address = address;
+                client.ConnectTime = DateTime.Now;
+                //LastActionFromClient = 
+                //LastActionToClient = 
+                //Roles = 
+                //State = 
+                //TimeoutCount = 
+            }
 
             AdminOnClientConnected.Do(x => x(clientId, name, team));
         }
 
         public void OnClientDisconnected(Guid clientId, LeaveReasons reason)
         {
+            _clients.RemoveAll(x => x.Id == clientId);
+
             AdminOnClientDisconnected.Do(x => x(clientId, reason));
         }
 
         public void OnAdminConnected(Guid adminId, string name, string address)
         {
+            AdminData admin = _admins.FirstOrDefault(x => x.Id == adminId);
+            if (admin == null)
+                _admins.Add(new AdminData
+                {
+                    Id = adminId,
+                    Name = name,
+                    ConnectTime = DateTime.Now,
+                    Address = address,
+                });
+            else
+            {
+                admin.Name = name;
+                admin.Address = address;
+                admin.ConnectTime = DateTime.Now;
+            }
+
             AdminOnAdminConnected.Do(x => x(adminId, name));
         }
 
         public void OnAdminDisconnected(Guid adminId, LeaveReasons reason)
         {
+            _admins.RemoveAll(x => x.Id == adminId);
+
             AdminOnAdminDisconnected.Do(x => x(adminId, reason));
         }
 
         public void OnGameCreated(Guid clientId, GameDescription game)
         {
+            GameRoomAdminData room = _rooms.FirstOrDefault(x => x.Id == game.Id);
+            if (room == null)
+                _rooms.Add(new GameRoomAdminData
+                    {
+                        Id = game.Id,
+                        Name = game.Name,
+                        Clients = new List<ClientAdminData>(),
+                        Rule = game.Rule,
+                        //Options = 
+                        //State = 
+                    });
+            else
+            {
+                room.Name = game.Name;
+                room.Rule = game.Rule;
+                //Options = 
+                //State = 
+            }
+
             AdminOnGameCreated.Do(x => x(clientId, game));
         }
 
@@ -112,11 +185,17 @@ namespace TetriNET2.Admin
 
         public void OnAdminListReceived(List<AdminData> admins)
         {
+            _admins.Clear();
+            _admins.AddRange(admins);
+
             AdminOnAdminListReceived.Do(x => x(admins));
         }
 
         public void OnClientListReceived(List<ClientAdminData> clients)
         {
+            _clients.Clear();
+            _clients.AddRange(clients);
+
             AdminOnClientListReceived.Do(x => x(clients));
         }
 
@@ -127,11 +206,17 @@ namespace TetriNET2.Admin
 
         public void OnRoomListReceived(List<GameRoomAdminData> rooms)
         {
+            _rooms.Clear();
+            _rooms.AddRange(rooms);
+
             AdminOnRoomListReceived.Do(x => x(rooms));
         }
 
         public void OnBannedListReceived(List<BanEntryData> entries)
         {
+            _banned.Clear();
+            _banned.AddRange(entries);
+
             AdminOnBannedListReceived.Do(x => x(entries));
         }
 
@@ -154,6 +239,11 @@ namespace TetriNET2.Admin
         public IEnumerable<GameRoomAdminData> Rooms
         {
             get { return _rooms; }
+        }
+
+        public IEnumerable<BanEntryData> Banned
+        {
+            get { return _banned; }
         }
 
         public void SetVersion(int major, int minor)
@@ -183,14 +273,18 @@ namespace TetriNET2.Admin
         public event AdminOnRoomListReceivedEventHandler AdminOnRoomListReceived;
         public event AdminOnBannedListReceivedEventHandler AdminOnBannedListReceived;
 
-        public bool Connect(string address, Versioning version, string name, string password)
+        public bool Connect(string address, string name, string password)
         {
             if (address == null)
                 throw new ArgumentNullException("address");
-            if (version == null)
-                throw new ArgumentNullException("version");
             if (name == null)
                 throw new ArgumentNullException("name");
+
+            if (Version == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Cannot connect, version is not set");
+                return false;
+            }
 
             if (_proxy != null)
             {
@@ -205,7 +299,7 @@ namespace TetriNET2.Admin
 
                 Name = name;
 
-                _proxy.AdminConnect(version, name, password);
+                _proxy.AdminConnect(Version, name, password);
 
                 return true;
             }

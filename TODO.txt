@@ -1,0 +1,4 @@
+server
+	delete a game room -> callback to client and admin
+admin
+	get one client/admin/room full information
