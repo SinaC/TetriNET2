@@ -7,7 +7,7 @@ namespace TetriNET2.Server.Tests.Mocking
 {
     public class RaiseExceptionTetriNETCallback : ITetriNETClientCallback
     {
-        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameDescription> games)
+        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameRoomData> games)
         {
             throw new NotImplementedException();
         }
@@ -43,7 +43,7 @@ namespace TetriNET2.Server.Tests.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnClientGameCreated(Guid clientId, GameDescription game)
+        public void OnClientGameCreated(Guid clientId, GameRoomData game)
         {
             throw new NotImplementedException();
         }
@@ -63,7 +63,7 @@ namespace TetriNET2.Server.Tests.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnGameCreated(GameCreateResults result, GameDescription game)
+        public void OnGameCreated(GameCreateResults result, GameRoomData game)
         {
             throw new NotImplementedException();
         }

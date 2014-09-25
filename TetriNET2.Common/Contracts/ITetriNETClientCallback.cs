@@ -8,7 +8,7 @@ namespace TetriNET2.Common.Contracts
     public interface ITetriNETClientCallback
     {
         [OperationContract(IsOneWay = true)]
-        void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameDescription> games);
+        void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameRoomData> games);
         [OperationContract(IsOneWay = true)]
         void OnDisconnected();
         [OperationContract(IsOneWay = true)]
@@ -29,7 +29,7 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void OnClientDisconnected(Guid clientId, LeaveReasons reason);
         [OperationContract(IsOneWay = true)]
-        void OnClientGameCreated(Guid clientId, GameDescription game);
+        void OnClientGameCreated(Guid clientId, GameRoomData game);
 
         [OperationContract(IsOneWay = true)]
         void OnServerMessageReceived(string message);
@@ -40,7 +40,7 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void OnTeamChanged(Guid clientId, string team);
         [OperationContract(IsOneWay = true)]
-        void OnGameCreated(GameCreateResults result, GameDescription game);
+        void OnGameCreated(GameCreateResults result, GameRoomData game);
 
         [OperationContract(IsOneWay = true)]
         void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster);

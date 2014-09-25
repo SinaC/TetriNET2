@@ -342,13 +342,13 @@ namespace TetriNET2.Server
                         else
                         {
                             // Build game room list
-                            List<GameDescription> games;
+                            List<GameRoomData> games;
                             lock (_gameRoomManager.LockObject)
-                                games = _gameRoomManager.Rooms.Select(r => new GameDescription
+                                games = _gameRoomManager.Rooms.Select(r => new GameRoomData
                                     {
                                         Id = r.Id,
                                         Name = r.Name,
-                                        Players = r.Players.Select(p => p.Name).ToList(),
+                                        Clients = BuildClientDatas(r),
                                     }).ToList();
                             // Handle connection lost
                             client.ConnectionLost += OnClientConnectionLost;
@@ -548,26 +548,35 @@ namespace TetriNET2.Server
                         else
                         {
                             //
-                            GameDescription description = new GameDescription
+                            GameRoomData clientDescription = new GameRoomData
                             {
                                 Id = game.Id,
                                 Name = game.Name,
                                 Rule = game.Rule,
-                                Players = null
+                                Clients = new List<ClientData>()
+                            };
+                            GameRoomAdminData adminDescription = new GameRoomAdminData
+                            {
+                                Id = game.Id,
+                                Name = game.Name,
+                                Rule = game.Rule,
+                                State = game.State,
+                                Options = game.Options,
+                                Clients = BuildClientAdminDatas(game)
                             };
 
                             // Inform client
-                            client.OnGameCreated(result, description);
+                            client.OnGameCreated(result, clientDescription);
 
                             // Inform other clients
                             lock (_clientManager.LockObject)
                                 foreach (IClient target in _clientManager.Clients.Where(c => c != client))
-                                    target.OnClientGameCreated(client.Id, description);
+                                    target.OnClientGameCreated(client.Id, clientDescription);
 
                             // Inform admins
                             lock (_adminManager.LockObject)
                                 foreach (IAdmin target in _adminManager.Admins)
-                                    target.OnGameCreated(client.Id, description);
+                                    target.OnGameCreated(client.Id, adminDescription);
 
                             // Hosts
                             foreach (IHost host in _hosts)

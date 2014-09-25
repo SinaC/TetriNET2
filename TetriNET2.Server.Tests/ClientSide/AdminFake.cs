@@ -153,7 +153,7 @@ namespace TetriNET2.Server.Tests.ClientSide
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, adminId, reason);
         }
 
-        public void OnGameCreated(Guid clientId, GameDescription game)
+        public void OnGameCreated(Guid clientId, GameRoomAdminData game)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, game);
         }

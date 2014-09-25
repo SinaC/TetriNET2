@@ -119,7 +119,7 @@ namespace TetriNET2.Server
 
         #region ITetriNETCallback
 
-        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameDescription> games)
+        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameRoomData> games)
         {
             ExceptionFreeAction(() => Callback.OnConnected(result, serverVersion, clientId, games));
         }
@@ -164,7 +164,7 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnClientDisconnected(clientId, reason));
         }
 
-        public void OnClientGameCreated(Guid clientId, GameDescription game)
+        public void OnClientGameCreated(Guid clientId, GameRoomData game)
         {
             ExceptionFreeAction(() => Callback.OnClientGameCreated(clientId, game));
         }
@@ -189,7 +189,7 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnTeamChanged(clientId, team));
         }
 
-        public void OnGameCreated(GameCreateResults result, GameDescription game)
+        public void OnGameCreated(GameCreateResults result, GameRoomData game)
         {
             ExceptionFreeAction(() => Callback.OnGameCreated(result, game));
         }

@@ -5,30 +5,30 @@ using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Admin.Interfaces
 {
-    public delegate void AdminConnectionLostEventHandler();
+    public delegate void ConnectionLostEventHandler();
 
-    public delegate void AdminOnConnectedEventHandler(ConnectResults result, Versioning serverVersion, Guid adminId);
-    public delegate void AdminOnDisconnectedEventHandler();
+    public delegate void ConnectedEventHandler(ConnectResults result, Versioning serverVersion, Guid adminId);
+    public delegate void DisconnectedEventHandler();
 
-    public delegate void AdminOnServerStoppedEventHandler();
+    public delegate void ServerStoppedEventHandler();
 
-    public delegate void AdminOnClientConnectedEventHandler(Guid clientId, string name, string team);
-    public delegate void AdminOnClientDisconnectedEventHandler(Guid clientId, LeaveReasons reason);
+    public delegate void ClientConnectedEventHandler(Guid clientId, string name, string team);
+    public delegate void ClientDisconnectedEventHandler(Guid clientId, LeaveReasons reason);
 
-    public delegate void AdminOnAdminConnectedEventHandler(Guid adminId, string name);
-    public delegate void AdminOnAdminDisconnectedEventHandler(Guid adminId, LeaveReasons reason);
+    public delegate void AdminConnectedEventHandler(Guid adminId, string name);
+    public delegate void AdminDisconnectedEventHandler(Guid adminId, LeaveReasons reason);
 
-    public delegate void AdminOnGameCreatedEventHandler(Guid clientId, GameDescription game);
+    public delegate void GameCreatedEventHandler(Guid clientId, GameRoomAdminData game);
 
-    public delegate void AdminOnServerMessageReceivedEventHandler(string message);
-    public delegate void AdminOnBroadcastMessageReceivedEventHandler(Guid clientId, string message);
-    public delegate void AdminOnPrivateMessageReceivedEventHandler(Guid adminId, string message);
+    public delegate void ServerMessageReceivedEventHandler(string message);
+    public delegate void BroadcastMessageReceivedEventHandler(Guid clientId, string message);
+    public delegate void PrivateMessageReceivedEventHandler(Guid adminId, string message);
 
-    public delegate void AdminOnAdminListReceivedEventHandler(List<AdminData> admins);
-    public delegate void AdminOnClientListReceivedEventHandler(List<ClientAdminData> clients);
-    public delegate void AdminOnClientListInRoomReceivedEventHandler(Guid roomId, List<ClientAdminData> clients);
-    public delegate void AdminOnRoomListReceivedEventHandler(List<GameRoomAdminData> rooms);
-    public delegate void AdminOnBannedListReceivedEventHandler(List<BanEntryData> entries);
+    public delegate void AdminListReceivedEventHandler(List<AdminData> admins);
+    public delegate void ClientListReceivedEventHandler(List<ClientAdminData> clients);
+    public delegate void ClientListInRoomReceivedEventHandler(Guid roomId, List<ClientAdminData> clients);
+    public delegate void RoomListReceivedEventHandler(List<GameRoomAdminData> rooms);
+    public delegate void BannedListReceivedEventHandler(List<BanEntryData> entries);
 
     public interface IAdmin : ITetriNETAdminCallback
     {
@@ -45,31 +45,31 @@ namespace TetriNET2.Admin.Interfaces
         void SetVersion(int major, int minor);
 
         //
-        event AdminConnectionLostEventHandler AdminConnectionLost;
+        event ConnectionLostEventHandler ConnectionLost;
 
         //
-        event AdminOnConnectedEventHandler AdminOnConnected;
-        event AdminOnDisconnectedEventHandler AdminOnDisconnected;
+        event ConnectedEventHandler Connected;
+        event DisconnectedEventHandler Disconnected;
 
-        event AdminOnServerStoppedEventHandler AdminOnServerStopped;
+        event ServerStoppedEventHandler ServerStopped;
 
-        event AdminOnClientConnectedEventHandler AdminOnClientConnected;
-        event AdminOnClientDisconnectedEventHandler AdminOnClientDisconnected;
+        event ClientConnectedEventHandler ClientConnected;
+        event ClientDisconnectedEventHandler ClientDisconnected;
 
-        event AdminOnAdminConnectedEventHandler AdminOnAdminConnected;
-        event AdminOnAdminDisconnectedEventHandler AdminOnAdminDisconnected;
+        event AdminConnectedEventHandler AdminConnected;
+        event AdminDisconnectedEventHandler AdminDisconnected;
 
-        event AdminOnGameCreatedEventHandler AdminOnGameCreated;
+        event GameCreatedEventHandler GameCreated;
 
-        event AdminOnServerMessageReceivedEventHandler AdminOnServerMessageReceived;
-        event AdminOnBroadcastMessageReceivedEventHandler AdminOnBroadcastMessageReceived;
-        event AdminOnPrivateMessageReceivedEventHandler AdminOnPrivateMessageReceived;
+        event ServerMessageReceivedEventHandler ServerMessageReceived;
+        event BroadcastMessageReceivedEventHandler BroadcastMessageReceived;
+        event PrivateMessageReceivedEventHandler PrivateMessageReceived;
 
-        event AdminOnAdminListReceivedEventHandler AdminOnAdminListReceived;
-        event AdminOnClientListReceivedEventHandler AdminOnClientListReceived;
-        event AdminOnClientListInRoomReceivedEventHandler AdminOnClientListInRoomReceived;
-        event AdminOnRoomListReceivedEventHandler AdminOnRoomListReceived;
-        event AdminOnBannedListReceivedEventHandler AdminOnBannedListReceived;
+        event AdminListReceivedEventHandler AdminListReceived;
+        event ClientListReceivedEventHandler ClientListReceived;
+        event ClientListInRoomReceivedEventHandler ClientListInRoomReceived;
+        event RoomListReceivedEventHandler RoomListReceived;
+        event BannedListReceivedEventHandler BannedListReceived;
 
         // Connect/disconnect
         bool Connect(string address, string name, string password);

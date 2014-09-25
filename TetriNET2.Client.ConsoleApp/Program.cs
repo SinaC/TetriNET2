@@ -154,7 +154,7 @@ namespace TetriNET2.Client.ConsoleApp
 
         #region ITetriNETCallback
 
-        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameDescription> games)
+        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameRoomData> games)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, serverVersion, clientId, games);
         }
@@ -217,7 +217,7 @@ namespace TetriNET2.Client.ConsoleApp
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, reason);
         }
 
-        public void OnClientGameCreated(Guid clientId, GameDescription game)
+        public void OnClientGameCreated(Guid clientId, GameRoomData game)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, game);
         }
@@ -242,7 +242,7 @@ namespace TetriNET2.Client.ConsoleApp
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, team);
         }
 
-        public void OnGameCreated(GameCreateResults result, GameDescription game)
+        public void OnGameCreated(GameCreateResults result, GameRoomData game)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, game);
         }

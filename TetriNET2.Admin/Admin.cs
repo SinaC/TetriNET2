@@ -63,17 +63,17 @@ namespace TetriNET2.Admin
                     });
             }
 
-            AdminOnConnected.Do(x => x(result, serverVersion, adminId));
+            Connected.Do(x => x(result, serverVersion, adminId));
         }
 
         public void OnDisconnected()
         {
-            AdminOnDisconnected.Do(x => x());
+            Disconnected.Do(x => x());
         }
 
         public void OnServerStopped()
         {
-            AdminOnServerStopped.Do(x => x());
+            ServerStopped.Do(x => x());
         }
 
         public void OnClientConnected(Guid clientId, string name, string team, string address)
@@ -106,14 +106,14 @@ namespace TetriNET2.Admin
                 //TimeoutCount = 
             }
 
-            AdminOnClientConnected.Do(x => x(clientId, name, team));
+            ClientConnected.Do(x => x(clientId, name, team));
         }
 
         public void OnClientDisconnected(Guid clientId, LeaveReasons reason)
         {
             _clients.RemoveAll(x => x.Id == clientId);
 
-            AdminOnClientDisconnected.Do(x => x(clientId, reason));
+            ClientDisconnected.Do(x => x(clientId, reason));
         }
 
         public void OnAdminConnected(Guid adminId, string name, string address)
@@ -134,53 +134,46 @@ namespace TetriNET2.Admin
                 admin.ConnectTime = DateTime.Now;
             }
 
-            AdminOnAdminConnected.Do(x => x(adminId, name));
+            AdminConnected.Do(x => x(adminId, name));
         }
 
         public void OnAdminDisconnected(Guid adminId, LeaveReasons reason)
         {
             _admins.RemoveAll(x => x.Id == adminId);
 
-            AdminOnAdminDisconnected.Do(x => x(adminId, reason));
+            AdminDisconnected.Do(x => x(adminId, reason));
         }
 
-        public void OnGameCreated(Guid clientId, GameDescription game)
+        public void OnGameCreated(Guid clientId, GameRoomAdminData game)
         {
             GameRoomAdminData room = _rooms.FirstOrDefault(x => x.Id == game.Id);
             if (room == null)
-                _rooms.Add(new GameRoomAdminData
-                    {
-                        Id = game.Id,
-                        Name = game.Name,
-                        Clients = new List<ClientAdminData>(),
-                        Rule = game.Rule,
-                        //Options = 
-                        //State = 
-                    });
+                _rooms.Add(game);
             else
             {
                 room.Name = game.Name;
                 room.Rule = game.Rule;
-                //Options = 
-                //State = 
+                room.Options = game.Options;
+                room.State = game.State;
+                room.Clients = game.Clients;
             }
 
-            AdminOnGameCreated.Do(x => x(clientId, game));
+            GameCreated.Do(x => x(clientId, game));
         }
 
         public void OnServerMessageReceived(string message)
         {
-            AdminOnServerMessageReceived.Do(x => x(message));
+            ServerMessageReceived.Do(x => x(message));
         }
 
         public void OnBroadcastMessageReceived(Guid clientId, string message)
         {
-            AdminOnBroadcastMessageReceived.Do(x => x(clientId, message));
+            BroadcastMessageReceived.Do(x => x(clientId, message));
         }
 
         public void OnPrivateMessageReceived(Guid adminId, string message)
         {
-            AdminOnPrivateMessageReceived.Do(x => x(adminId, message));
+            PrivateMessageReceived.Do(x => x(adminId, message));
         }
 
         public void OnAdminListReceived(List<AdminData> admins)
@@ -188,7 +181,7 @@ namespace TetriNET2.Admin
             _admins.Clear();
             _admins.AddRange(admins);
 
-            AdminOnAdminListReceived.Do(x => x(admins));
+            AdminListReceived.Do(x => x(admins));
         }
 
         public void OnClientListReceived(List<ClientAdminData> clients)
@@ -196,12 +189,12 @@ namespace TetriNET2.Admin
             _clients.Clear();
             _clients.AddRange(clients);
 
-            AdminOnClientListReceived.Do(x => x(clients));
+            ClientListReceived.Do(x => x(clients));
         }
 
         public void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients)
         {
-            AdminOnClientListInRoomReceived.Do(x => x(roomId, clients));
+            ClientListInRoomReceived.Do(x => x(roomId, clients));
         }
 
         public void OnRoomListReceived(List<GameRoomAdminData> rooms)
@@ -209,7 +202,7 @@ namespace TetriNET2.Admin
             _rooms.Clear();
             _rooms.AddRange(rooms);
 
-            AdminOnRoomListReceived.Do(x => x(rooms));
+            RoomListReceived.Do(x => x(rooms));
         }
 
         public void OnBannedListReceived(List<BanEntryData> entries)
@@ -217,7 +210,7 @@ namespace TetriNET2.Admin
             _banned.Clear();
             _banned.AddRange(entries);
 
-            AdminOnBannedListReceived.Do(x => x(entries));
+            BannedListReceived.Do(x => x(entries));
         }
 
         #endregion
@@ -255,23 +248,23 @@ namespace TetriNET2.Admin
                 };
         }
 
-        public event AdminConnectionLostEventHandler AdminConnectionLost;
-        public event AdminOnConnectedEventHandler AdminOnConnected;
-        public event AdminOnDisconnectedEventHandler AdminOnDisconnected;
-        public event AdminOnServerStoppedEventHandler AdminOnServerStopped;
-        public event AdminOnClientConnectedEventHandler AdminOnClientConnected;
-        public event AdminOnClientDisconnectedEventHandler AdminOnClientDisconnected;
-        public event AdminOnAdminConnectedEventHandler AdminOnAdminConnected;
-        public event AdminOnAdminDisconnectedEventHandler AdminOnAdminDisconnected;
-        public event AdminOnGameCreatedEventHandler AdminOnGameCreated;
-        public event AdminOnServerMessageReceivedEventHandler AdminOnServerMessageReceived;
-        public event AdminOnBroadcastMessageReceivedEventHandler AdminOnBroadcastMessageReceived;
-        public event AdminOnPrivateMessageReceivedEventHandler AdminOnPrivateMessageReceived;
-        public event AdminOnAdminListReceivedEventHandler AdminOnAdminListReceived;
-        public event AdminOnClientListReceivedEventHandler AdminOnClientListReceived;
-        public event AdminOnClientListInRoomReceivedEventHandler AdminOnClientListInRoomReceived;
-        public event AdminOnRoomListReceivedEventHandler AdminOnRoomListReceived;
-        public event AdminOnBannedListReceivedEventHandler AdminOnBannedListReceived;
+        public event ConnectionLostEventHandler ConnectionLost;
+        public event ConnectedEventHandler Connected;
+        public event DisconnectedEventHandler Disconnected;
+        public event ServerStoppedEventHandler ServerStopped;
+        public event ClientConnectedEventHandler ClientConnected;
+        public event ClientDisconnectedEventHandler ClientDisconnected;
+        public event AdminConnectedEventHandler AdminConnected;
+        public event AdminDisconnectedEventHandler AdminDisconnected;
+        public event GameCreatedEventHandler GameCreated;
+        public event ServerMessageReceivedEventHandler ServerMessageReceived;
+        public event BroadcastMessageReceivedEventHandler BroadcastMessageReceived;
+        public event PrivateMessageReceivedEventHandler PrivateMessageReceived;
+        public event AdminListReceivedEventHandler AdminListReceived;
+        public event ClientListReceivedEventHandler ClientListReceived;
+        public event ClientListInRoomReceivedEventHandler ClientListInRoomReceived;
+        public event RoomListReceivedEventHandler RoomListReceived;
+        public event BannedListReceivedEventHandler BannedListReceived;
 
         public bool Connect(string address, string name, string password)
         {
@@ -393,7 +386,7 @@ namespace TetriNET2.Admin
         {
             Disconnect();
 
-            AdminConnectionLost.Do(x => x());
+            ConnectionLost.Do(x => x());
         }
     }
 }

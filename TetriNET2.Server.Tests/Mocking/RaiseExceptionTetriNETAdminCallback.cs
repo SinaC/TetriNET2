@@ -35,7 +35,7 @@ namespace TetriNET2.Server.Tests.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnGameCreated(Guid clientId, GameDescription game)
+        public void OnGameCreated(Guid clientId, GameRoomAdminData game)
         {
             throw new NotImplementedException();
         }

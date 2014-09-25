@@ -101,7 +101,7 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnAdminDisconnected(adminId, reason));
         }
 
-        public void OnGameCreated(Guid clientId, GameDescription game)
+        public void OnGameCreated(Guid clientId, GameRoomAdminData game)
         {
             ExceptionFreeAction(() => Callback.OnGameCreated(clientId, game));
         }
@@ -121,22 +121,22 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => OnPrivateMessageReceived(adminId, message));
         }
 
-        public void OnAdminListReceived(List<Common.DataContracts.AdminData> admins)
+        public void OnAdminListReceived(List<AdminData> admins)
         {
             ExceptionFreeAction(() => Callback.OnAdminListReceived(admins));
         }
 
-        public void OnClientListReceived(List<Common.DataContracts.ClientAdminData> clients)
+        public void OnClientListReceived(List<ClientAdminData> clients)
         {
             ExceptionFreeAction(() => Callback.OnClientListReceived(clients));
         }
 
-        public void OnClientListInRoomReceived(Guid roomId, List<Common.DataContracts.ClientAdminData> clients)
+        public void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients)
         {
             ExceptionFreeAction(() => Callback.OnClientListInRoomReceived(roomId, clients));
         }
 
-        public void OnRoomListReceived(List<Common.DataContracts.GameRoomAdminData> rooms)
+        public void OnRoomListReceived(List<GameRoomAdminData> rooms)
         {
             ExceptionFreeAction(() => Callback.OnRoomListReceived(rooms));
         }

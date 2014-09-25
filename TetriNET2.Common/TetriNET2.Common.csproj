@@ -59,7 +59,6 @@
     <Compile Include="DataContracts\ClientStates.cs" />
     <Compile Include="DataContracts\ConnectResults.cs" />
     <Compile Include="DataContracts\GameCreateResults.cs" />
-    <Compile Include="DataContracts\GameDescription.cs" />
     <Compile Include="DataContracts\GameFinishedReasons.cs" />
     <Compile Include="DataContracts\GameJoinResults.cs" />
     <Compile Include="DataContracts\GameOptions.cs" />
