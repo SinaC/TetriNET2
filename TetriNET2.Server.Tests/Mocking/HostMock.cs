@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Diagnostics;
 using System.Net;
-using System.Reflection;
 using System.Runtime.CompilerServices;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
@@ -66,6 +64,8 @@ namespace TetriNET2.Server.Tests.Mocking
         public event HostAdminGetClientListInRoomEventHandler HostAdminGetClientListInRoom;
         public event HostAdminGetRoomListEventHandler HostAdminGetRoomList;
         public event HostAdminGetBannedListEventHandler HostAdminGetBannedList;
+        public event HostAdminCreateGameRoomEventHandler HostAdminCreateGameRoom;
+        public event HostAdminDeleteGameRoomEventHandler HostAdminDeleteGameRoom;
         public event HostAdminKickEventHandler HostAdminKick;
         public event HostAdminBanEventHandler HostAdminBan;
         public event HostAdminRestartServerEventHandler HostAdminRestartServer;
@@ -393,6 +393,21 @@ namespace TetriNET2.Server.Tests.Mocking
             IAdmin admin = AdminManager[AdminCallback];
             if (admin != null && HostAdminGetBannedList != null)
                 HostAdminGetBannedList(admin);
+        }
+
+        public void AdminCreateGameRoom(string name, GameRules rule, string password)
+        {
+            IAdmin admin = AdminManager[AdminCallback];
+            if (admin != null && HostAdminCreateGameRoom != null)
+                HostAdminCreateGameRoom(admin, name, rule, password);
+        }
+
+        public void AdminDeleteGameRoom(Guid roomId)
+        {
+            IAdmin admin = AdminManager[AdminCallback];
+            IGameRoom room = GameRoomManager[roomId];
+            if (admin != null && room != null && HostAdminCreateGameRoom != null)
+                HostAdminDeleteGameRoom(admin, room);
         }
 
         public void AdminKick(Guid targetId, string reason)

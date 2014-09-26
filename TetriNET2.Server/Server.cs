@@ -160,6 +160,10 @@ namespace TetriNET2.Server
             host.HostAdminGetRoomList += OnAdminGetRoomList;
             host.HostAdminGetBannedList += OnAdminGetBannedList;
 
+            // Room
+            host.HostAdminCreateGameRoom += OnAdminCreateGameRoom;
+            host.HostAdminDeleteGameRoom += OnAdminDeleteGameRoom;
+
             // Kick/Ban
             host.HostAdminKick += OnAdminKick;
             host.HostAdminBan += OnAdminBan;
@@ -511,7 +515,7 @@ namespace TetriNET2.Server
 
         private void OnClientCreateAndJoinGame(IClient client, string name, string password, GameRules rule, bool asSpectator)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Client create and join game: {0} {1} {2}", client.Name, name, asSpectator);
+            Log.Default.WriteLine(LogLevels.Info, "Client create and join game: {0} {1} {2} {3}", client.Name, name, rule, asSpectator);
 
             GameCreateResults result = GameCreateResults.Successfull;
 
@@ -576,7 +580,7 @@ namespace TetriNET2.Server
                             // Inform admins
                             lock (_adminManager.LockObject)
                                 foreach (IAdmin target in _adminManager.Admins)
-                                    target.OnGameCreated(client.Id, adminDescription);
+                                    target.OnGameCreated(true, client.Id, adminDescription);
 
                             // Hosts
                             foreach (IHost host in _hosts)
@@ -1094,6 +1098,86 @@ namespace TetriNET2.Server
             admin.OnBannedListReceived(list);
         }
 
+        private void OnAdminCreateGameRoom(IAdmin admin, string name, GameRules rule, string password)
+        {
+            Log.Default.WriteLine(LogLevels.Info, "Admin create game: {0} {1} {2}", admin.Name, name, rule);
+
+            lock (_gameRoomManager.LockObject)
+            {
+                if (_gameRoomManager.RoomCount >= _gameRoomManager.MaxRooms)
+                    Log.Default.WriteLine(LogLevels.Warning, "Admin {0} cannot create game {1} because there is too many rooms", admin.Name, name);
+                else if (_gameRoomManager[name] != null)
+                    Log.Default.WriteLine(LogLevels.Warning, "Admin {0} cannot create game {1} because it already exists", admin.Name, name);
+                else
+                {
+                    GameOptions options = new GameOptions();
+                    options.Initialize(rule);
+                    IGameRoom game = _factory.CreateGameRoom(name, 6, 10, rule, options, password);
+                    bool added = _gameRoomManager.Add(game);
+                    if (!added)
+                        Log.Default.WriteLine(LogLevels.Warning, "Created game {0} by {1} cannot be added", name, admin.Name);
+                    else
+                    {
+                        //
+                        GameRoomData clientDescription = new GameRoomData
+                            {
+                                Id = game.Id,
+                                Name = game.Name,
+                                Rule = game.Rule,
+                                Clients = new List<ClientData>()
+                            };
+                        GameRoomAdminData adminDescription = new GameRoomAdminData
+                            {
+                                Id = game.Id,
+                                Name = game.Name,
+                                Rule = game.Rule,
+                                State = game.State,
+                                Options = game.Options,
+                                Clients = BuildClientAdminDatas(game)
+                            };
+
+                        // Inform clients
+                        lock(_clientManager.LockObject)
+                            foreach(IClient client in _clientManager.Clients)
+                                client.OnServerGameCreated(clientDescription);
+
+                        // Inform admins
+                        lock (_adminManager.LockObject)
+                            foreach (IAdmin target in _adminManager.Admins)
+                                target.OnGameCreated(false, admin.Id, adminDescription);
+
+                        // Hosts
+                        foreach (IHost host in _hosts)
+                            host.AddGameRoom(game);
+
+                        // Start room
+                        game.Start(_cancellationTokenSource);
+                    }
+                }
+            }
+        }
+
+        private void OnAdminDeleteGameRoom(IAdmin admin, IGameRoom room)
+        {
+            Log.Default.WriteLine(LogLevels.Info, "Admin delete game: {0} {1}", admin.Name, room.Name);
+
+            // Stop game, remove/inform clients
+            room.Stop();
+
+            // Remove game
+            lock (_gameRoomManager.Rooms)
+                _gameRoomManager.Remove(room);
+
+            // Hosts
+            foreach (IHost host in _hosts)
+                host.RemoveGameRoom(room);
+
+            // Inform admins
+            lock(_adminManager.Admins)
+                foreach(IAdmin administrator in _adminManager.Admins)
+                    administrator.OnGameDeleted(admin.Id, room.Id);
+        }
+        
         private void OnAdminKick(IAdmin admin, IClient client, string reason)
         {
             Log.Default.WriteLine(LogLevels.Info, "Admin kick: {0} {1} {2}", admin.Name, client.Name, reason);

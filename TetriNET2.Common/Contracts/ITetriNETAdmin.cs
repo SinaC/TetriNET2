@@ -33,6 +33,12 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void AdminGetBannedList();
 
+        // Room
+        [OperationContract(IsOneWay = true)]
+        void AdminCreateGameRoom(string name, GameRules rule, string password);
+        [OperationContract(IsOneWay = true)]
+        void AdminDeleteGameRoom(Guid roomId);
+
         // Kick/Ban
         [OperationContract(IsOneWay = true)]
         void AdminKick(Guid targetId, string reason);

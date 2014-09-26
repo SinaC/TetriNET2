@@ -35,7 +35,11 @@ namespace TetriNET2.Server.Tests.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnGameCreated(Guid clientId, GameRoomAdminData game)
+        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game)
+        {
+            throw new NotImplementedException();
+        }
+        public void OnGameDeleted(Guid adminId, Guid roomId)
         {
             throw new NotImplementedException();
         }

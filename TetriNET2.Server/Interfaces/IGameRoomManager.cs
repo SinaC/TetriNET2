@@ -14,8 +14,8 @@ namespace TetriNET2.Server.Interfaces
         IGameRoom this[Guid guid] { get; }
         IGameRoom this[string name] { get; }
 
-        bool Add(IGameRoom client);
-        bool Remove(IGameRoom client);
+        bool Add(IGameRoom room);
+        bool Remove(IGameRoom room);
         void Clear();
     }
 }

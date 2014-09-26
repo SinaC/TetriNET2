@@ -8,14 +8,15 @@ using TetriNET2.Common.Logger;
 
 namespace TetriNET2.Admin.ConsoleApp
 {
-    class Program
+    internal class Program
     {
         private static IAdmin _admin;
-
-        static void DisplayHelp()
+        private static void DisplayHelp()
         {
             Console.WriteLine("Commands:");
             Console.WriteLine("x: Stop admin");
+            Console.WriteLine("o: Connect");
+            Console.WriteLine("d: Disconnect");
             Console.WriteLine("a: Get admin list");
             Console.WriteLine("c: Get client list");
             Console.WriteLine("r: Get room list");
@@ -23,10 +24,10 @@ namespace TetriNET2.Admin.ConsoleApp
             Console.WriteLine("s: Restart server");
             // TODO: 
             //  get client in room
+            //  create/delete room
             //  kick/ban
         }
-
-        static void Main(string[] args)
+        private static void Main(string[] args)
         {
             Log.Default.Logger = new NLogger();
             Log.Default.Initialize(@"D:\TEMP\LOG\", "TETRINET2_ADMIN.LOG");
@@ -36,16 +37,21 @@ namespace TetriNET2.Admin.ConsoleApp
             _admin = new Admin(factory);
             _admin.SetVersion(1, 0);
             _admin.Connect(
-                "net.tcp://localhost:7788/TetriNET2Admin", 
+                "net.tcp://localhost:7788/TetriNET2Admin",
                 "admin1", "123456");
 
             _admin.Connected += OnConnected;
             _admin.Disconnected += OnDisconnected;
-            _admin.GameCreated += OnGameCreated;
+            _admin.ServerStopped += OnServerStopped;
             _admin.ClientConnected += OnClientConnected;
             _admin.ClientDisconnected += OnClientDisconnected;
             _admin.AdminConnected += OnAdminConnected;
             _admin.AdminDisconnected += OnAdminDisconnected;
+            _admin.GameCreated += OnGameCreated;
+            _admin.GameDeleted += OnGameDeleted;
+            _admin.ServerMessageReceived += OnServerMessageReceived;
+            _admin.BroadcastMessageReceived += OnBroadcastMessageReceived;
+            _admin.PrivateMessageReceived += OnPrivateMessageReceived;
             _admin.AdminListReceived += OnAdminListReceived;
             _admin.ClientListReceived += OnClientListReceived;
             _admin.ClientListInRoomReceived += OnClientListInRoomReceived;
@@ -62,6 +68,14 @@ namespace TetriNET2.Admin.ConsoleApp
                     {
                         default:
                             DisplayHelp();
+                            break;
+                        case ConsoleKey.O:
+                            _admin.Connect(
+                                "net.tcp://localhost:7788/TetriNET2Admin",
+                                "admin1", "123456");
+                            break;
+                        case ConsoleKey.D:
+                            _admin.Disconnect();
                             break;
                         case ConsoleKey.X:
                             _admin.Disconnect();
@@ -80,7 +94,7 @@ namespace TetriNET2.Admin.ConsoleApp
                             _admin.GetBannedList();
                             break;
                         case ConsoleKey.S:
-                            _admin.RestartServer(90);
+                            _admin.RestartServer(30);
                             break;
                     }
                 }
@@ -92,7 +106,7 @@ namespace TetriNET2.Admin.ConsoleApp
         private static void DisplayAdminList()
         {
             Console.WriteLine("Admin list: {0}", _admin.Admins.Count());
-            foreach(AdminData admin in _admin.Admins)
+            foreach (AdminData admin in _admin.Admins)
                 Console.WriteLine("Admin: {0} {1} {2:dd-MM-yyyy HH:mm:ss.fff} {3}", admin.Id, admin.Name, admin.ConnectTime, admin.Address);
         }
 
@@ -126,10 +140,15 @@ namespace TetriNET2.Admin.ConsoleApp
             Console.WriteLine("OnDisconnected");
         }
 
+        private static void OnServerStopped()
+        {
+            Console.WriteLine("OnServerStopped");
+        }
+
         private static void OnClientConnected(Guid clientId, string name, string team)
         {
             Console.WriteLine("OnClientConnected: {0} {1} {2}", clientId, name, team);
-            
+
             DisplayClientList();
         }
 
@@ -154,9 +173,9 @@ namespace TetriNET2.Admin.ConsoleApp
             DisplayAdminList();
         }
 
-        private static void OnGameCreated(Guid clientId, GameRoomAdminData game)
+        private static void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game)
         {
-            Console.WriteLine("OnGameCreated: {0} {1} {2}", game.Id, game.Name, game.Rule);
+            Console.WriteLine("OnGameCreated: {0} {1} {2} {3} {4}", createdByClient, clientOrAdminId, game.Id, game.Name, game.Rule);
             if (game.Clients != null)
             {
                 Console.WriteLine("\tClients: {0}", game.Clients.Count);
@@ -165,6 +184,28 @@ namespace TetriNET2.Admin.ConsoleApp
             }
 
             DisplayRoomList();
+        }
+
+        private static void OnGameDeleted(Guid adminId, Guid roomId)
+        {
+            Console.WriteLine("OnGameDeleted: {0} {1}", adminId, roomId);
+
+            DisplayRoomList();
+        }
+
+        private static void OnServerMessageReceived(string message)
+        {
+            Console.WriteLine("OnServerMessageReceived: {0}", message);
+        }
+
+        private static void OnBroadcastMessageReceived(Guid clientId, string message)
+        {
+            Console.WriteLine("OnBroadcastMessageReceived: {0} {1}", clientId, message);
+        }
+
+        private static void OnPrivateMessageReceived(Guid adminId, string message)
+        {
+            Console.WriteLine("OnPrivateMessageReceived: {0} {1}", adminId, message);
         }
 
         private static void OnAdminListReceived(List<AdminData> admins)

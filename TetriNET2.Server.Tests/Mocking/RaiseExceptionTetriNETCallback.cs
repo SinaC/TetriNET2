@@ -47,6 +47,14 @@ namespace TetriNET2.Server.Tests.Mocking
         {
             throw new NotImplementedException();
         }
+        public void OnServerGameCreated(GameRoomData game)
+        {
+            throw new NotImplementedException();
+        }
+        public void OnServerGameDeleted(Guid gameId)
+        {
+            throw new NotImplementedException();
+        }
         public void OnServerMessageReceived(string message)
         {
             throw new NotImplementedException();

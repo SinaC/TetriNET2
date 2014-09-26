@@ -66,7 +66,12 @@ namespace TetriNET2.Server.Tests.Mocking
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnGameCreated(Guid clientId, GameRoomAdminData game)
+        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game)
+        {
+            UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
+        }
+
+        public void OnGameDeleted(Guid adminId, Guid roomId)
         {
             UpdateCallCount(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }

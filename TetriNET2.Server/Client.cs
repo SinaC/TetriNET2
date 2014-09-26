@@ -168,7 +168,17 @@ namespace TetriNET2.Server
         {
             ExceptionFreeAction(() => Callback.OnClientGameCreated(clientId, game));
         }
-        
+
+        public void OnServerGameCreated(GameRoomData game)
+        {
+            ExceptionFreeAction(() => Callback.OnServerGameCreated(game));
+        }
+
+        public void OnServerGameDeleted(Guid gameId)
+        {
+            ExceptionFreeAction(() => Callback.OnServerGameDeleted(gameId));
+        }
+
         public void OnServerMessageReceived(string message)
         {
             ExceptionFreeAction(() => Callback.OnServerMessageReceived(message));

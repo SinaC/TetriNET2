@@ -31,6 +31,9 @@ namespace TetriNET2.Server.WCFHost
         public event HostAdminGetRoomListEventHandler HostAdminGetRoomList;
         public event HostAdminGetBannedListEventHandler HostAdminGetBannedList;
 
+        public event HostAdminCreateGameRoomEventHandler HostAdminCreateGameRoom;
+        public event HostAdminDeleteGameRoomEventHandler HostAdminDeleteGameRoom;
+
         public event HostAdminKickEventHandler HostAdminKick;
         public event HostAdminBanEventHandler HostAdminBan;
 
@@ -112,9 +115,14 @@ namespace TetriNET2.Server.WCFHost
         public void AdminGetClientListInRoom(Guid roomId)
         {
             IAdmin admin = AdminManager[AdminCallback];
-            IGameRoom game = GameRoomManager[roomId];
-            if (admin != null && game != null && HostAdminGetClientListInRoom != null)
-                HostAdminGetClientListInRoom.Do(x => x(admin, game));
+            if (admin != null)
+            {
+                IGameRoom room = GameRoomManager[roomId];
+                if (room != null)
+                    HostAdminGetClientListInRoom.Do(x => x(admin, room));
+                else
+                    Log.Default.WriteLine(LogLevels.Warning, "AdminGetClientListInRoom for unknown room");
+            }
             else
                 Log.Default.WriteLine(LogLevels.Warning, "AdminGetClientListInRoom from unknown admin");
         }
@@ -122,7 +130,7 @@ namespace TetriNET2.Server.WCFHost
         public void AdminGetRoomList()
         {
             IAdmin admin = AdminManager[AdminCallback];
-            if (admin != null && HostAdminGetRoomList != null)
+            if (admin != null)
                 HostAdminGetRoomList.Do(x => x(admin));
             else
                 Log.Default.WriteLine(LogLevels.Warning, "AdminGetRoomList from unknown admin");
@@ -131,10 +139,34 @@ namespace TetriNET2.Server.WCFHost
         public void AdminGetBannedList()
         {
             IAdmin admin = AdminManager[AdminCallback];
-            if (admin != null && HostAdminGetBannedList != null)
+            if (admin != null)
                 HostAdminGetBannedList.Do(x => x(admin));
             else
                 Log.Default.WriteLine(LogLevels.Warning, "AdminGetBannedList from unknown admin");
+        }
+
+        public void AdminCreateGameRoom(string name, GameRules rule, string password)
+        {
+            IAdmin admin = AdminManager[AdminCallback];
+            if (admin != null)
+                HostAdminCreateGameRoom.Do(x => x(admin, name, rule, password));
+            else
+                Log.Default.WriteLine(LogLevels.Warning, "AdminCreateGameRoom from unknown admin");
+        }
+        
+        public void AdminDeleteGameRoom(Guid roomId)
+        {
+            IAdmin admin = AdminManager[AdminCallback];
+            if (admin != null)
+            {
+                IGameRoom room = GameRoomManager[roomId];
+                if (room != null)
+                    HostAdminDeleteGameRoom.Do(x => x(admin, room));
+                else
+                    Log.Default.WriteLine(LogLevels.Warning, "AdminDeleteGameRoom for unknown room");
+            }
+            else
+                Log.Default.WriteLine(LogLevels.Warning, "AdminDeleteGameRoom from unknown admin");
         }
 
         public void AdminKick(Guid targetId, string reason)

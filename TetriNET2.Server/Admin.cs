@@ -101,9 +101,14 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnAdminDisconnected(adminId, reason));
         }
 
-        public void OnGameCreated(Guid clientId, GameRoomAdminData game)
+        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game)
         {
-            ExceptionFreeAction(() => Callback.OnGameCreated(clientId, game));
+            ExceptionFreeAction(() => Callback.OnGameCreated(createdByClient, clientOrAdminId, game));
+        }
+
+        public void OnGameDeleted(Guid adminId, Guid roomId)
+        {
+            ExceptionFreeAction(() => Callback.OnGameDeleted(adminId, roomId));
         }
 
         public void OnServerMessageReceived(string message)

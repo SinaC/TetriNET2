@@ -222,6 +222,16 @@ namespace TetriNET2.Client.ConsoleApp
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, game);
         }
 
+        public void OnServerGameCreated(GameRoomData game)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, game);
+        }
+
+        public void OnServerGameDeleted(Guid gameId)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, gameId);
+        }
+
         public void OnServerMessageReceived(string message)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, message);

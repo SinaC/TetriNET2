@@ -143,12 +143,16 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Game {0} task not yet started", Name);
                 return false;
             }
-
+            //
             State = GameRoomStates.Stopping;
 
             // Disable sudden death
             _isSuddenDeathActive = false;
             _suddenDeathTimer.Change(Timeout.Infinite, Timeout.Infinite);
+
+            // Clear vote kick
+            _voteKickTarget = null;
+            _voteKickTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
             // If game was running, inform about game stop
             if (State == GameRoomStates.GameStarted || State == GameRoomStates.GamePaused)
@@ -161,7 +165,9 @@ namespace TetriNET2.Server
             foreach (IClient client in Clients)
             {
                 client.State = ClientStates.Connected;
+                client.Roles = ClientRoles.NoRole;
                 client.Game = null;
+                client.LastVoteKickAnswer = null;
                 client.OnGameLeft();
             }
 
@@ -271,7 +277,7 @@ namespace TetriNET2.Server
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot leave, {0} is not in game room {1}", client.Name, Name);
                 return false;
             }
-
+            //
             bool removed = _clients.Remove(client);
             if (!removed)
                 return false;

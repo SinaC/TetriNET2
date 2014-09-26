@@ -22,6 +22,9 @@ namespace TetriNET2.Server.Interfaces.IHost
     public delegate void HostAdminGetRoomListEventHandler(IAdmin admin);
     public delegate void HostAdminGetBannedListEventHandler(IAdmin admin);
 
+    public delegate void HostAdminCreateGameRoomEventHandler(IAdmin admin, string name, GameRules rule, string password);
+    public delegate void HostAdminDeleteGameRoomEventHandler(IAdmin admin, IGameRoom room);
+
     // Kick/Ban
     public delegate void HostAdminKickEventHandler(IAdmin admin, IClient target, string reason);
     public delegate void HostAdminBanEventHandler(IAdmin admin, IClient target, string reason);
@@ -48,6 +51,10 @@ namespace TetriNET2.Server.Interfaces.IHost
         event HostAdminGetClientListInRoomEventHandler HostAdminGetClientListInRoom;
         event HostAdminGetRoomListEventHandler HostAdminGetRoomList;
         event HostAdminGetBannedListEventHandler HostAdminGetBannedList;
+
+        // Room
+        event HostAdminCreateGameRoomEventHandler HostAdminCreateGameRoom;
+        event HostAdminDeleteGameRoomEventHandler HostAdminDeleteGameRoom;
 
         // Kick/Ban
         event HostAdminKickEventHandler HostAdminKick;

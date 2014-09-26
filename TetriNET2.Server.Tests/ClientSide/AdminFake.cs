@@ -96,6 +96,18 @@ namespace TetriNET2.Server.Tests.ClientSide
             Host.AdminGetBannedList();
         }
 
+        public void AdminCreateGameRoom(string name, GameRules rule, string password)
+        {
+            SetCallbackAndAddress();
+            Host.AdminCreateGameRoom(name, rule, password);
+        }
+
+        public void AdminDeleteGameRoom(Guid roomId)
+        {
+            SetCallbackAndAddress();
+            Host.AdminDeleteGameRoom(roomId);
+        }
+        
         public void AdminKick(Guid targetId, string reason)
         {
             SetCallbackAndAddress();
@@ -153,9 +165,14 @@ namespace TetriNET2.Server.Tests.ClientSide
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, adminId, reason);
         }
 
-        public void OnGameCreated(Guid clientId, GameRoomAdminData game)
+        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, game);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, createdByClient, clientOrAdminId, game);
+        }
+
+        public void OnGameDeleted(Guid adminId, Guid roomId)
+        {
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, adminId, roomId);
         }
 
         public void OnServerMessageReceived(string message)

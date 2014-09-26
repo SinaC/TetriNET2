@@ -18,7 +18,8 @@ namespace TetriNET2.Admin.Interfaces
     public delegate void AdminConnectedEventHandler(Guid adminId, string name);
     public delegate void AdminDisconnectedEventHandler(Guid adminId, LeaveReasons reason);
 
-    public delegate void GameCreatedEventHandler(Guid clientId, GameRoomAdminData game);
+    public delegate void GameCreatedEventHandler(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game);
+    public delegate void GameDeletedEventHandler(Guid adminId, Guid roomId);
 
     public delegate void ServerMessageReceivedEventHandler(string message);
     public delegate void BroadcastMessageReceivedEventHandler(Guid clientId, string message);
@@ -60,6 +61,7 @@ namespace TetriNET2.Admin.Interfaces
         event AdminDisconnectedEventHandler AdminDisconnected;
 
         event GameCreatedEventHandler GameCreated;
+        event GameDeletedEventHandler GameDeleted;
 
         event ServerMessageReceivedEventHandler ServerMessageReceived;
         event BroadcastMessageReceivedEventHandler BroadcastMessageReceived;

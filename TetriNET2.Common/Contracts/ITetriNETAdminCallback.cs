@@ -26,7 +26,9 @@ namespace TetriNET2.Common.Contracts
         void OnAdminDisconnected(Guid adminId, LeaveReasons reason);
 
         [OperationContract(IsOneWay = true)]
-        void OnGameCreated(Guid clientId, GameRoomAdminData game);
+        void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game);
+        [OperationContract(IsOneWay = true)]
+        void OnGameDeleted(Guid adminId, Guid roomId);
 
         [OperationContract(IsOneWay = true)]
         void OnServerMessageReceived(string message);

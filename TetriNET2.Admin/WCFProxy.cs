@@ -120,6 +120,16 @@ namespace TetriNET2.Admin
             ExceptionFreeAction(() => _proxy.AdminGetBannedList());
         }
 
+        public void AdminCreateGameRoom(string name, GameRules rule, string password)
+        {
+            ExceptionFreeAction(() => _proxy.AdminCreateGameRoom(name, rule, password));
+        }
+
+        public void AdminDeleteGameRoom(Guid roomId)
+        {
+            ExceptionFreeAction(() => _proxy.AdminDeleteGameRoom(roomId));
+        }
+
         public void AdminKick(Guid targetId, string reason)
         {
             ExceptionFreeAction(() => _proxy.AdminKick(targetId, reason));

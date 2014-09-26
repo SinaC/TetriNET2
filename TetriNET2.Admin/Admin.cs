@@ -73,6 +73,7 @@ namespace TetriNET2.Admin
 
         public void OnServerStopped()
         {
+            Disconnect();
             ServerStopped.Do(x => x());
         }
 
@@ -144,7 +145,7 @@ namespace TetriNET2.Admin
             AdminDisconnected.Do(x => x(adminId, reason));
         }
 
-        public void OnGameCreated(Guid clientId, GameRoomAdminData game)
+        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game)
         {
             GameRoomAdminData room = _rooms.FirstOrDefault(x => x.Id == game.Id);
             if (room == null)
@@ -158,7 +159,14 @@ namespace TetriNET2.Admin
                 room.Clients = game.Clients;
             }
 
-            GameCreated.Do(x => x(clientId, game));
+            GameCreated.Do(x => x(createdByClient, clientOrAdminId, game));
+        }
+
+        public void OnGameDeleted(Guid adminId, Guid gameId)
+        {
+            _rooms.RemoveAll(x => x.Id == gameId);
+
+            GameDeleted.Do(x => x(adminId, gameId));
         }
 
         public void OnServerMessageReceived(string message)
@@ -257,6 +265,7 @@ namespace TetriNET2.Admin
         public event AdminConnectedEventHandler AdminConnected;
         public event AdminDisconnectedEventHandler AdminDisconnected;
         public event GameCreatedEventHandler GameCreated;
+        public event GameDeletedEventHandler GameDeleted;
         public event ServerMessageReceivedEventHandler ServerMessageReceived;
         public event BroadcastMessageReceivedEventHandler BroadcastMessageReceived;
         public event PrivateMessageReceivedEventHandler PrivateMessageReceived;
@@ -292,7 +301,7 @@ namespace TetriNET2.Admin
 
                 Name = name;
 
-                _proxy.AdminConnect(Version, name, password);
+                _proxy.Do(x => x.AdminConnect(Version, name, password));
 
                 return true;
             }
@@ -305,86 +314,93 @@ namespace TetriNET2.Admin
 
         public bool Disconnect()
         {
+            _proxy.Do(x => x.AdminDisconnect());
+
+            InternalDisconnect();
+            return true;
+        }
+
+        public bool SendPrivateAdminMessage(Guid targetAdminId, string message)
+        {
+            _proxy.Do(x => x.AdminSendPrivateAdminMessage(targetAdminId, message));
+            return true;
+        }
+
+        public bool SendPrivateMessage(Guid targetClientId, string message)
+        {
+            _proxy.Do(x => x.AdminSendPrivateMessage(targetClientId, message));
+            return true;
+        }
+
+        public bool SendBroadcastMessage(string message)
+        {
+            _proxy.Do(x => x.AdminSendBroadcastMessage(message));
+            return true;
+        }
+
+        public bool GetAdminList()
+        {
+            _proxy.Do(x => x.AdminGetAdminList());
+            return true;
+        }
+
+        public bool GetClientList()
+        {
+            _proxy.Do(x => x.AdminGetClientList());
+            return true;
+        }
+
+        public bool GetClientListInRoom(Guid roomId)
+        {
+            _proxy.Do(x => x.AdminGetClientListInRoom(roomId));
+            return true;
+        }
+
+        public bool GetRoomList()
+        {
+            _proxy.Do(x => x.AdminGetRoomList());
+            return true;
+        }
+
+        public bool GetBannedList()
+        {
+            _proxy.Do(x => x.AdminGetBannedList());
+            return true;
+        }
+
+        public bool Kick(Guid targetId, string reason)
+        {
+            _proxy.Do(x => x.AdminKick(targetId, reason));
+            return true;
+        }
+
+        public bool Ban(Guid targetId, string reason)
+        {
+            _proxy.Do(x => x.AdminBan(targetId, reason));
+            return true;
+        }
+
+        public bool RestartServer(int seconds)
+        {
+            _proxy.Do(x => x.AdminRestartServer(seconds));
+            return true;
+        }
+
+        #endregion
+
+        private void InternalDisconnect()
+        {
             if (_proxy != null)
             {
                 _proxy.ConnectionLost -= OnConnectionLost;
                 _proxy.Disconnect();
                 _proxy = null;
             }
-            return true;
         }
-
-        public bool SendPrivateAdminMessage(Guid targetAdminId, string message)
-        {
-            _proxy.AdminSendPrivateAdminMessage(targetAdminId, message);
-            return true;
-        }
-
-        public bool SendPrivateMessage(Guid targetClientId, string message)
-        {
-            _proxy.AdminSendPrivateMessage(targetClientId, message);
-            return true;
-        }
-
-        public bool SendBroadcastMessage(string message)
-        {
-            _proxy.AdminSendBroadcastMessage(message);
-            return true;
-        }
-
-        public bool GetAdminList()
-        {
-            _proxy.AdminGetAdminList();
-            return true;
-        }
-
-        public bool GetClientList()
-        {
-            _proxy.AdminGetClientList();
-            return true;
-        }
-
-        public bool GetClientListInRoom(Guid roomId)
-        {
-            _proxy.AdminGetClientListInRoom(roomId);
-            return true;
-        }
-
-        public bool GetRoomList()
-        {
-            _proxy.AdminGetRoomList();
-            return true;
-        }
-
-        public bool GetBannedList()
-        {
-            _proxy.AdminGetBannedList();
-            return true;
-        }
-
-        public bool Kick(Guid targetId, string reason)
-        {
-            _proxy.AdminKick(targetId, reason);
-            return true;
-        }
-
-        public bool Ban(Guid targetId, string reason)
-        {
-            _proxy.AdminBan(targetId, reason);
-            return true;
-        }
-
-        public bool RestartServer(int seconds)
-        {
-            _proxy.AdminRestartServer(seconds);
-            return true;
-        }
-
-        #endregion
 
         private void OnConnectionLost()
         {
-            Disconnect();
+            InternalDisconnect();
 
             ConnectionLost.Do(x => x());
         }
