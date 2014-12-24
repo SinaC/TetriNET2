@@ -1,2 +1,5 @@
 admin
 	get one client/admin/room full information
+client
+	generic Client
+	WPF Client

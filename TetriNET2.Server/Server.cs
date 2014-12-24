@@ -1235,14 +1235,14 @@ namespace TetriNET2.Server
 
         private void OnAdminRestartServer(IAdmin admin, int seconds)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Admin ask for server restart:{0} {1}", admin.Name, seconds);
+            Log.Default.WriteLine(LogLevels.Info, "Admin asks for server restart:{0} {1}", admin.Name, seconds);
 
             if (_isRestartRunning)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot restart server, a restart is already running");
                 return;
             }
-            if (seconds <= MinRestartDelay)
+            if (seconds < MinRestartDelay)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot restart server, delay must be > to min restart delay ({0} seconds)", MinRestartDelay);
                 return;

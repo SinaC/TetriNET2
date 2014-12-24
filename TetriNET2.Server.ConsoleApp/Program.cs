@@ -93,6 +93,9 @@ namespace TetriNET2.Server.ConsoleApp
         {
             // TODO
             server.Stop();
+            Console.WriteLine("Waiting 5 seconds before restarting");
+            System.Threading.Thread.Sleep(5000);
+            server.Start();
         }
     }
 
