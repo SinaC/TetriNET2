@@ -53,6 +53,7 @@ namespace TetriNET2.Admin
                 _clients.Clear();
                 _admins.Clear();
                 _rooms.Clear();
+                _banned.Clear();
 
                 _admins.Add(new AdminData
                     {
