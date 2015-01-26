@@ -11,6 +11,7 @@ namespace TetriNET2.Admin.ConsoleApp
     internal class Program
     {
         private static IAdmin _admin;
+
         private static void DisplayHelp()
         {
             Console.WriteLine("Commands:");
@@ -27,6 +28,7 @@ namespace TetriNET2.Admin.ConsoleApp
             //  create/delete room
             //  kick/ban
         }
+
         private static void Main(string[] args)
         {
             Log.Default.Logger = new NLogger();
@@ -40,18 +42,26 @@ namespace TetriNET2.Admin.ConsoleApp
                 "net.tcp://localhost:7788/TetriNET2Admin",
                 "admin1", "123456");
 
+            //_admin.ConnectionLost += AdminOnConnectionLost;
+
             _admin.Connected += OnConnected;
             _admin.Disconnected += OnDisconnected;
+
             _admin.ServerStopped += OnServerStopped;
+
             _admin.ClientConnected += OnClientConnected;
             _admin.ClientDisconnected += OnClientDisconnected;
+
             _admin.AdminConnected += OnAdminConnected;
             _admin.AdminDisconnected += OnAdminDisconnected;
+
             _admin.GameCreated += OnGameCreated;
             _admin.GameDeleted += OnGameDeleted;
+
             _admin.ServerMessageReceived += OnServerMessageReceived;
             _admin.BroadcastMessageReceived += OnBroadcastMessageReceived;
             _admin.PrivateMessageReceived += OnPrivateMessageReceived;
+
             _admin.AdminListReceived += OnAdminListReceived;
             _admin.ClientListReceived += OnClientListReceived;
             _admin.ClientListInRoomReceived += OnClientListInRoomReceived;
@@ -102,7 +112,7 @@ namespace TetriNET2.Admin.ConsoleApp
                     System.Threading.Thread.Sleep(250);
             }
         }
-
+        
         private static void DisplayAdminList()
         {
             Console.WriteLine("Admin list: {0}", _admin.Admins.Count());

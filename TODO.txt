@@ -3,3 +3,5 @@ admin
 client
 	generic Client
 	WPF Client
+
+uniformize game/room wording

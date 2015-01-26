@@ -57,7 +57,7 @@ namespace TetriNET2.Client
         {
             if (factory == null)
                 throw new ArgumentNullException("factory");
-            if (_actionQueue == null)
+            if (actionQueue == null)
                 throw new ArgumentNullException("actionQueue");
 
             _factory = factory;

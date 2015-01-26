@@ -51,7 +51,7 @@ namespace TetriNET2.Client.Interfaces
     public delegate void GridModifiedEventHandler(Guid playerId, byte[] grid);
     public delegate void ContinuousSpecialFinishedEventHandler(Guid playerId, Specials special);
 
-    interface IClient : ITetriNETClientCallback
+    public interface IClient : ITetriNETClientCallback
     {
         string Name { get; }
         string Team { get; }

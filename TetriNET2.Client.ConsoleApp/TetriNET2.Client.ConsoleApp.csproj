@@ -42,8 +42,15 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
+    <None Include="NLog.config">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\TetriNET2.Client\TetriNET2.Client.csproj">
+      <Project>{21f10459-5374-45f7-b1c6-241d7f12e19e}</Project>
+      <Name>TetriNET2.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TetriNET2.Common\TetriNET2.Common.csproj">
       <Project>{36268a24-7765-41c9-b1ee-f6105be7e145}</Project>
       <Name>TetriNET2.Common</Name>
