@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 namespace TetriNET2.Common.DataContracts
 {
     [DataContract]
-    public enum GameRoomStates
+    public enum GameStates
     {
         [EnumMember]
         [Description("Created")]

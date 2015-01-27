@@ -18,8 +18,8 @@ namespace TetriNET2.Admin.Interfaces
     public delegate void AdminConnectedEventHandler(Guid adminId, string name);
     public delegate void AdminDisconnectedEventHandler(Guid adminId, LeaveReasons reason);
 
-    public delegate void GameCreatedEventHandler(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game);
-    public delegate void GameDeletedEventHandler(Guid adminId, Guid roomId);
+    public delegate void GameCreatedEventHandler(bool createdByClient, Guid clientOrAdminId, GameAdminData game);
+    public delegate void GameDeletedEventHandler(Guid adminId, Guid gameId);
 
     public delegate void ServerMessageReceivedEventHandler(string message);
     public delegate void BroadcastMessageReceivedEventHandler(Guid clientId, string message);
@@ -27,8 +27,8 @@ namespace TetriNET2.Admin.Interfaces
 
     public delegate void AdminListReceivedEventHandler(List<AdminData> admins);
     public delegate void ClientListReceivedEventHandler(List<ClientAdminData> clients);
-    public delegate void ClientListInRoomReceivedEventHandler(Guid roomId, List<ClientAdminData> clients);
-    public delegate void RoomListReceivedEventHandler(List<GameRoomAdminData> rooms);
+    public delegate void ClientListInGameReceivedEventHandler(Guid gameId, List<ClientAdminData> clients);
+    public delegate void GameListReceivedEventHandler(List<GameAdminData> games);
     public delegate void BannedListReceivedEventHandler(List<BanEntryData> entries);
 
     public interface IAdmin : ITetriNETAdminCallback
@@ -39,7 +39,7 @@ namespace TetriNET2.Admin.Interfaces
         // Following list are updated internally with ITetriNETAdminCallback notifications
         IEnumerable<ClientAdminData> Clients { get; }
         IEnumerable<AdminData> Admins { get; }
-        IEnumerable<GameRoomAdminData> Rooms { get; }
+        IEnumerable<GameAdminData> Games { get; }
         IEnumerable<BanEntryData> Banned { get; }
 
         //
@@ -69,8 +69,8 @@ namespace TetriNET2.Admin.Interfaces
 
         event AdminListReceivedEventHandler AdminListReceived;
         event ClientListReceivedEventHandler ClientListReceived;
-        event ClientListInRoomReceivedEventHandler ClientListInRoomReceived;
-        event RoomListReceivedEventHandler RoomListReceived;
+        event ClientListInGameReceivedEventHandler ClientListInGameReceived;
+        event GameListReceivedEventHandler GameListReceived;
         event BannedListReceivedEventHandler BannedListReceived;
 
         // Connect/disconnect
@@ -85,8 +85,8 @@ namespace TetriNET2.Admin.Interfaces
         // Monitoring
         bool GetAdminList();
         bool GetClientList();
-        bool GetClientListInRoom(Guid roomId);
-        bool GetRoomList();
+        bool GetClientListInGame(Guid gameId);
+        bool GetGameList();
         bool GetBannedList();
 
         // Kick/Ban

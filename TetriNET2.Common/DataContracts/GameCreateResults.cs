@@ -15,8 +15,8 @@ namespace TetriNET2.Common.DataContracts
         FailedAlreadyExists,
 
         [EnumMember]
-        [Description("Too many rooms")]
-        FailedTooManyRooms,
+        [Description("Too many games")]
+        FailedTooManyGames,
 
         [EnumMember]
         [Description("Internal error")]

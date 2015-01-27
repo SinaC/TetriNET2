@@ -18,12 +18,12 @@ namespace TetriNET2.Server.Interfaces.IHost
     // Monitoring
     public delegate void HostAdminGetAdminListEventHandler(IAdmin admin);
     public delegate void HostAdminGetClientListEventHandler(IAdmin admin);
-    public delegate void HostAdminGetClientListInRoomEventHandler(IAdmin admin, IGameRoom room);
-    public delegate void HostAdminGetRoomListEventHandler(IAdmin admin);
+    public delegate void HostAdminGetClientListInGameEventHandler(IAdmin admin, IGame game);
+    public delegate void HostAdminGetGameListEventHandler(IAdmin admin);
     public delegate void HostAdminGetBannedListEventHandler(IAdmin admin);
 
-    public delegate void HostAdminCreateGameRoomEventHandler(IAdmin admin, string name, GameRules rule, string password);
-    public delegate void HostAdminDeleteGameRoomEventHandler(IAdmin admin, IGameRoom room);
+    public delegate void HostAdminCreateGameEventHandler(IAdmin admin, string name, GameRules rule, string password);
+    public delegate void HostAdminDeleteGameEventHandler(IAdmin admin, IGame game);
 
     // Kick/Ban
     public delegate void HostAdminKickEventHandler(IAdmin admin, IClient target, string reason);
@@ -48,13 +48,13 @@ namespace TetriNET2.Server.Interfaces.IHost
         // Monitoring
         event HostAdminGetAdminListEventHandler HostAdminGetAdminList;
         event HostAdminGetClientListEventHandler HostAdminGetClientList;
-        event HostAdminGetClientListInRoomEventHandler HostAdminGetClientListInRoom;
-        event HostAdminGetRoomListEventHandler HostAdminGetRoomList;
+        event HostAdminGetClientListInGameEventHandler HostAdminGetClientListInGame;
+        event HostAdminGetGameListEventHandler HostAdminGetGameList;
         event HostAdminGetBannedListEventHandler HostAdminGetBannedList;
 
-        // Room
-        event HostAdminCreateGameRoomEventHandler HostAdminCreateGameRoom;
-        event HostAdminDeleteGameRoomEventHandler HostAdminDeleteGameRoom;
+        // Game
+        event HostAdminCreateGameEventHandler HostAdminCreateGame;
+        event HostAdminDeleteGameEventHandler HostAdminDeleteGame;
 
         // Kick/Ban
         event HostAdminKickEventHandler HostAdminKick;

@@ -5,13 +5,13 @@ using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Server.Interfaces
 {
-    public interface IGameRoom
+    public interface IGame
     {
         Guid Id { get; }
         string Name { get; }
         DateTime CreationTime { get; }
         string Password { get; }
-        GameRoomStates State { get; }
+        GameStates State { get; }
 
         int MaxPlayers { get; }
         int MaxSpectators { get; }

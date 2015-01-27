@@ -10,12 +10,12 @@ namespace TetriNET2.Server.Tests.Mocking
 {
     public sealed class HostMock : IHost
     {
-        public HostMock(IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
+        public HostMock(IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameManager gameManager)
         {
             BanManager = banManager;
             ClientManager = clientManager;
             AdminManager = adminManager;
-            GameRoomManager = gameRoomManager;
+            GameManager = gameManager;
         }
 
         public IPAddress Address { private get; set; }
@@ -35,7 +35,7 @@ namespace TetriNET2.Server.Tests.Mocking
         public event HostClientJoinGameEventHandler HostClientJoinGame;
         public event HostClientJoinRandomGameEventHandler HostClientJoinRandomGame;
         public event HostClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
-        public event HostClientGetRoomListEventHandler HostClientGetRoomList;
+        public event HostClientGetGameListEventHandler HostClientGetGameList;
         public event HostClientGetClientListEventHandler HostClientGetClientList;
         public event HostClientStartGameEventHandler HostClientStartGame;
         public event HostClientStopGameEventHandler HostClientStopGame;
@@ -61,18 +61,18 @@ namespace TetriNET2.Server.Tests.Mocking
         public event HostAdminSendBroadcastMessageEventHandler HostAdminSendBroadcastMessage;
         public event HostAdminGetAdminListEventHandler HostAdminGetAdminList;
         public event HostAdminGetClientListEventHandler HostAdminGetClientList;
-        public event HostAdminGetClientListInRoomEventHandler HostAdminGetClientListInRoom;
-        public event HostAdminGetRoomListEventHandler HostAdminGetRoomList;
+        public event HostAdminGetClientListInGameEventHandler HostAdminGetClientListInGame;
+        public event HostAdminGetGameListEventHandler HostAdminGetGameList;
         public event HostAdminGetBannedListEventHandler HostAdminGetBannedList;
-        public event HostAdminCreateGameRoomEventHandler HostAdminCreateGameRoom;
-        public event HostAdminDeleteGameRoomEventHandler HostAdminDeleteGameRoom;
+        public event HostAdminCreateGameEventHandler HostAdminCreateGame;
+        public event HostAdminDeleteGameEventHandler HostAdminDeleteGame;
         public event HostAdminKickEventHandler HostAdminKick;
         public event HostAdminBanEventHandler HostAdminBan;
         public event HostAdminRestartServerEventHandler HostAdminRestartServer;
 
         public IBanManager BanManager { get; private set; }
         public IClientManager ClientManager { get; private set; }
-        public IGameRoomManager GameRoomManager { get; private set; }
+        public IGameManager GameManager { get; private set; }
         public IAdminManager AdminManager { get; private set; }
 
         public void Start()
@@ -95,7 +95,7 @@ namespace TetriNET2.Server.Tests.Mocking
             // NOP
         }
 
-        public void AddGameRoom(IGameRoom added)
+        public void AddGame(IGame added)
         {
             // NOP
         }
@@ -110,7 +110,7 @@ namespace TetriNET2.Server.Tests.Mocking
             // NOP
         }
 
-        public void RemoveGameRoom(IGameRoom removed)
+        public void RemoveGame(IGame removed)
         {
             // NOP
         }
@@ -165,7 +165,7 @@ namespace TetriNET2.Server.Tests.Mocking
         public void ClientJoinGame(Guid gameId, string password, bool asSpectator)
         {
             IClient client = ClientManager[ClientCallback];
-            IGameRoom game = GameRoomManager[gameId];
+            IGame game = GameManager[gameId];
             if (client != null && game != null && HostClientJoinGame != null)
                 HostClientJoinGame(client, game, password, asSpectator);
         }
@@ -184,11 +184,11 @@ namespace TetriNET2.Server.Tests.Mocking
                 HostClientCreateAndJoinGame(client, name, password, rule, asSpectator);
         }
 
-        public void ClientGetRoomList()
+        public void ClientGetGameList()
         {
             IClient client = ClientManager[ClientCallback];
-            if (client != null && HostClientGetRoomList != null)
-                HostClientGetRoomList(client);
+            if (client != null && HostClientGetGameList != null)
+                HostClientGetGameList(client);
         }
 
         public void ClientGetClientList()
@@ -373,19 +373,19 @@ namespace TetriNET2.Server.Tests.Mocking
                 HostAdminGetClientList(admin);
         }
 
-        public void AdminGetClientListInRoom(Guid roomId)
+        public void AdminGetClientListInGame(Guid gameId)
         {
             IAdmin admin = AdminManager[AdminCallback];
-            IGameRoom game = GameRoomManager[roomId];
-            if (admin != null && game != null && HostAdminGetClientListInRoom != null)
-                HostAdminGetClientListInRoom(admin, game);
+            IGame game = GameManager[gameId];
+            if (admin != null && game != null && HostAdminGetClientListInGame != null)
+                HostAdminGetClientListInGame(admin, game);
         }
 
-        public void AdminGetRoomList()
+        public void AdminGetGameList()
         {
             IAdmin admin = AdminManager[AdminCallback];
-            if (admin != null && HostAdminGetRoomList != null)
-                HostAdminGetRoomList(admin);
+            if (admin != null && HostAdminGetGameList != null)
+                HostAdminGetGameList(admin);
         }
 
         public void AdminGetBannedList()
@@ -395,19 +395,19 @@ namespace TetriNET2.Server.Tests.Mocking
                 HostAdminGetBannedList(admin);
         }
 
-        public void AdminCreateGameRoom(string name, GameRules rule, string password)
+        public void AdminCreateGame(string name, GameRules rule, string password)
         {
             IAdmin admin = AdminManager[AdminCallback];
-            if (admin != null && HostAdminCreateGameRoom != null)
-                HostAdminCreateGameRoom(admin, name, rule, password);
+            if (admin != null && HostAdminCreateGame != null)
+                HostAdminCreateGame(admin, name, rule, password);
         }
 
-        public void AdminDeleteGameRoom(Guid roomId)
+        public void AdminDeleteGame(Guid gameId)
         {
             IAdmin admin = AdminManager[AdminCallback];
-            IGameRoom room = GameRoomManager[roomId];
-            if (admin != null && room != null && HostAdminCreateGameRoom != null)
-                HostAdminDeleteGameRoom(admin, room);
+            IGame game = GameManager[gameId];
+            if (admin != null && game != null && HostAdminCreateGame != null)
+                HostAdminDeleteGame(admin, game);
         }
 
         public void AdminKick(Guid targetId, string reason)

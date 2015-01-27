@@ -8,7 +8,7 @@ namespace TetriNET2.Common.Contracts
     public interface ITetriNETClientCallback
     {
         [OperationContract(IsOneWay = true)]
-        void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameRoomData> games);
+        void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameData> games);
         [OperationContract(IsOneWay = true)]
         void OnDisconnected();
         [OperationContract(IsOneWay = true)]
@@ -18,7 +18,7 @@ namespace TetriNET2.Common.Contracts
         void OnServerStopped();
 
         [OperationContract(IsOneWay = true)]
-        void OnRoomListReceived(List<GameRoomData> rooms);
+        void OnGameListReceived(List<GameData> games);
         [OperationContract(IsOneWay = true)]
         void OnClientListReceived(List<ClientData> clients);
         [OperationContract(IsOneWay = true)]
@@ -29,9 +29,9 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void OnClientDisconnected(Guid clientId, LeaveReasons reason);
         [OperationContract(IsOneWay = true)]
-        void OnClientGameCreated(Guid clientId, GameRoomData game);
+        void OnClientGameCreated(Guid clientId, GameData game);
         [OperationContract(IsOneWay = true)]
-        void OnServerGameCreated(GameRoomData game);
+        void OnServerGameCreated(GameData game);
         [OperationContract(IsOneWay = true)]
         void OnServerGameDeleted(Guid gameId);
 
@@ -44,7 +44,7 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void OnTeamChanged(Guid clientId, string team);
         [OperationContract(IsOneWay = true)]
-        void OnGameCreated(GameCreateResults result, GameRoomData game);
+        void OnGameCreated(GameCreateResults result, GameData game);
 
         [OperationContract(IsOneWay = true)]
         void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster);

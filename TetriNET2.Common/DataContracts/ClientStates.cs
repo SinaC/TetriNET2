@@ -8,11 +8,11 @@ namespace TetriNET2.Common.DataContracts
     {
         [EnumMember]
         [Description("Connected")]
-        Connected, // -> WaitInGameRoom
+        Connected, // -> WaitInGame
 
         [EnumMember]
-        [Description("Wait in game room")]
-        WaitInGameRoom, // -> Connected | Playing
+        [Description("Wait in game")]
+        WaitInGame, // -> Connected | Playing
 
         [EnumMember]
         [Description("Playing")]
@@ -20,6 +20,6 @@ namespace TetriNET2.Common.DataContracts
 
         [EnumMember]
         [Description("Game lost")]
-        GameLost,   // -> Connected | WaitInGameRoom
+        GameLost,   // -> Connected | WaitInGame
     }
 }

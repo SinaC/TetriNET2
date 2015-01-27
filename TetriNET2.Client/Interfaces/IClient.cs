@@ -7,26 +7,26 @@ namespace TetriNET2.Client.Interfaces
 {
     public delegate void ConnectionLostEventHandler();
 
-    public delegate void ConnectedEventHandler(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameRoomData> games);
+    public delegate void ConnectedEventHandler(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameData> games);
     public delegate void DisconnectedEventHandler();
 
     public delegate void ServerStoppedEventHandler();
 
-    public delegate void RoomListReceivedEventHandler(List<GameRoomData> rooms);
+    public delegate void GameListReceivedEventHandler(List<GameData> games);
     public delegate void ClientListReceivedEventHandler(List<ClientData> clients);
     public delegate void GameClientListReceivedEventHandler(List<ClientData> clients);
 
     public delegate void ClientConnectedEventHandler(Guid clientId, string name, string team);
     public delegate void ClientDisconnectedEventHandler(Guid clientId, LeaveReasons reason);
-    public delegate void ClientGameCreatedEventHandler(Guid clientId, GameRoomData game);
-    public delegate void ServerGameCreatedEventHandler(GameRoomData game);
+    public delegate void ClientGameCreatedEventHandler(Guid clientId, GameData game);
+    public delegate void ServerGameCreatedEventHandler(GameData game);
     public delegate void ServerGameDeletedEventHandler(Guid gameId);
 
     public delegate void ServerMessageReceivedEventHandler(string message);
     public delegate void BroadcastMessageReceivedEventHandler(Guid clientId, string message);
     public delegate void PrivateMessageReceivedEventHandler(Guid clientId, string message);
     public delegate void TeamChangedEventHandler(Guid clientId, string team);
-    public delegate void GameCreatedEventHandler(GameCreateResults result, GameRoomData game);
+    public delegate void GameCreatedEventHandler(GameCreateResults result, GameData game);
 
     public delegate void GameJoinedEventHandler(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster);
     public delegate void GameLeftEventHandler();
@@ -60,7 +60,7 @@ namespace TetriNET2.Client.Interfaces
         // Following list are updated internally with ITetriNETClientCallback notifications
         IEnumerable<ClientData> Clients { get; }
         IEnumerable<ClientData> GameClients { get; }
-        IEnumerable<GameRoomData> Rooms { get; }
+        IEnumerable<GameData> Games { get; }
 
         //
         void SetVersion(int major, int minor);
@@ -73,7 +73,7 @@ namespace TetriNET2.Client.Interfaces
          
         event ServerStoppedEventHandler ServerStopped;
          
-        event RoomListReceivedEventHandler RoomListReceived;
+        event GameListReceivedEventHandler GameListReceived;
         event ClientListReceivedEventHandler ClientListReceived;
         event GameClientListReceivedEventHandler GameClientListReceived;
          
@@ -120,15 +120,15 @@ namespace TetriNET2.Client.Interfaces
         bool SendPrivateMessage(Guid targetId, string message);
         bool SendBroadcastMessage(string message);
 
-        // Wait room
+        // Wait
         bool ChangeTeam(string team);
         bool JoinGame(Guid gameId, string password, bool asSpectator);
         bool JoinRandomGame(bool asSpectator);
         bool CreateAndJoinGame(string name, string password, GameRules rule, bool asSpectator);
-        bool GetRoomList();
+        bool GetGameList();
         bool GetClientList();
 
-        // Game room
+        // Game
         bool StartGame();
         bool StopGame();
         bool PauseGame();

@@ -17,20 +17,19 @@ namespace TetriNET2.Server.WCFHost
 
         public int Port { get; set; }
 
-        public WCFHost(IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
+        public WCFHost(IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameManager gameManager)
         {
             BanManager = banManager;
             ClientManager = clientManager;
             AdminManager = adminManager;
-            GameRoomManager = gameRoomManager;
-
+            GameManager = gameManager;
         }
 
         #region IHost
 
         public IBanManager BanManager { get; private set; }
         public IClientManager ClientManager { get; private set; }
-        public IGameRoomManager GameRoomManager { get; private set; }
+        public IGameManager GameManager { get; private set; }
         public IAdminManager AdminManager { get; private set; }
 
         public void Start()
@@ -68,7 +67,7 @@ namespace TetriNET2.Server.WCFHost
             // NOP
         }
 
-        public void AddGameRoom(IGameRoom added)
+        public void AddGame(IGame added)
         {
             // NOP
         }
@@ -83,7 +82,7 @@ namespace TetriNET2.Server.WCFHost
             // NOP
         }
 
-        public void RemoveGameRoom(IGameRoom removed)
+        public void RemoveGame(IGame removed)
         {
             // NOP
         }

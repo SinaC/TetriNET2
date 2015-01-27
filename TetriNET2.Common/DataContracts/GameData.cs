@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 namespace TetriNET2.Common.DataContracts
 {
     [DataContract]
-    public sealed class GameRoomAdminData
+    public sealed class GameData
     {
         [DataMember]
         public Guid Id { get; set; }
@@ -14,10 +14,7 @@ namespace TetriNET2.Common.DataContracts
         public string Name { get; set; }
 
         [DataMember]
-        public GameRoomStates State { get; set; }
-
-        [DataMember]
-        public List<ClientAdminData> Clients { get; set; }
+        public List<ClientData> Clients { get; set; }
 
         [DataMember]
         public GameRules Rule { get; set; }

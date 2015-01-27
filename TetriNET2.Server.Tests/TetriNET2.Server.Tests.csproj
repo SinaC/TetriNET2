@@ -54,8 +54,8 @@
     <Compile Include="BanManagerUnitTest.cs" />
     <Compile Include="ClientManagerUnitTest.cs" />
     <Compile Include="ClientUnitTest.cs" />
-    <Compile Include="GameRoomManagerUnitTest.cs" />
-    <Compile Include="GameRoomUnitTest.cs" />
+    <Compile Include="GameManagerUnitTest.cs" />
+    <Compile Include="GameUnitTest.cs" />
     <Compile Include="Helpers\EventChecker.cs" />
     <Compile Include="Mocking\ActionQueueMock.cs" />
     <Compile Include="ClientSide\AdminFake.cs" />

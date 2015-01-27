@@ -6,18 +6,18 @@
         IBanManager BanManager { get; }
         IClientManager ClientManager { get; }
         IAdminManager AdminManager { get; }
-        IGameRoomManager GameRoomManager { get; }
+        IGameManager GameManager { get; }
 
         //
         void Start();
         void Stop();
 
-        // Called when a client/admin/room is removed from client/admin/room manager
+        // Called when a client/admin/game is removed from client/admin/game manager
         void AddClient(IClient added);
         void AddAdmin(IAdmin added);
-        void AddGameRoom(IGameRoom added);
+        void AddGame(IGame added);
         void RemoveClient(IClient removed);
         void RemoveAdmin(IAdmin removed);
-        void RemoveGameRoom(IGameRoom removed);
+        void RemoveGame(IGame removed);
     }
 }

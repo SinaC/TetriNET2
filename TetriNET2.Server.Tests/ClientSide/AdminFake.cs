@@ -78,16 +78,16 @@ namespace TetriNET2.Server.Tests.ClientSide
             Host.AdminGetClientList();
         }
 
-        public void AdminGetClientListInRoom(Guid roomId)
+        public void AdminGetClientListInGame(Guid gameId)
         {
             SetCallbackAndAddress();
-            Host.AdminGetClientListInRoom(roomId);
+            Host.AdminGetClientListInGame(gameId);
         }
 
-        public void AdminGetRoomList()
+        public void AdminGetGameList()
         {
             SetCallbackAndAddress();
-            Host.AdminGetRoomList();
+            Host.AdminGetGameList();
         }
 
         public void AdminGetBannedList()
@@ -96,16 +96,16 @@ namespace TetriNET2.Server.Tests.ClientSide
             Host.AdminGetBannedList();
         }
 
-        public void AdminCreateGameRoom(string name, GameRules rule, string password)
+        public void AdminCreateGame(string name, GameRules rule, string password)
         {
             SetCallbackAndAddress();
-            Host.AdminCreateGameRoom(name, rule, password);
+            Host.AdminCreateGame(name, rule, password);
         }
 
-        public void AdminDeleteGameRoom(Guid roomId)
+        public void AdminDeleteGame(Guid gameId)
         {
             SetCallbackAndAddress();
-            Host.AdminDeleteGameRoom(roomId);
+            Host.AdminDeleteGame(gameId);
         }
         
         public void AdminKick(Guid targetId, string reason)
@@ -165,14 +165,14 @@ namespace TetriNET2.Server.Tests.ClientSide
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, adminId, reason);
         }
 
-        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game)
+        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameAdminData game)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, createdByClient, clientOrAdminId, game);
         }
 
-        public void OnGameDeleted(Guid adminId, Guid roomId)
+        public void OnGameDeleted(Guid adminId, Guid gameId)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, adminId, roomId);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, adminId, gameId);
         }
 
         public void OnServerMessageReceived(string message)
@@ -200,14 +200,14 @@ namespace TetriNET2.Server.Tests.ClientSide
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clients);
         }
 
-        public void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients)
+        public void OnClientListInGameReceived(Guid gameId, List<ClientAdminData> clients)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, roomId, clients);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, gameId, clients);
         }
 
-        public void OnRoomListReceived(List<GameRoomAdminData> rooms)
+        public void OnGameListReceived(List<GameAdminData> games)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, rooms);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, games);
         }
 
         public void OnBannedListReceived(List<BanEntryData> entries)

@@ -15,7 +15,7 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void ClientHeartbeat();
 
-        // Wait+Game room
+        // Wait+Game
         [OperationContract(IsOneWay = true)]
         void ClientSendPrivateMessage(Guid targetId, string message);
         [OperationContract(IsOneWay = true)]
@@ -23,7 +23,7 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void ClientChangeTeam(string team);
 
-        // Wait room
+        // Wait
         [OperationContract(IsOneWay = true)]
         void ClientJoinGame(Guid gameId, string password, bool asSpectator);
         [OperationContract(IsOneWay = true)]
@@ -31,11 +31,11 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void ClientCreateAndJoinGame(string name, string password, GameRules rule, bool asSpectator);
         [OperationContract(IsOneWay = true)]
-        void ClientGetRoomList();
+        void ClientGetGameList();
         [OperationContract(IsOneWay = true)]
         void ClientGetClientList();
 
-        // Game room as game master (player or spectator)
+        // Game as game master (player or spectator)
         [OperationContract(IsOneWay = true)]
         void ClientStartGame();
         [OperationContract(IsOneWay = true)]
@@ -53,13 +53,13 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void ClientResetWinList();
 
-        // Game room as player or spectator
+        // Game as player or spectator
         [OperationContract(IsOneWay = true)]
         void ClientLeaveGame();
         [OperationContract(IsOneWay = true)]
         void ClientGetGameClientList();
 
-        // Game room as player
+        // Game as player
         [OperationContract(IsOneWay = true)]
         void ClientPlacePiece(int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid);
         [OperationContract(IsOneWay = true)]

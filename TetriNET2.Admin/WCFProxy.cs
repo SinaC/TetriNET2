@@ -105,14 +105,14 @@ namespace TetriNET2.Admin
             ExceptionFreeAction(() => _proxy.AdminGetClientList());
         }
 
-        public void AdminGetClientListInRoom(Guid roomId)
+        public void AdminGetClientListInGame(Guid gameId)
         {
-            ExceptionFreeAction(() => _proxy.AdminGetClientListInRoom(roomId));
+            ExceptionFreeAction(() => _proxy.AdminGetClientListInGame(gameId));
         }
 
-        public void AdminGetRoomList()
+        public void AdminGetGameList()
         {
-            ExceptionFreeAction(() => _proxy.AdminGetRoomList());
+            ExceptionFreeAction(() => _proxy.AdminGetGameList());
         }
 
         public void AdminGetBannedList()
@@ -120,14 +120,14 @@ namespace TetriNET2.Admin
             ExceptionFreeAction(() => _proxy.AdminGetBannedList());
         }
 
-        public void AdminCreateGameRoom(string name, GameRules rule, string password)
+        public void AdminCreateGame(string name, GameRules rule, string password)
         {
-            ExceptionFreeAction(() => _proxy.AdminCreateGameRoom(name, rule, password));
+            ExceptionFreeAction(() => _proxy.AdminCreateGame(name, rule, password));
         }
 
-        public void AdminDeleteGameRoom(Guid roomId)
+        public void AdminDeleteGame(Guid gameId)
         {
-            ExceptionFreeAction(() => _proxy.AdminDeleteGameRoom(roomId));
+            ExceptionFreeAction(() => _proxy.AdminDeleteGame(gameId));
         }
 
         public void AdminKick(Guid targetId, string reason)

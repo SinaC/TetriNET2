@@ -3,19 +3,19 @@ using System.Collections.Generic;
 
 namespace TetriNET2.Server.Interfaces
 {
-    public interface IGameRoomManager
+    public interface IGameManager
     {
-        int MaxRooms { get; }
-        int RoomCount { get; }
+        int MaxGames { get; }
+        int GameCount { get; }
         object LockObject { get; }
 
-        IEnumerable<IGameRoom> Rooms { get; }
+        IEnumerable<IGame> Games { get; }
 
-        IGameRoom this[Guid guid] { get; }
-        IGameRoom this[string name] { get; }
+        IGame this[Guid guid] { get; }
+        IGame this[string name] { get; }
 
-        bool Add(IGameRoom room);
-        bool Remove(IGameRoom room);
+        bool Add(IGame game);
+        bool Remove(IGame game);
         void Clear();
     }
 }

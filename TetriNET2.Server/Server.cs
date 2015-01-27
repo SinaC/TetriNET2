@@ -29,7 +29,7 @@ namespace TetriNET2.Server
         private readonly IBanManager _banManager;
         private readonly IClientManager _clientManager;
         private readonly IAdminManager _adminManager;
-        private readonly IGameRoomManager _gameRoomManager;
+        private readonly IGameManager _gameManager;
 
         private CancellationTokenSource _cancellationTokenSource;
         private Task _timeoutTask;
@@ -37,7 +37,7 @@ namespace TetriNET2.Server
         private int _restartSecondLeft;
         private bool _isRestartRunning;
 
-        public Server(IFactory factory, IPasswordManager passwordManager, IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameRoomManager gameRoomManager)
+        public Server(IFactory factory, IPasswordManager passwordManager, IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameManager gameManager)
         {
             if (factory == null)
                 throw new ArgumentNullException("factory");
@@ -49,15 +49,15 @@ namespace TetriNET2.Server
                 throw new ArgumentNullException("clientManager");
             if (adminManager == null)
                 throw new ArgumentNullException("adminManager");
-            if (gameRoomManager == null)
-                throw new ArgumentNullException("gameRoomManager");
+            if (gameManager == null)
+                throw new ArgumentNullException("gameManager");
 
             _factory = factory;
             _passwordManager = passwordManager;
             _banManager = banManager;
             _clientManager = clientManager;
             _adminManager = adminManager;
-            _gameRoomManager = gameRoomManager;
+            _gameManager = gameManager;
 
             State = ServerStates.Waiting;
 
@@ -107,19 +107,19 @@ namespace TetriNET2.Server
             host.HostClientDisconnect += OnClientDisconnect;
             host.HostClientHeartbeat += OnClientHeartbeat;
 
-            // Wait+Game room
+            // Wait+Game
             host.HostClientSendPrivateMessage += OnClientSendPrivateMessage;
             host.HostClientSendBroadcastMessage += OnClientSendBroadcastMessage;
             host.HostClientChangeTeam += OnClientChangeTeam;
 
-            // Wait room
+            // Wait
             host.HostClientJoinGame += OnClientJoinGame;
             host.HostClientJoinRandomGame += OnClientJoinRandomGame;
             host.HostClientCreateAndJoinGame += OnClientCreateAndJoinGame;
-            host.HostClientGetRoomList += OnClientGetRoomList;
+            host.HostClientGetGameList += OnClientGetGameList;
             host.HostClientGetClientList += OnClientGetClientList;
 
-            // Game room as game master (player or spectator)
+            // Game as game master (player or spectator)
             host.HostClientStartGame += OnClientStartGame;
             host.HostClientStopGame += OnClientStopGame;
             host.HostClientPauseGame += OnClientPauseGame;
@@ -129,11 +129,11 @@ namespace TetriNET2.Server
             host.HostClientVoteKickAnswer += OnClientVoteKickAnswer;
             host.HostClientResetWinList += OnClientResetWinList;
 
-            // Game room as player or spectator
+            // Game as player or spectator
             host.HostClientLeaveGame += OnClientLeaveGame;
             host.HostClientGetGameClientList += OnClientGetGameClientList;
 
-            // Game room as player
+            // Game as player
             host.HostClientPlacePiece += OnClientPlacePiece;
             host.HostClientModifyGrid += OnClientModifyGrid;
             host.HostClientUseSpecial += OnClientUseSpecial;
@@ -156,13 +156,13 @@ namespace TetriNET2.Server
             // Monitoring
             host.HostAdminGetAdminList += OnAdminGetAdminList;
             host.HostAdminGetClientList += OnAdminGetClientList;
-            host.HostAdminGetClientListInRoom += OnAdminGetClientListInRoom;
-            host.HostAdminGetRoomList += OnAdminGetRoomList;
+            host.HostAdminGetClientListInGame += OnAdminGetClientListInGame;
+            host.HostAdminGetGameList += OnAdminGetGameList;
             host.HostAdminGetBannedList += OnAdminGetBannedList;
 
-            // Room
-            host.HostAdminCreateGameRoom += OnAdminCreateGameRoom;
-            host.HostAdminDeleteGameRoom += OnAdminDeleteGameRoom;
+            // Game
+            host.HostAdminCreateGame += OnAdminCreateGame;
+            host.HostAdminDeleteGame += OnAdminDeleteGame;
 
             // Kick/Ban
             host.HostAdminKick += OnAdminKick;
@@ -226,7 +226,7 @@ namespace TetriNET2.Server
             foreach (IHost host in _hosts)
                 host.Start();
 
-            // TODO: create and start some game rooms
+            // TODO: create and start some games
 
             State = ServerStates.Started;
 
@@ -269,8 +269,8 @@ namespace TetriNET2.Server
                     admin.OnServerStopped();
 
             // Stop games
-            lock (_gameRoomManager.LockObject)
-                foreach (IGameRoom game in _gameRoomManager.Rooms)
+            lock (_gameManager.LockObject)
+                foreach (IGame game in _gameManager.Games)
                     game.Stop();
 
             // Stop hosts
@@ -279,7 +279,7 @@ namespace TetriNET2.Server
 
             // Clear clients, games, wait, admins
             _clientManager.Clear();
-            _gameRoomManager.Clear();
+            _gameManager.Clear();
             _adminManager.Clear();
 
             //
@@ -345,10 +345,10 @@ namespace TetriNET2.Server
                         }
                         else
                         {
-                            // Build game room list
-                            List<GameRoomData> games;
-                            lock (_gameRoomManager.LockObject)
-                                games = _gameRoomManager.Rooms.Select(r => new GameRoomData
+                            // Build game list
+                            List<GameData> games;
+                            lock (_gameManager.LockObject)
+                                games = _gameManager.Games.Select(r => new GameData
                                     {
                                         Id = r.Id,
                                         Name = r.Name,
@@ -426,7 +426,7 @@ namespace TetriNET2.Server
                     target.OnTeamChanged(client.Id, team);
         }
 
-        private void OnClientJoinGame(IClient client, IGameRoom game, string password, bool asSpectator)
+        private void OnClientJoinGame(IClient client, IGame game, string password, bool asSpectator)
         {
             Log.Default.WriteLine(LogLevels.Info, "Client join game:{0} {1} {2}", client.Name, game.Name, asSpectator);
 
@@ -481,10 +481,10 @@ namespace TetriNET2.Server
             }
             else
             {
-                // Search a suitable room
-                IGameRoom game;
-                lock (_gameRoomManager.LockObject)
-                    game = _gameRoomManager.Rooms.FirstOrDefault(x =>
+                // Search a suitable game
+                IGame game;
+                lock (_gameManager.LockObject)
+                    game = _gameManager.Games.FirstOrDefault(x =>
                         x.Password == null
                         && ((!asSpectator && x.PlayerCount < x.MaxPlayers)
                             ||
@@ -492,7 +492,7 @@ namespace TetriNET2.Server
 
                 if (game == null)
                 {
-                    result = GameJoinResults.FailedNoRoomAvailable;
+                    result = GameJoinResults.FailedNoGameAvailable;
                     Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot find a suitable random game", client.Name);
                 }
                 else
@@ -526,14 +526,14 @@ namespace TetriNET2.Server
             }
             else
             {
-                lock (_gameRoomManager.LockObject)
+                lock (_gameManager.LockObject)
                 {
-                    if (_gameRoomManager.RoomCount >= _gameRoomManager.MaxRooms)
+                    if (_gameManager.GameCount >= _gameManager.MaxGames)
                     {
-                        result = GameCreateResults.FailedTooManyRooms;
-                        Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot create game {1} because there is too many rooms", client.Name, name);
+                        result = GameCreateResults.FailedTooManyGames;
+                        Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot create game {1} because there is too many games", client.Name, name);
                     }
-                    else if (_gameRoomManager[name] != null)
+                    else if (_gameManager[name] != null)
                     {
                         result = GameCreateResults.FailedAlreadyExists;
                         Log.Default.WriteLine(LogLevels.Warning, "Client {0} cannot create game {1} because it already exists", client.Name, name);
@@ -542,8 +542,8 @@ namespace TetriNET2.Server
                     {
                         GameOptions options = new GameOptions();
                         options.Initialize(rule);
-                        IGameRoom game = _factory.CreateGameRoom(name, 6, 10, rule, options, password);
-                        bool added = _gameRoomManager.Add(game);
+                        IGame game = _factory.CreateGame(name, 6, 10, rule, options, password);
+                        bool added = _gameManager.Add(game);
                         if (!added)
                         {
                             result = GameCreateResults.FailedInternalError;
@@ -552,14 +552,14 @@ namespace TetriNET2.Server
                         else
                         {
                             //
-                            GameRoomData clientDescription = new GameRoomData
+                            GameData clientDescription = new GameData
                             {
                                 Id = game.Id,
                                 Name = game.Name,
                                 Rule = game.Rule,
                                 Clients = new List<ClientData>()
                             };
-                            GameRoomAdminData adminDescription = new GameRoomAdminData
+                            GameAdminData adminDescription = new GameAdminData
                             {
                                 Id = game.Id,
                                 Name = game.Name,
@@ -584,9 +584,9 @@ namespace TetriNET2.Server
 
                             // Hosts
                             foreach (IHost host in _hosts)
-                                host.AddGameRoom(game);
+                                host.AddGame(game);
 
-                            // Start room
+                            // Start game
                             game.Start(_cancellationTokenSource);
 
                             // Add client in game
@@ -604,14 +604,14 @@ namespace TetriNET2.Server
                 client.OnGameCreated(result, null);
         }
 
-        private void OnClientGetRoomList(IClient client)
+        private void OnClientGetGameList(IClient client)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Client get room list: {0}", client.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Client get game list: {0}", client.Name);
 
             // Build list
-            List<GameRoomData> list;
-            lock (_gameRoomManager)
-                list = _gameRoomManager.Rooms.Select(x => new GameRoomData
+            List<GameData> list;
+            lock (_gameManager)
+                list = _gameManager.Games.Select(x => new GameData
                 {
                     Id = x.Id,
                     Name = x.Name,
@@ -620,7 +620,7 @@ namespace TetriNET2.Server
                     Clients = BuildClientDatas(x)
                 }).ToList();
             // Send list
-            client.OnRoomListReceived(list);
+            client.OnGameListReceived(list);
         }
 
         private void OnClientGetClientList(IClient client)
@@ -639,10 +639,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client start game: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot start game, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot start game, client {0} is not in a game", client.Name);
                 return;
             }
             if (!client.IsGameMaster)
@@ -658,10 +658,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client stop game: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot stop game, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot stop game, client {0} is not in a game", client.Name);
                 return;
             }
             if (!client.IsGameMaster)
@@ -677,10 +677,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client pause game: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot pause game, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot pause game, client {0} is not in a game", client.Name);
                 return;
             }
             if (!client.IsGameMaster)
@@ -696,10 +696,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client resume game: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot resume game, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot resume game, client {0} is not in a game", client.Name);
                 return;
             }
             if (!client.IsGameMaster)
@@ -715,10 +715,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client change options: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot change options, client {0} is not in a game", client.Name);
                 return;
             }
             if (!client.IsGameMaster)
@@ -742,10 +742,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client reset winlist: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot reset winlist, client {0} is not in a game", client.Name);
                 return;
             }
             if (!client.IsGameMaster)
@@ -763,12 +763,12 @@ namespace TetriNET2.Server
 
             if (client.Game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, client {0} is not in a game", client.Name);
                 return;
             }
             if (target.Game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, target {0} is not in a game room", target.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, target {0} is not in a game", target.Name);
                 return;
             }
             if (client.Game == target.Game)
@@ -777,7 +777,7 @@ namespace TetriNET2.Server
                 return;
             }
             //
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             game.VoteKick(client, target, reason); // VoteKick is responsible for using Callback
         }
 
@@ -785,10 +785,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client vote kick answer: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot handle vote kick answer, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot handle vote kick answer, client {0} is not in a game", client.Name);
                 return;
             }
             //
@@ -799,10 +799,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client leave game: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot leave game, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot leave game, client {0} is not in a game", client.Name);
                 return;
             }
             //
@@ -815,7 +815,7 @@ namespace TetriNET2.Server
 
             if (client.Game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot get game client list, {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot get game client list, {0} is not in a game", client.Name);
                 return;
             }
             // Build list
@@ -828,10 +828,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client place piece: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot place piece, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot place piece, client {0} is not in a game", client.Name);
                 return;
             }
             //
@@ -842,10 +842,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client modify grid: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot modify grid, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot modify grid, client {0} is not in a game", client.Name);
                 return;
             }
             //
@@ -856,10 +856,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client use special: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot use special, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot use special, client {0} is not in a game", client.Name);
                 return;
             }
             //
@@ -870,10 +870,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client clear lines: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot clear lines, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot clear lines, client {0} is not in a game", client.Name);
                 return;
             }
             //
@@ -884,10 +884,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client game lost: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot game lost, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot game lost, client {0} is not in a game", client.Name);
                 return;
             }
             //
@@ -898,10 +898,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client finish continuous special: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot finish continuous special, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot finish continuous special, client {0} is not in a game", client.Name);
                 return;
             }
             //
@@ -912,10 +912,10 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client earn achievement: {0}", client.Name);
 
-            IGameRoom game = client.Game;
+            IGame game = client.Game;
             if (game == null)
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot earn achievement, client {0} is not in a game room", client.Name);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot earn achievement, client {0} is not in a game", client.Name);
                 return;
             }
             //
@@ -1058,24 +1058,24 @@ namespace TetriNET2.Server
             admin.OnClientListReceived(list);
         }
 
-        private void OnAdminGetClientListInRoom(IAdmin admin, IGameRoom room)
+        private void OnAdminGetClientListInGame(IAdmin admin, IGame game)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Admin asks for client list in room:{0} {1}", admin.Name, room.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Admin asks for client list in game:{0} {1}", admin.Name, game.Name);
 
             // Build list
-            List<ClientAdminData> list = BuildClientAdminDatas(room);
+            List<ClientAdminData> list = BuildClientAdminDatas(game);
             // Send list
             admin.OnClientListReceived(list);
         }
 
-        private void OnAdminGetRoomList(IAdmin admin)
+        private void OnAdminGetGameList(IAdmin admin)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Admin asks for room list:{0}", admin.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Admin asks for game list:{0}", admin.Name);
 
             // Build list
-            List<GameRoomAdminData> list;
-            lock (_gameRoomManager)
-                list = _gameRoomManager.Rooms.Select(x => new GameRoomAdminData
+            List<GameAdminData> list;
+            lock (_gameManager)
+                list = _gameManager.Games.Select(x => new GameAdminData
                 {
                     Id = x.Id,
                     Name = x.Name,
@@ -1085,7 +1085,7 @@ namespace TetriNET2.Server
                     Clients = BuildClientAdminDatas(x)
                 }).ToList();
             // Send list
-            admin.OnRoomListReceived(list);
+            admin.OnGameListReceived(list);
         }
 
         private void OnAdminGetBannedList(IAdmin admin)
@@ -1098,35 +1098,35 @@ namespace TetriNET2.Server
             admin.OnBannedListReceived(list);
         }
 
-        private void OnAdminCreateGameRoom(IAdmin admin, string name, GameRules rule, string password)
+        private void OnAdminCreateGame(IAdmin admin, string name, GameRules rule, string password)
         {
             Log.Default.WriteLine(LogLevels.Info, "Admin create game: {0} {1} {2}", admin.Name, name, rule);
 
-            lock (_gameRoomManager.LockObject)
+            lock (_gameManager.LockObject)
             {
-                if (_gameRoomManager.RoomCount >= _gameRoomManager.MaxRooms)
-                    Log.Default.WriteLine(LogLevels.Warning, "Admin {0} cannot create game {1} because there is too many rooms", admin.Name, name);
-                else if (_gameRoomManager[name] != null)
+                if (_gameManager.GameCount >= _gameManager.MaxGames)
+                    Log.Default.WriteLine(LogLevels.Warning, "Admin {0} cannot create game {1} because there is too many games", admin.Name, name);
+                else if (_gameManager[name] != null)
                     Log.Default.WriteLine(LogLevels.Warning, "Admin {0} cannot create game {1} because it already exists", admin.Name, name);
                 else
                 {
                     GameOptions options = new GameOptions();
                     options.Initialize(rule);
-                    IGameRoom game = _factory.CreateGameRoom(name, 6, 10, rule, options, password);
-                    bool added = _gameRoomManager.Add(game);
+                    IGame game = _factory.CreateGame(name, 6, 10, rule, options, password);
+                    bool added = _gameManager.Add(game);
                     if (!added)
                         Log.Default.WriteLine(LogLevels.Warning, "Created game {0} by {1} cannot be added", name, admin.Name);
                     else
                     {
                         //
-                        GameRoomData clientDescription = new GameRoomData
+                        GameData clientDescription = new GameData
                             {
                                 Id = game.Id,
                                 Name = game.Name,
                                 Rule = game.Rule,
                                 Clients = new List<ClientData>()
                             };
-                        GameRoomAdminData adminDescription = new GameRoomAdminData
+                        GameAdminData adminDescription = new GameAdminData
                             {
                                 Id = game.Id,
                                 Name = game.Name,
@@ -1148,34 +1148,34 @@ namespace TetriNET2.Server
 
                         // Hosts
                         foreach (IHost host in _hosts)
-                            host.AddGameRoom(game);
+                            host.AddGame(game);
 
-                        // Start room
+                        // Start game
                         game.Start(_cancellationTokenSource);
                     }
                 }
             }
         }
 
-        private void OnAdminDeleteGameRoom(IAdmin admin, IGameRoom room)
+        private void OnAdminDeleteGame(IAdmin admin, IGame game)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Admin delete game: {0} {1}", admin.Name, room.Name);
+            Log.Default.WriteLine(LogLevels.Info, "Admin delete game: {0} {1}", admin.Name, game.Name);
 
             // Stop game, remove/inform clients
-            room.Stop();
+            game.Stop();
 
             // Remove game
-            lock (_gameRoomManager.Rooms)
-                _gameRoomManager.Remove(room);
+            lock (_gameManager.Games)
+                _gameManager.Remove(game);
 
             // Hosts
             foreach (IHost host in _hosts)
-                host.RemoveGameRoom(room);
+                host.RemoveGame(game);
 
             // Inform admins
             lock(_adminManager.Admins)
                 foreach(IAdmin administrator in _adminManager.Admins)
-                    administrator.OnGameDeleted(admin.Id, room.Id);
+                    administrator.OnGameDeleted(admin.Id, game.Id);
         }
         
         private void OnAdminKick(IAdmin admin, IClient client, string reason)
@@ -1296,8 +1296,8 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client left:{0} {1}", client.Name, reason);
 
-            // Remove from game room
-            IGameRoom game = client.Game;
+            // Remove from game
+            IGame game = client.Game;
             if (game != null)
             {
                 lock (game.LockObject)
@@ -1453,10 +1453,10 @@ namespace TetriNET2.Server
                 : String.Format("***Server will restart in {0} seconds***", seconds);
         }
 
-        private static List<ClientAdminData> BuildClientAdminDatas(IGameRoom room)
+        private static List<ClientAdminData> BuildClientAdminDatas(IGame game)
         {
-            lock (room)
-                return room.Clients.Select(BuildClientAdminData).ToList();
+            lock (game)
+                return game.Clients.Select(BuildClientAdminData).ToList();
         }
 
         private static ClientAdminData BuildClientAdminData(IClient client)
@@ -1476,10 +1476,10 @@ namespace TetriNET2.Server
             };
         }
         
-        private static List<ClientData> BuildClientDatas(IGameRoom room)
+        private static List<ClientData> BuildClientDatas(IGame game)
         {
-            lock (room)
-                return room.Clients.Select(BuildClientData).ToList();
+            lock (game)
+                return game.Clients.Select(BuildClientData).ToList();
         }
 
         private static ClientData BuildClientData(IClient client)

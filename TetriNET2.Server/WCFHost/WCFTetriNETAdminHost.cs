@@ -27,12 +27,12 @@ namespace TetriNET2.Server.WCFHost
 
         public event HostAdminGetAdminListEventHandler HostAdminGetAdminList;
         public event HostAdminGetClientListEventHandler HostAdminGetClientList;
-        public event HostAdminGetClientListInRoomEventHandler HostAdminGetClientListInRoom;
-        public event HostAdminGetRoomListEventHandler HostAdminGetRoomList;
+        public event HostAdminGetClientListInGameEventHandler HostAdminGetClientListInGame;
+        public event HostAdminGetGameListEventHandler HostAdminGetGameList;
         public event HostAdminGetBannedListEventHandler HostAdminGetBannedList;
 
-        public event HostAdminCreateGameRoomEventHandler HostAdminCreateGameRoom;
-        public event HostAdminDeleteGameRoomEventHandler HostAdminDeleteGameRoom;
+        public event HostAdminCreateGameEventHandler HostAdminCreateGame;
+        public event HostAdminDeleteGameEventHandler HostAdminDeleteGame;
 
         public event HostAdminKickEventHandler HostAdminKick;
         public event HostAdminBanEventHandler HostAdminBan;
@@ -112,28 +112,28 @@ namespace TetriNET2.Server.WCFHost
                 Log.Default.WriteLine(LogLevels.Warning, "AdminGetClientList from unknown admin");
         }
 
-        public void AdminGetClientListInRoom(Guid roomId)
+        public void AdminGetClientListInGame(Guid gameId)
         {
             IAdmin admin = AdminManager[AdminCallback];
             if (admin != null)
             {
-                IGameRoom room = GameRoomManager[roomId];
-                if (room != null)
-                    HostAdminGetClientListInRoom.Do(x => x(admin, room));
+                IGame game = GameManager[gameId];
+                if (game != null)
+                    HostAdminGetClientListInGame.Do(x => x(admin, game));
                 else
-                    Log.Default.WriteLine(LogLevels.Warning, "AdminGetClientListInRoom for unknown room");
+                    Log.Default.WriteLine(LogLevels.Warning, "AdminGetClientListInGame for unknown game");
             }
             else
-                Log.Default.WriteLine(LogLevels.Warning, "AdminGetClientListInRoom from unknown admin");
+                Log.Default.WriteLine(LogLevels.Warning, "AdminGetClientListInGame from unknown admin");
         }
 
-        public void AdminGetRoomList()
+        public void AdminGetGameList()
         {
             IAdmin admin = AdminManager[AdminCallback];
             if (admin != null)
-                HostAdminGetRoomList.Do(x => x(admin));
+                HostAdminGetGameList.Do(x => x(admin));
             else
-                Log.Default.WriteLine(LogLevels.Warning, "AdminGetRoomList from unknown admin");
+                Log.Default.WriteLine(LogLevels.Warning, "AdminGetGameList from unknown admin");
         }
 
         public void AdminGetBannedList()
@@ -145,28 +145,28 @@ namespace TetriNET2.Server.WCFHost
                 Log.Default.WriteLine(LogLevels.Warning, "AdminGetBannedList from unknown admin");
         }
 
-        public void AdminCreateGameRoom(string name, GameRules rule, string password)
+        public void AdminCreateGame(string name, GameRules rule, string password)
         {
             IAdmin admin = AdminManager[AdminCallback];
             if (admin != null)
-                HostAdminCreateGameRoom.Do(x => x(admin, name, rule, password));
+                HostAdminCreateGame.Do(x => x(admin, name, rule, password));
             else
-                Log.Default.WriteLine(LogLevels.Warning, "AdminCreateGameRoom from unknown admin");
+                Log.Default.WriteLine(LogLevels.Warning, "AdminCreateGame from unknown admin");
         }
         
-        public void AdminDeleteGameRoom(Guid roomId)
+        public void AdminDeleteGame(Guid gameId)
         {
             IAdmin admin = AdminManager[AdminCallback];
             if (admin != null)
             {
-                IGameRoom room = GameRoomManager[roomId];
-                if (room != null)
-                    HostAdminDeleteGameRoom.Do(x => x(admin, room));
+                IGame game = GameManager[gameId];
+                if (game != null)
+                    HostAdminDeleteGame.Do(x => x(admin, game));
                 else
-                    Log.Default.WriteLine(LogLevels.Warning, "AdminDeleteGameRoom for unknown room");
+                    Log.Default.WriteLine(LogLevels.Warning, "AdminDeleteGame for unknown game");
             }
             else
-                Log.Default.WriteLine(LogLevels.Warning, "AdminDeleteGameRoom from unknown admin");
+                Log.Default.WriteLine(LogLevels.Warning, "AdminDeleteGame from unknown admin");
         }
 
         public void AdminKick(Guid targetId, string reason)

@@ -62,9 +62,9 @@
     <Compile Include="DataContracts\GameFinishedReasons.cs" />
     <Compile Include="DataContracts\GameJoinResults.cs" />
     <Compile Include="DataContracts\GameOptions.cs" />
-    <Compile Include="DataContracts\GameRoomAdminData.cs" />
-    <Compile Include="DataContracts\GameRoomData.cs" />
-    <Compile Include="DataContracts\GameRoomStates.cs" />
+    <Compile Include="DataContracts\GameAdminData.cs" />
+    <Compile Include="DataContracts\GameData.cs" />
+    <Compile Include="DataContracts\GameStates.cs" />
     <Compile Include="DataContracts\GameRules.cs" />
     <Compile Include="DataContracts\GameStatistics.cs" />
     <Compile Include="DataContracts\GameStatisticsByPlayer.cs" />

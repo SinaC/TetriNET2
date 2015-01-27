@@ -11,19 +11,19 @@ namespace TetriNET2.Server.Interfaces.IHost
     public delegate void HostClientDisconnectEventHandler(IClient client);
     public delegate void HostClientHeartbeatEventHandler(IClient client);
 
-    // Wait+Game room
+    // Wait+Game
     public delegate void HostClientSendPrivateMessageEventHandler(IClient client, IClient target, string message);
     public delegate void HostClientSendBroadcastMessageEventHandler(IClient client, string message);
     public delegate void HostClientChangeTeamEventHandler(IClient client, string team);
 
-    // Wait room
-    public delegate void HostClientJoinGameEventHandler(IClient client, IGameRoom game, string password, bool asSpectator);
+    // Wait
+    public delegate void HostClientJoinGameEventHandler(IClient client, IGame game, string password, bool asSpectator);
     public delegate void HostClientJoinRandomGameEventHandler(IClient client, bool asSpectator);
     public delegate void HostClientCreateAndJoinGameEventHandler(IClient client, string name, string password, GameRules rule, bool asSpectator);
-    public delegate void HostClientGetRoomListEventHandler(IClient client);
+    public delegate void HostClientGetGameListEventHandler(IClient client);
     public delegate void HostClientGetClientListEventHandler(IClient client);
 
-    // Game room as game master (player or spectator)
+    // Game as game master (player or spectator)
     public delegate void HostClientStartGameEventHandler(IClient client);
     public delegate void HostClientStopGameEventHandler(IClient client);
     public delegate void HostClientPauseGameEventHandler(IClient client);
@@ -33,11 +33,11 @@ namespace TetriNET2.Server.Interfaces.IHost
     public delegate void HostClientVoteKickEventHandler(IClient client, IClient target, string reason);
     public delegate void HostClientVoteKickResponseEventHandler(IClient client, bool accepted);
 
-    // Game room as player or spectator
+    // Game as player or spectator
     public delegate void HostClientLeaveGameEventHandler(IClient client);
     public delegate void HostClientGetGameClientListEventHandler(IClient client);
 
-    // Game room as player
+    // Game as player
     public delegate void HostClientPlacePieceEventHandler(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid);
     public delegate void HostClientModifyGridEventHandler(IClient client, byte[] grid);
     public delegate void HostClientUseSpecialEventHandler(IClient client, IClient target, Specials special);
@@ -55,19 +55,19 @@ namespace TetriNET2.Server.Interfaces.IHost
         event HostClientDisconnectEventHandler HostClientDisconnect;
         event HostClientHeartbeatEventHandler HostClientHeartbeat;
 
-        // Wait+Game room
+        // Wait+Game
         event HostClientSendPrivateMessageEventHandler HostClientSendPrivateMessage;
         event HostClientSendBroadcastMessageEventHandler HostClientSendBroadcastMessage;
         event HostClientChangeTeamEventHandler HostClientChangeTeam;
 
-        // Wait room
+        // Wait
         event HostClientJoinGameEventHandler HostClientJoinGame;
         event HostClientJoinRandomGameEventHandler HostClientJoinRandomGame;
         event HostClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
-        event HostClientGetRoomListEventHandler HostClientGetRoomList;
+        event HostClientGetGameListEventHandler HostClientGetGameList;
         event HostClientGetClientListEventHandler HostClientGetClientList;
 
-        // Game room as game master (player or spectator)
+        // Game as game master (player or spectator)
         event HostClientStartGameEventHandler HostClientStartGame;
         event HostClientStopGameEventHandler HostClientStopGame;
         event HostClientPauseGameEventHandler HostClientPauseGame;
@@ -77,11 +77,11 @@ namespace TetriNET2.Server.Interfaces.IHost
         event HostClientVoteKickEventHandler HostClientVoteKick;
         event HostClientVoteKickResponseEventHandler HostClientVoteKickAnswer;
 
-        // Game room as player or spectator
+        // Game as player or spectator
         event HostClientLeaveGameEventHandler HostClientLeaveGame;
         event HostClientGetGameClientListEventHandler HostClientGetGameClientList;
 
-        // Game room as player
+        // Game as player
         event HostClientPlacePieceEventHandler HostClientPlacePiece;
         event HostClientModifyGridEventHandler HostClientModifyGrid;
         event HostClientUseSpecialEventHandler HostClientUseSpecial;

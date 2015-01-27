@@ -101,14 +101,14 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnAdminDisconnected(adminId, reason));
         }
 
-        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game)
+        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameAdminData game)
         {
             ExceptionFreeAction(() => Callback.OnGameCreated(createdByClient, clientOrAdminId, game));
         }
 
-        public void OnGameDeleted(Guid adminId, Guid roomId)
+        public void OnGameDeleted(Guid adminId, Guid gameId)
         {
-            ExceptionFreeAction(() => Callback.OnGameDeleted(adminId, roomId));
+            ExceptionFreeAction(() => Callback.OnGameDeleted(adminId, gameId));
         }
 
         public void OnServerMessageReceived(string message)
@@ -136,14 +136,14 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnClientListReceived(clients));
         }
 
-        public void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients)
+        public void OnClientListInGameReceived(Guid gameId, List<ClientAdminData> clients)
         {
-            ExceptionFreeAction(() => Callback.OnClientListInRoomReceived(roomId, clients));
+            ExceptionFreeAction(() => Callback.OnClientListInGameReceived(gameId, clients));
         }
 
-        public void OnRoomListReceived(List<GameRoomAdminData> rooms)
+        public void OnGameListReceived(List<GameAdminData> games)
         {
-            ExceptionFreeAction(() => Callback.OnRoomListReceived(rooms));
+            ExceptionFreeAction(() => Callback.OnGameListReceived(games));
         }
 
         public void OnBannedListReceived(List<BanEntryData> entries)

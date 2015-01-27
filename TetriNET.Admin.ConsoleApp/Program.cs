@@ -20,12 +20,12 @@ namespace TetriNET2.Admin.ConsoleApp
             Console.WriteLine("d: Disconnect");
             Console.WriteLine("a: Get admin list");
             Console.WriteLine("c: Get client list");
-            Console.WriteLine("r: Get room list");
+            Console.WriteLine("g: Get game list");
             Console.WriteLine("b: Get banned list");
             Console.WriteLine("s: Restart server");
             // TODO: 
-            //  get client in room
-            //  create/delete room
+            //  get client in game
+            //  create/delete game
             //  kick/ban
         }
 
@@ -64,8 +64,8 @@ namespace TetriNET2.Admin.ConsoleApp
 
             _admin.AdminListReceived += OnAdminListReceived;
             _admin.ClientListReceived += OnClientListReceived;
-            _admin.ClientListInRoomReceived += OnClientListInRoomReceived;
-            _admin.RoomListReceived += OnRoomListReceived;
+            _admin.ClientListInGameReceived += OnClientListInGameReceived;
+            _admin.GameListReceived += OnGameListReceived;
             _admin.BannedListReceived += OnBannedListReceived;
 
             bool stopped = false;
@@ -97,8 +97,8 @@ namespace TetriNET2.Admin.ConsoleApp
                         case ConsoleKey.C:
                             _admin.GetClientList();
                             break;
-                        case ConsoleKey.R:
-                            _admin.GetRoomList();
+                        case ConsoleKey.G:
+                            _admin.GetGameList();
                             break;
                         case ConsoleKey.B:
                             _admin.GetBannedList();
@@ -127,15 +127,15 @@ namespace TetriNET2.Admin.ConsoleApp
                 Console.WriteLine("Client: {0} {1} {2} {3:HH:mm:ss.fff} {4} {5} {6}", client.Id, client.Name, client.Team, client.ConnectTime, client.Address, client.Roles, client.State);
         }
 
-        private static void DisplayRoomList()
+        private static void DisplayGameList()
         {
-            Console.WriteLine("Rooms: {0}", _admin.Rooms.Count());
-            foreach (GameRoomAdminData room in _admin.Rooms)
+            Console.WriteLine("Games: {0}", _admin.Games.Count());
+            foreach (GameAdminData game in _admin.Games)
             {
-                Console.WriteLine("Room: {0} {1} {2}", room.Id, room.Name, room.Rule);
-                Console.WriteLine("\tClients: {0}", room.Clients == null ? 0 : room.Clients.Count);
-                if (room.Clients != null)
-                    foreach (ClientAdminData client in room.Clients)
+                Console.WriteLine("Game: {0} {1} {2}", game.Id, game.Name, game.Rule);
+                Console.WriteLine("\tClients: {0}", game.Clients == null ? 0 : game.Clients.Count);
+                if (game.Clients != null)
+                    foreach (ClientAdminData client in game.Clients)
                         Console.WriteLine("Client: {0} {1} {2} {3:HH:mm:ss.fff} {4} {5} {6}", client.Id, client.Name, client.Team, client.ConnectTime, client.Address, client.Roles, client.State);
             }
         }
@@ -183,7 +183,7 @@ namespace TetriNET2.Admin.ConsoleApp
             DisplayAdminList();
         }
 
-        private static void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game)
+        private static void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameAdminData game)
         {
             Console.WriteLine("OnGameCreated: {0} {1} {2} {3} {4}", createdByClient, clientOrAdminId, game.Id, game.Name, game.Rule);
             if (game.Clients != null)
@@ -193,14 +193,14 @@ namespace TetriNET2.Admin.ConsoleApp
                     Console.WriteLine("\tClient: {0} {1} {2} {3:HH:mm:ss.fff} {4} {5} {6}", client.Id, client.Name, client.Team, client.ConnectTime, client.Address, client.Roles, client.State);
             }
 
-            DisplayRoomList();
+            DisplayGameList();
         }
 
-        private static void OnGameDeleted(Guid adminId, Guid roomId)
+        private static void OnGameDeleted(Guid adminId, Guid gameId)
         {
-            Console.WriteLine("OnGameDeleted: {0} {1}", adminId, roomId);
+            Console.WriteLine("OnGameDeleted: {0} {1}", adminId, gameId);
 
-            DisplayRoomList();
+            DisplayGameList();
         }
 
         private static void OnServerMessageReceived(string message)
@@ -236,24 +236,24 @@ namespace TetriNET2.Admin.ConsoleApp
                     Console.WriteLine("Client: {0} {1} {2} {3:HH:mm:ss.fff} {4} {5} {6}", client.Id, client.Name, client.Team, client.ConnectTime, client.Address, client.Roles, client.State);
         }
 
-        private static void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients)
+        private static void OnClientListInGameReceived(Guid gameId, List<ClientAdminData> clients)
         {
-            Console.WriteLine("OnClientListInRoomReceived {0}: {1}", roomId, clients == null ? 0 : clients.Count);
+            Console.WriteLine("OnClientListInGameReceived {0}: {1}", gameId, clients == null ? 0 : clients.Count);
             if (clients != null)
                 foreach (ClientAdminData client in clients)
                     Console.WriteLine("Client: {0} {1} {2} {3:HH:mm:ss.fff} {4} {5} {6}", client.Id, client.Name, client.Team, client.ConnectTime, client.Address, client.Roles, client.State);
         }
 
-        private static void OnRoomListReceived(List<GameRoomAdminData> rooms)
+        private static void OnGameListReceived(List<GameAdminData> games)
         {
-            Console.WriteLine("OnRoomListReceived: {0}", rooms == null ? 0 : rooms.Count);
-            if (rooms != null)
-                foreach (GameRoomAdminData room in rooms)
+            Console.WriteLine("OnGameListReceived: {0}", games == null ? 0 : games.Count);
+            if (games != null)
+                foreach (GameAdminData game in games)
                 {
-                    Console.WriteLine("Room: {0} {1} {2} {3}", room.Id, room.Name, room.Rule, room.State);
-                    Console.WriteLine("\tClients: {0}", room.Clients == null ? 0 : room.Clients.Count);
-                    if (room.Clients != null)
-                        foreach (ClientAdminData client in room.Clients)
+                    Console.WriteLine("Game: {0} {1} {2} {3}", game.Id, game.Name, game.Rule, game.State);
+                    Console.WriteLine("\tClients: {0}", game.Clients == null ? 0 : game.Clients.Count);
+                    if (game.Clients != null)
+                        foreach (ClientAdminData client in game.Clients)
                             Console.WriteLine("\tClient: {0} {1} {2} {3:HH:mm:ss.fff} {4} {5} {6}", client.Id, client.Name, client.Team, client.ConnectTime, client.Address, client.Roles, client.State);
                 }
         }

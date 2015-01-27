@@ -22,11 +22,11 @@ namespace TetriNET2.Client
     {
         Created, // --> Connecting
         Connecting, // --> Connected
-        Connected, // --> WaitInGameRoom
-        WaitInGameRoom, // --> Connected | Playing
+        Connected, // --> WaitInGame
+        WaitInGame, // --> Connected | Playing
         Playing, // --> Connected | GameLost | Paused
         GamePaused, // --> Connected | Playing
-        GameLost // --> Connected | WaitInGameRoom
+        GameLost // --> Connected | WaitInGame
     }
 
     public class Client : IClient
@@ -40,7 +40,7 @@ namespace TetriNET2.Client
         private readonly IActionQueue _actionQueue;
         private readonly List<ClientData> _clients;
         private readonly List<ClientData> _gameClients;
-        private readonly List<GameRoomData> _rooms;
+        private readonly List<GameData> _games;
 
         private IProxy _proxy;
 
@@ -64,7 +64,7 @@ namespace TetriNET2.Client
             _actionQueue = actionQueue;
             _clients = new List<ClientData>();
             _gameClients = new List<ClientData>();
-            _rooms = new List<GameRoomData>();
+            _games = new List<GameData>();
 
             Assembly entryAssembly = Assembly.GetEntryAssembly();
             if (entryAssembly != null)
@@ -91,7 +91,7 @@ namespace TetriNET2.Client
         
         #region ITetriNETClientCallback
 
-        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameRoomData> games)
+        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameData> games)
         {
             if (result == ConnectResults.Successfull)
             {
@@ -99,9 +99,9 @@ namespace TetriNET2.Client
 
                 _clients.Clear();
                 _gameClients.Clear();
-                _rooms.Clear();
+                _games.Clear();
 
-                _rooms.AddRange(games);
+                _games.AddRange(games);
 
                 _clientId = clientId;
 
@@ -151,14 +151,14 @@ namespace TetriNET2.Client
             _isGameMaster = false;
         }
 
-        public void OnRoomListReceived(List<GameRoomData> rooms)
+        public void OnGameListReceived(List<GameData> games)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Room list received");
+            Log.Default.WriteLine(LogLevels.Info, "Game list received");
 
-            _rooms.Clear();
-            _rooms.AddRange(rooms);
+            _games.Clear();
+            _games.AddRange(games);
 
-            RoomListReceived.Do(x => x(rooms));
+            GameListReceived.Do(x => x(games));
         }
 
         public void OnClientListReceived(List<ClientData> clients)
@@ -173,7 +173,7 @@ namespace TetriNET2.Client
 
         public void OnGameClientListReceived(List<ClientData> clients)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Client in game room received");
+            Log.Default.WriteLine(LogLevels.Info, "Client in game received");
 
             _gameClients.Clear();
             _gameClients.AddRange(clients);
@@ -204,20 +204,20 @@ namespace TetriNET2.Client
             ClientDisconnected.Do(x => x(clientId, reason));
         }
 
-        public void OnClientGameCreated(Guid clientId, GameRoomData game)
+        public void OnClientGameCreated(Guid clientId, GameData game)
         {
             Log.Default.WriteLine(LogLevels.Info, "Client {0} creates game {1}", clientId, game == null ? Guid.Empty : game.Id);
 
-            _rooms.Add(game);
+            _games.Add(game);
 
             ClientGameCreated.Do(x => x(clientId, game));
         }
 
-        public void OnServerGameCreated(GameRoomData game)
+        public void OnServerGameCreated(GameData game)
         {
             Log.Default.WriteLine(LogLevels.Info, "Server creates game {0}", game == null ? Guid.Empty : game.Id);
 
-            _rooms.Add(game);
+            _games.Add(game);
 
             ServerGameCreated.Do(x => x(game));
         }
@@ -226,7 +226,7 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Server deletes game {0}", gameId);
 
-            _rooms.RemoveAll(x => x.Id == gameId);
+            _games.RemoveAll(x => x.Id == gameId);
 
             ServerGameDeleted.Do(x => x(gameId));
         }
@@ -259,13 +259,13 @@ namespace TetriNET2.Client
             TeamChanged.Do(x => x(clientId, team));
         }
 
-        public void OnGameCreated(GameCreateResults result, GameRoomData game)
+        public void OnGameCreated(GameCreateResults result, GameData game)
         {
             if (result == GameCreateResults.Successfull)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Game {0} created successfully", game == null ? Guid.Empty : game.Id);
 
-                _rooms.Add(game);
+                _games.Add(game);
             }
             else
             {
@@ -281,12 +281,12 @@ namespace TetriNET2.Client
             {
                 Log.Default.WriteLine(LogLevels.Info, "Game {0} joined successfully. Master {1}", gameId, isGameMaster);
 
-                _state = States.WaitInGameRoom;
+                _state = States.WaitInGame;
                 _isGameMaster = isGameMaster;
 
                 _gameClients.Clear();
 
-                // Get clients in room  TODO: players in room as additional parameter ?
+                // Get clients in game  TODO: players in game as additional parameter ?
                 _proxy.Do(x => x.ClientGetGameClientList());
             }
             else
@@ -323,7 +323,7 @@ namespace TetriNET2.Client
 
                     // Get clients
                     _proxy.Do(x => x.ClientGetClientList());
-                    // Get clients in room
+                    // Get clients in game
                     _proxy.Do(x => x.ClientGetGameClientList());
                 }
             }
@@ -331,7 +331,7 @@ namespace TetriNET2.Client
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Client {0} already in game", clientId);
 
-                // Get clients in room
+                // Get clients in game
                 _proxy.Do(x => x.ClientGetGameClientList());
             }
 
@@ -350,7 +350,7 @@ namespace TetriNET2.Client
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Client {0} not in game", clientId);
 
-                // Get clients in room
+                // Get clients in game
                 _proxy.Do(x => x.ClientGetGameClientList());
             }
 
@@ -465,7 +465,7 @@ namespace TetriNET2.Client
 
         public IEnumerable<ClientData> GameClients { get { return _gameClients; } }
 
-        public IEnumerable<GameRoomData> Rooms { get { return _rooms; } }
+        public IEnumerable<GameData> Games { get { return _games; } }
 
         public void SetVersion(int major, int minor)
         {
@@ -479,7 +479,7 @@ namespace TetriNET2.Client
         public event ConnectedEventHandler Connected;
         public event DisconnectedEventHandler Disconnected;
         public event ServerStoppedEventHandler ServerStopped;
-        public event RoomListReceivedEventHandler RoomListReceived;
+        public event GameListReceivedEventHandler GameListReceived;
         public event ClientListReceivedEventHandler ClientListReceived;
         public event GameClientListReceivedEventHandler GameClientListReceived;
         public event ClientConnectedEventHandler ClientConnected;
@@ -598,9 +598,9 @@ namespace TetriNET2.Client
             return true;
         }
 
-        public bool GetRoomList()
+        public bool GetGameList()
         {
-            _proxy.Do(x => x.ClientGetRoomList());
+            _proxy.Do(x => x.ClientGetGameList());
             return true;
         }
 
@@ -761,7 +761,7 @@ namespace TetriNET2.Client
                     break;
                 }
 
-                if (_state == States.Connected || _state == States.WaitInGameRoom || _state == States.Playing || _state == States.GamePaused || _state == States.GameLost)
+                if (_state == States.Connected || _state == States.WaitInGame || _state == States.Playing || _state == States.GamePaused || _state == States.GameLost)
                 {
                     // Check server timeout
                     TimeSpan timespan = DateTime.Now - _lastActionFromServer;

@@ -27,8 +27,8 @@ namespace TetriNET2.Common.DataContracts
         FailedInternalError,
 
         [EnumMember]
-        [Description("No room available")]
-        FailedNoRoomAvailable,
+        [Description("No game available")]
+        FailedNoGameAvailable,
 
         [EnumMember]
         [Description("Already in a game")]

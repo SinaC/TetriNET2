@@ -120,9 +120,9 @@ namespace TetriNET2.Client
             ExceptionFreeAction(() => _proxy.ClientCreateAndJoinGame(name, password, rule, asSpectator));
         }
 
-        public void ClientGetRoomList()
+        public void ClientGetGameList()
         {
-            ExceptionFreeAction(() => _proxy.ClientGetRoomList());
+            ExceptionFreeAction(() => _proxy.ClientGetGameList());
         }
 
         public void ClientGetClientList()

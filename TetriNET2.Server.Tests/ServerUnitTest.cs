@@ -23,11 +23,11 @@ namespace TetriNET2.Server.Tests
         protected IBanManager BanManager;
         protected IClientManager ClientManager;
         protected IAdminManager AdminManager;
-        protected IGameRoomManager GameRoomManager;
+        protected IGameManager GameManager;
 
         protected abstract IServer CreateServer(bool passwordCheckSucceedIfNotFound = true);
         protected abstract HostMock CreateHost();
-        protected abstract IGameRoom CreateGameRoom(string name);
+        protected abstract IGame CreateGame(string name);
         protected abstract ClientFake CreateClientFake(IHost host, string name, Versioning version, IPAddress address = null, string team = null);
         protected abstract AdminFake CreateAdminFake(IHost host, string name, Versioning version);
 
@@ -257,9 +257,9 @@ namespace TetriNET2.Server.Tests
         {
             IServer server = CreateServer();
             IHost host = CreateHost();
-            IGameRoom gameRoom = CreateGameRoom("room1");
-            gameRoom.Start(new CancellationTokenSource());
-            GameRoomManager.Add(gameRoom);
+            IGame game = CreateGame("game1");
+            game.Start(new CancellationTokenSource());
+            GameManager.Add(game);
             server.SetVersion(1, 1);
             server.AddHost(host);
             server.Start();
@@ -276,8 +276,8 @@ namespace TetriNET2.Server.Tests
 
             Assert.IsTrue(succeed);
             Assert.AreEqual(ServerStates.Waiting, server.State);
-            Assert.AreEqual(GameRoomStates.Created, gameRoom.State);
-            Assert.AreEqual(0, GameRoomManager.RoomCount);
+            Assert.AreEqual(GameStates.Created, game.State);
+            Assert.AreEqual(0, GameManager.GameCount);
             Assert.AreEqual(0, AdminManager.AdminCount);
             Assert.AreEqual(0, ClientManager.ClientCount);
             Assert.AreEqual(1, clientFake1.GetCallCount("OnServerStopped"));
@@ -298,9 +298,9 @@ namespace TetriNET2.Server.Tests
         {
             IServer server = CreateServer();
             IHost host = CreateHost();
-            IGameRoom gameRoom = CreateGameRoom("room1");
-            gameRoom.Start(new CancellationTokenSource());
-            GameRoomManager.Add(gameRoom);
+            IGame game = CreateGame("game1");
+            game.Start(new CancellationTokenSource());
+            GameManager.Add(game);
             server.SetVersion(1, 1);
             server.AddHost(host);
             server.Start();
@@ -322,9 +322,9 @@ namespace TetriNET2.Server.Tests
         {
             IServer server = CreateServer();
             IHost host = CreateHost();
-            IGameRoom gameRoom = CreateGameRoom("room1");
-            gameRoom.Start(new CancellationTokenSource());
-            GameRoomManager.Add(gameRoom);
+            IGame game = CreateGame("game1");
+            game.Start(new CancellationTokenSource());
+            GameManager.Add(game);
             server.SetVersion(1, 1);
             server.AddHost(host);
             server.Start();
@@ -354,9 +354,9 @@ namespace TetriNET2.Server.Tests
         {
             IServer server = CreateServer();
             IHost host = CreateHost();
-            IGameRoom gameRoom = CreateGameRoom("room1");
-            gameRoom.Start(new CancellationTokenSource());
-            GameRoomManager.Add(gameRoom);
+            IGame game = CreateGame("game1");
+            game.Start(new CancellationTokenSource());
+            GameManager.Add(game);
             server.SetVersion(1, 1);
             server.AddHost(host);
             server.Start();
@@ -376,9 +376,9 @@ namespace TetriNET2.Server.Tests
         {
             IServer server = CreateServer();
             IHost host = CreateHost();
-            IGameRoom gameRoom = CreateGameRoom("room1");
-            gameRoom.Start(new CancellationTokenSource());
-            GameRoomManager.Add(gameRoom);
+            IGame game = CreateGame("game1");
+            game.Start(new CancellationTokenSource());
+            GameManager.Add(game);
             server.SetVersion(1, 1);
             server.AddHost(host);
             server.Start();
@@ -400,9 +400,9 @@ namespace TetriNET2.Server.Tests
         {
             IServer server = CreateServer();
             IHost host = CreateHost();
-            IGameRoom gameRoom = CreateGameRoom("room1");
-            gameRoom.Start(new CancellationTokenSource());
-            GameRoomManager.Add(gameRoom);
+            IGame game = CreateGame("game1");
+            game.Start(new CancellationTokenSource());
+            GameManager.Add(game);
             server.SetVersion(1, 1);
             server.AddHost(host);
             server.Start();
@@ -423,9 +423,9 @@ namespace TetriNET2.Server.Tests
         {
             IServer server = CreateServer();
             IHost host = CreateHost();
-            IGameRoom gameRoom = CreateGameRoom("room1");
-            gameRoom.Start(new CancellationTokenSource());
-            GameRoomManager.Add(gameRoom);
+            IGame game = CreateGame("game1");
+            game.Start(new CancellationTokenSource());
+            GameManager.Add(game);
             server.SetVersion(1, 1);
             server.AddHost(host);
             server.Start();
@@ -445,9 +445,9 @@ namespace TetriNET2.Server.Tests
         {
             IServer server = CreateServer();
             IHost host = CreateHost();
-            IGameRoom gameRoom = CreateGameRoom("room1");
-            gameRoom.Start(new CancellationTokenSource());
-            GameRoomManager.Add(gameRoom);
+            IGame game = CreateGame("game1");
+            game.Start(new CancellationTokenSource());
+            GameManager.Add(game);
             server.SetVersion(1, 1);
             server.AddHost(host);
             server.Start();
@@ -482,9 +482,9 @@ namespace TetriNET2.Server.Tests
                 return new Admin(name, address, callback);
             }
 
-            public IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
+            public IGame CreateGame(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
             {
-                return new GameRoom(new ActionQueueMock(), new PieceProviderMock(), name, maxPlayers, maxSpectators, rule, options, password);
+                return new Game(new ActionQueueMock(), new PieceProviderMock(), name, maxPlayers, maxSpectators, rule, options, password);
             }
         }
 
@@ -497,13 +497,13 @@ namespace TetriNET2.Server.Tests
             BanManager = new BanManager(BanFilename);
             ClientManager = new ClientManager(10);
             AdminManager = new AdminManager(10);
-            GameRoomManager = new GameRoomManager(10);
-            return new Server(new Factory(), PasswordManager, BanManager, ClientManager, AdminManager, GameRoomManager);
+            GameManager = new GameManager(10);
+            return new Server(new Factory(), PasswordManager, BanManager, ClientManager, AdminManager, GameManager);
         }
 
         protected override HostMock CreateHost()
         {
-            return new HostMock(BanManager, ClientManager, AdminManager, GameRoomManager);
+            return new HostMock(BanManager, ClientManager, AdminManager, GameManager);
         }
 
         protected override ClientFake CreateClientFake(IHost host, string name, Versioning version, IPAddress address = null, string team = null)
@@ -524,11 +524,11 @@ namespace TetriNET2.Server.Tests
             return admin;
         }
 
-        protected override IGameRoom CreateGameRoom(string name)
+        protected override IGame CreateGame(string name)
         {
             GameOptions options = new GameOptions();
             options.Initialize(GameRules.Standard);
-            return new GameRoom(new ActionQueueMock(), new PieceProviderMock(), name, 10, 10, GameRules.Standard, options);
+            return new Game(new ActionQueueMock(), new PieceProviderMock(), name, 10, 10, GameRules.Standard, options);
         }
 
         #region Constructors
@@ -541,7 +541,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new Server(null, new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+                IServer server = new Server(null, new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -559,7 +559,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new Server(new Factory(), null, new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+                IServer server = new Server(new Factory(), null, new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -577,7 +577,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new Server(new Factory(), new PasswordManager(), null, new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+                IServer server = new Server(new Factory(), new PasswordManager(), null, new ClientManager(10), new AdminManager(10), new GameManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -595,7 +595,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), null, new AdminManager(10), new GameRoomManager(10));
+                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), null, new AdminManager(10), new GameManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -613,7 +613,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), null, new GameRoomManager(10));
+                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), null, new GameManager(10));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -627,7 +627,7 @@ namespace TetriNET2.Server.Tests
         [TestCategory("Server.Server")]
         [TestCategory("Server.Server.ctor")]
         [TestMethod]
-        public void TestNullGameRoomManager()
+        public void TestNullGameManager()
         {
             try
             {
@@ -637,7 +637,7 @@ namespace TetriNET2.Server.Tests
             }
             catch (ArgumentNullException ex)
             {
-                Assert.AreEqual("gameRoomManager", ex.ParamName);
+                Assert.AreEqual("gameManager", ex.ParamName);
             }
         }
 
@@ -647,7 +647,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestConstructorSetProperties()
         {
-            IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameRoomManager(10));
+            IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameManager(10));
 
             Assert.AreEqual(ServerStates.Waiting, server.State);
         }

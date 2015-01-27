@@ -63,7 +63,7 @@ namespace TetriNET2.Server.Tests.Mocking
 
         #region ITetriNETCallback
 
-        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameRoomData> games)
+        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameData> games)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, serverVersion, clientId, games);
         }
@@ -83,9 +83,9 @@ namespace TetriNET2.Server.Tests.Mocking
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name);
         }
 
-        public void OnRoomListReceived(List<GameRoomData> rooms)
+        public void OnGameListReceived(List<GameData> games)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, rooms);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, games);
         }
 
         public void OnClientListReceived(List<ClientData> clients)
@@ -108,12 +108,12 @@ namespace TetriNET2.Server.Tests.Mocking
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, reason);
         }
 
-        public void OnClientGameCreated(Guid clientId, GameRoomData game)
+        public void OnClientGameCreated(Guid clientId, GameData game)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, game);
         }
 
-        public void OnServerGameCreated(GameRoomData game)
+        public void OnServerGameCreated(GameData game)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, game);
         }
@@ -143,7 +143,7 @@ namespace TetriNET2.Server.Tests.Mocking
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, clientId, team);
         }
 
-        public void OnGameCreated(GameCreateResults result, GameRoomData game)
+        public void OnGameCreated(GameCreateResults result, GameData game)
         {
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, game);
         }

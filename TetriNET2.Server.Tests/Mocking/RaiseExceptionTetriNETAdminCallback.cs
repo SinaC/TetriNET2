@@ -35,11 +35,11 @@ namespace TetriNET2.Server.Tests.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameRoomAdminData game)
+        public void OnGameCreated(bool createdByClient, Guid clientOrAdminId, GameAdminData game)
         {
             throw new NotImplementedException();
         }
-        public void OnGameDeleted(Guid adminId, Guid roomId)
+        public void OnGameDeleted(Guid adminId, Guid gameId)
         {
             throw new NotImplementedException();
         }
@@ -63,11 +63,11 @@ namespace TetriNET2.Server.Tests.Mocking
         {
             throw new NotImplementedException();
         }
-        public void OnClientListInRoomReceived(Guid roomId, List<ClientAdminData> clients)
+        public void OnClientListInGameReceived(Guid gameId, List<ClientAdminData> clients)
         {
             throw new NotImplementedException();
         }
-        public void OnRoomListReceived(List<GameRoomAdminData> rooms)
+        public void OnGameListReceived(List<GameAdminData> games)
         {
             throw new NotImplementedException();
         }

@@ -29,7 +29,7 @@ namespace TetriNET2.Server.WCFHost
         public event HostClientJoinGameEventHandler HostClientJoinGame;
         public event HostClientJoinRandomGameEventHandler HostClientJoinRandomGame;
         public event HostClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
-        public event HostClientGetRoomListEventHandler HostClientGetRoomList;
+        public event HostClientGetGameListEventHandler HostClientGetGameList;
         public event HostClientGetClientListEventHandler HostClientGetClientList;
 
         public event HostClientStartGameEventHandler HostClientStartGame;
@@ -115,7 +115,7 @@ namespace TetriNET2.Server.WCFHost
             IClient client = ClientManager[ClientCallback];
             if (client != null)
             {
-                IGameRoom game = GameRoomManager[gameId];
+                IGame game = GameManager[gameId];
                 if (game != null)
                     HostClientJoinGame.Do(x => x(client, game, password, asSpectator));
                 else
@@ -143,13 +143,13 @@ namespace TetriNET2.Server.WCFHost
                 Log.Default.WriteLine(LogLevels.Warning, "ClientCreateAndJoinGame from unknown client");
         }
 
-        public void ClientGetRoomList()
+        public void ClientGetGameList()
         {
             IClient client = ClientManager[ClientCallback];
             if (client != null)
-                HostClientGetRoomList.Do(x => x(client));
+                HostClientGetGameList.Do(x => x(client));
             else
-                Log.Default.WriteLine(LogLevels.Warning, "ClientGetRoomList from unknown client");
+                Log.Default.WriteLine(LogLevels.Warning, "ClientGetGameList from unknown client");
         }
 
         public void ClientGetClientList()

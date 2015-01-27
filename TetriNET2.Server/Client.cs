@@ -81,7 +81,7 @@ namespace TetriNET2.Server
         public int PieceIndex { get; set; }
         public byte[] Grid { get; set; }
         public DateTime LossTime { get; set; }
-        public IGameRoom Game { get; set; }
+        public IGame Game { get; set; }
         public bool? LastVoteKickAnswer { get; set; }
 
         public bool IsGameMaster
@@ -119,7 +119,7 @@ namespace TetriNET2.Server
 
         #region ITetriNETCallback
 
-        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameRoomData> games)
+        public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameData> games)
         {
             ExceptionFreeAction(() => Callback.OnConnected(result, serverVersion, clientId, games));
         }
@@ -139,9 +139,9 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnServerStopped());
         }
 
-        public void OnRoomListReceived(List<GameRoomData> rooms)
+        public void OnGameListReceived(List<GameData> games)
         {
-            ExceptionFreeAction(() => Callback.OnRoomListReceived(rooms));
+            ExceptionFreeAction(() => Callback.OnGameListReceived(games));
         }
 
         public void OnClientListReceived(List<ClientData> clients)
@@ -164,12 +164,12 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnClientDisconnected(clientId, reason));
         }
 
-        public void OnClientGameCreated(Guid clientId, GameRoomData game)
+        public void OnClientGameCreated(Guid clientId, GameData game)
         {
             ExceptionFreeAction(() => Callback.OnClientGameCreated(clientId, game));
         }
 
-        public void OnServerGameCreated(GameRoomData game)
+        public void OnServerGameCreated(GameData game)
         {
             ExceptionFreeAction(() => Callback.OnServerGameCreated(game));
         }
@@ -199,7 +199,7 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnTeamChanged(clientId, team));
         }
 
-        public void OnGameCreated(GameCreateResults result, GameRoomData game)
+        public void OnGameCreated(GameCreateResults result, GameData game)
         {
             ExceptionFreeAction(() => Callback.OnGameCreated(result, game));
         }

@@ -29,14 +29,14 @@ namespace TetriNET2.Server.ConsoleApp
             IBanManager banManager = new BanManager(@"D:\TEMP\ban.lst");
             IClientManager clientManager = new ClientManager(50);
             IAdminManager adminManager = new AdminManager(5);
-            IGameRoomManager gameRoomManager = new GameRoomManager(10);
+            IGameManager gameManager = new GameManager(10);
 
-            IHost wcfHost = new WCFHost.WCFHost(banManager, clientManager, adminManager, gameRoomManager)
+            IHost wcfHost = new WCFHost.WCFHost(banManager, clientManager, adminManager, gameManager)
                 {
                     Port = 7788
                 };
 
-            IServer server = new Server(factory, passwordManager, banManager, clientManager, adminManager, gameRoomManager);
+            IServer server = new Server(factory, passwordManager, banManager, clientManager, adminManager, gameManager);
 
             server.AddHost(wcfHost);
 
@@ -78,9 +78,9 @@ namespace TetriNET2.Server.ConsoleApp
                             Console.WriteLine("Admins:");
                             foreach (IAdmin admin in adminManager.Admins)
                                 Console.WriteLine("{0}) {1}", admin.Id, admin.Name);
-                            Console.WriteLine("Rooms:");
-                            foreach (IGameRoom room in gameRoomManager.Rooms)
-                                Console.WriteLine("{0}) {1} {2} {3} #players:{4} #spectators:{5}  password:{6} {7:HH:mm:ss}", room.Id, room.Name, room.State, room.Rule, room.PlayerCount, room.SpectatorCount, room.Password, room.CreationTime);
+                            Console.WriteLine("Games:");
+                            foreach (IGame game in gameManager.Games)
+                                Console.WriteLine("{0}) {1} {2} {3} #players:{4} #spectators:{5}  password:{6} {7:HH:mm:ss}", game.Id, game.Name, game.State, game.Rule, game.PlayerCount, game.SpectatorCount, game.Password, game.CreationTime);
                             break;
                     }
                 }
@@ -111,9 +111,9 @@ namespace TetriNET2.Server.ConsoleApp
             return new Admin(name, address, callback);
         }
 
-        public IGameRoom CreateGameRoom(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
+        public IGame CreateGame(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
         {
-            return new GameRoom(new BlockingActionQueue(), new PieceBag(RangeRandom.Random, 4), name, maxPlayers, maxSpectators, rule, options, password);
+            return new Game(new BlockingActionQueue(), new PieceBag(RangeRandom.Random, 4), name, maxPlayers, maxSpectators, rule, options, password);
         }
     }
 }

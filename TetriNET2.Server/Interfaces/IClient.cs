@@ -27,7 +27,7 @@ namespace TetriNET2.Server.Interfaces
         int PieceIndex { get; set; }
         byte[] Grid { get; set; }
         DateTime LossTime { get; set; }
-        IGameRoom Game { get; set; }
+        IGame Game { get; set; }
         bool? LastVoteKickAnswer { get; set; }
 
         //

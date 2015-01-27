@@ -4,7 +4,7 @@
     {
         Admin,
         Player,
-        Room,
+        Game,
     }
 
     public interface IPasswordManager

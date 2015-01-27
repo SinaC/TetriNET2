@@ -27,17 +27,17 @@ namespace TetriNET2.Common.Contracts
         [OperationContract(IsOneWay = true)]
         void AdminGetClientList();
         [OperationContract(IsOneWay = true)]
-        void AdminGetClientListInRoom(Guid roomId);
+        void AdminGetClientListInGame(Guid gameId);
         [OperationContract(IsOneWay = true)]
-        void AdminGetRoomList();
+        void AdminGetGameList();
         [OperationContract(IsOneWay = true)]
         void AdminGetBannedList();
 
-        // Room
+        // Game
         [OperationContract(IsOneWay = true)]
-        void AdminCreateGameRoom(string name, GameRules rule, string password);
+        void AdminCreateGame(string name, GameRules rule, string password);
         [OperationContract(IsOneWay = true)]
-        void AdminDeleteGameRoom(Guid roomId);
+        void AdminDeleteGame(Guid gameId);
 
         // Kick/Ban
         [OperationContract(IsOneWay = true)]
