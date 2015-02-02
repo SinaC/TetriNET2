@@ -13,6 +13,9 @@ namespace TetriNET2.Common.DataContracts
         public string Name { get; set; }
 
         [DataMember]
+        public string Team { get; set; }
+
+        [DataMember]
         public Guid GameId { get; set; }
 
         [DataMember]

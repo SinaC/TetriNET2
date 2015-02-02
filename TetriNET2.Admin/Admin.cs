@@ -315,6 +315,12 @@ namespace TetriNET2.Admin
 
         public bool Disconnect()
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+
             _proxy.Do(x => x.AdminDisconnect());
 
             InternalDisconnect();
@@ -323,66 +329,144 @@ namespace TetriNET2.Admin
 
         public bool SendPrivateAdminMessage(Guid targetAdminId, string message)
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+
+            if (targetAdminId == Guid.Empty)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Cannot send message to unknown target");
+                return false;
+            }
+
+            if (String.IsNullOrWhiteSpace(message))
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Cannot send empty message");
+                return false;
+            }
+
             _proxy.Do(x => x.AdminSendPrivateAdminMessage(targetAdminId, message));
             return true;
         }
 
         public bool SendPrivateMessage(Guid targetClientId, string message)
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+            
             _proxy.Do(x => x.AdminSendPrivateMessage(targetClientId, message));
             return true;
         }
 
         public bool SendBroadcastMessage(string message)
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+
             _proxy.Do(x => x.AdminSendBroadcastMessage(message));
             return true;
         }
 
         public bool GetAdminList()
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+
             _proxy.Do(x => x.AdminGetAdminList());
             return true;
         }
 
         public bool GetClientList()
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+
             _proxy.Do(x => x.AdminGetClientList());
             return true;
         }
 
         public bool GetClientListInGame(Guid gameId)
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+
             _proxy.Do(x => x.AdminGetClientListInGame(gameId));
             return true;
         }
 
         public bool GetGameList()
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+
             _proxy.Do(x => x.AdminGetGameList());
             return true;
         }
 
         public bool GetBannedList()
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+
             _proxy.Do(x => x.AdminGetBannedList());
             return true;
         }
 
         public bool Kick(Guid targetId, string reason)
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+
             _proxy.Do(x => x.AdminKick(targetId, reason));
             return true;
         }
 
         public bool Ban(Guid targetId, string reason)
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            }
+
             _proxy.Do(x => x.AdminBan(targetId, reason));
             return true;
         }
 
         public bool RestartServer(int seconds)
         {
+            if (_proxy == null)
+            {
+                Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
+                return false;
+            };
+
             _proxy.Do(x => x.AdminRestartServer(seconds));
             return true;
         }

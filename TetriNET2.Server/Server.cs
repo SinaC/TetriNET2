@@ -1488,6 +1488,7 @@ namespace TetriNET2.Server
             {
                 Id = client.Id,
                 Name = client.Name,
+                Team = client.Team,
                 GameId = client.Game == null ? Guid.Empty : client.Game.Id,
                 IsPlayer = client.IsPlayer,
                 IsSpectator = client.IsSpectator,

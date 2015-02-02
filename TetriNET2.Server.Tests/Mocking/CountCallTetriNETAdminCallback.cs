@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 
@@ -9,8 +10,11 @@ namespace TetriNET2.Server.Tests.Mocking
     {
         private readonly Dictionary<string, int> _callCount = new Dictionary<string, int>();
 
-        private void UpdateCallCount(string callbackName)
+        private void UpdateCallCount([CallerMemberName]string callbackName = null)
         {
+            if (String.IsNullOrWhiteSpace(callbackName))
+                return;
+
             if (!_callCount.ContainsKey(callbackName))
                 _callCount.Add(callbackName, 1);
             else

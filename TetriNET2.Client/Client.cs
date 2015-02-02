@@ -42,6 +42,9 @@ namespace TetriNET2.Client
         private readonly List<ClientData> _gameClients;
         private readonly List<GameData> _games;
 
+        private DateTime _gameStartTime;
+        private DateTime _gamePausedTime;
+
         private IProxy _proxy;
 
         private readonly Task _timeoutTask;
@@ -93,6 +96,7 @@ namespace TetriNET2.Client
 
         public void OnConnected(ConnectResults result, Versioning serverVersion, Guid clientId, List<GameData> games)
         {
+            ClientData client = null;
             if (result == ConnectResults.Successfull)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Connected as player {0}", clientId);
@@ -105,11 +109,13 @@ namespace TetriNET2.Client
 
                 _clientId = clientId;
 
-                _clients.Add(new ClientData
+                client = new ClientData
                     {
                         Id = clientId,
                         Name = Name,
-                    });
+                        Team = Team,
+                    };
+                _clients.Add(client);
 
                 _state = States.Connected;
             }
@@ -120,7 +126,7 @@ namespace TetriNET2.Client
                 _state = States.Created;
             }
 
-            Connected.Do(x => x(result, serverVersion, clientId, games));
+            Connected.Do(x => x(result, serverVersion, client, games));
         }
 
         public void OnDisconnected()
@@ -185,23 +191,47 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Client connected {0} {1} {2}", clientId, name, team);
 
-            ClientConnected.Do(x => x(clientId, name, team));
+            
+
+            ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
+            if (client == null)
+               client = new ClientData
+                {
+                    Id = clientId,
+                    Name = name,
+                    Team = team
+                };
+            else
+            {
+                client.Id = clientId;
+                client.Name = name;
+                client.Team = team;
+            }
+
+            ClientConnected.Do(x => x(client, name, team));
         }
 
         public void OnClientDisconnected(Guid clientId, LeaveReasons reason)
         {
             Log.Default.WriteLine(LogLevels.Info, "Client disconnected {0} {1}", clientId, reason);
 
+            ClientData clientInGame = _gameClients.FirstOrDefault(x => x.Id == clientId);
+
             // If client was in game, remove it
-            if (_gameClients.Any(x => x.Id == clientId))
+            if (clientInGame != null)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Client disconnected {0} and removed from game", clientId);
 
                 _gameClients.RemoveAll(x => x.Id == clientId);
-                ClientGameLeft.Do(x => x(clientId));
+                ClientGameLeft.Do(x => x(clientInGame));
             }
 
-            ClientDisconnected.Do(x => x(clientId, reason));
+            // Remove client
+            ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
+            if (client != null)
+                _clients.RemoveAll(x => x.Id == clientId);
+
+            ClientDisconnected.Do(x => x(client, reason));
         }
 
         public void OnClientGameCreated(Guid clientId, GameData game)
@@ -209,8 +239,9 @@ namespace TetriNET2.Client
             Log.Default.WriteLine(LogLevels.Info, "Client {0} creates game {1}", clientId, game == null ? Guid.Empty : game.Id);
 
             _games.Add(game);
-
-            ClientGameCreated.Do(x => x(clientId, game));
+            
+            ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
+            ClientGameCreated.Do(x => x(client, game));
         }
 
         public void OnServerGameCreated(GameData game)
@@ -226,9 +257,11 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Server deletes game {0}", gameId);
 
-            _games.RemoveAll(x => x.Id == gameId);
+            GameData game = _games.FirstOrDefault(x => x.Id == gameId);
+            if (game != null)
+                _games.RemoveAll(x => x.Id == gameId);
 
-            ServerGameDeleted.Do(x => x(gameId));
+            ServerGameDeleted.Do(x => x(game));
         }
 
         public void OnServerMessageReceived(string message)
@@ -242,21 +275,27 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Client {0} broadcasts message {1}", clientId, message);
 
-            BroadcastMessageReceived.Do(x => x(clientId, message));
+            ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
+            BroadcastMessageReceived.Do(x => x(client, message));
         }
 
         public void OnPrivateMessageReceived(Guid clientId, string message)
         {
             Log.Default.WriteLine(LogLevels.Info, "Client {0} sends message {1}", clientId, message);
 
-            PrivateMessageReceived.Do(x => x(clientId, message));
+            ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
+            PrivateMessageReceived.Do(x => x(client, message));
         }
 
         public void OnTeamChanged(Guid clientId, string team)
         {
             Log.Default.WriteLine(LogLevels.Info, "Client {0} changes team {1}", clientId, team);
 
-            TeamChanged.Do(x => x(clientId, team));
+            ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
+            if (client != null)
+                client.Team = team;
+
+            TeamChanged.Do(x => x(client, team));
         }
 
         public void OnGameCreated(GameCreateResults result, GameData game)
@@ -277,6 +316,7 @@ namespace TetriNET2.Client
 
         public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster)
         {
+            GameData game = _games.FirstOrDefault(x => x.Id == gameId);
             if (result == GameJoinResults.Successfull)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Game {0} joined successfully. Master {1}", gameId, isGameMaster);
@@ -294,7 +334,7 @@ namespace TetriNET2.Client
                 Log.Default.WriteLine(LogLevels.Warning, "Failed to join game {0} {1}", gameId, result);
             }
 
-            GameJoined.Do(x => x(result, gameId, options, isGameMaster));
+            GameJoined.Do(x => x(result, game, isGameMaster));
         }
 
         public void OnGameLeft()
@@ -335,7 +375,8 @@ namespace TetriNET2.Client
                 _proxy.Do(x => x.ClientGetGameClientList());
             }
 
-            ClientGameJoined.Do(x => x(clientId, asSpectator));
+            ClientData player = _gameClients.FirstOrDefault(x => x.Id == clientId);
+            ClientGameJoined.Do(x => x(player, asSpectator));
         }
 
         public void OnClientGameLeft(Guid clientId)
@@ -354,7 +395,8 @@ namespace TetriNET2.Client
                 _proxy.Do(x => x.ClientGetGameClientList());
             }
 
-            ClientGameLeft.Do(x => x(clientId));
+            ClientData player = _gameClients.FirstOrDefault(x => x.Id == clientId);
+            ClientGameLeft.Do(x => x(player));
         }
 
         public void OnGameMasterModified(Guid playerId)
@@ -370,27 +412,62 @@ namespace TetriNET2.Client
                 _isGameMaster = true;
             }
 
-            GameMasterModified.Do(x => x(playerId));
+            ClientData newMaster = _gameClients.FirstOrDefault(x => x.Id == playerId);
+            GameMasterModified.Do(x => x(newMaster));
         }
 
         public void OnGameStarted(List<Pieces> pieces)
         {
-            throw new NotImplementedException();
+            if (_state == States.WaitInGame)
+            {
+                _gameStartTime = DateTime.Now;
+                _state = States.Playing;
+
+                // TODO: add piece to queue, start action queue, start various timer, initialize play variables
+                GameStarted.Do(x => x());
+            }
+            else
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot start game, wrong state {0}", _state);
         }
 
         public void OnGamePaused()
         {
-            throw new NotImplementedException();
+            if (_state == States.Playing)
+            {
+                _gamePausedTime = DateTime.Now;
+                _state = States.GamePaused;
+
+                // TODO
+                GamePaused.Do(x => x());
+            }
+            else
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot pause game, wrong state {0}", _state);
         }
 
         public void OnGameResumed()
         {
-            throw new NotImplementedException();
+            if (_state == States.GamePaused)
+            {
+                _state = States.Playing;
+
+                // TODO
+                GameResumed.Do(x => x());
+            }
+            else
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot resume game, wrong state {0}", _state);
         }
 
         public void OnGameFinished(GameFinishedReasons reason, GameStatistics statistics)
         {
-            throw new NotImplementedException();
+            if (_state == States.Playing || _state == States.GamePaused || _state == States.GameLost)
+            {
+                _state = States.WaitInGame;
+
+                // TODO: update statistics, reset play variables
+                GameFinished.Do(x => x(reason, statistics));
+            }
+            else
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot finish game, wrong state {0}", _state);
         }
 
         public void OnWinListModified(List<WinEntry> winEntries)
@@ -403,7 +480,7 @@ namespace TetriNET2.Client
             throw new NotImplementedException();
         }
 
-        public void OnVoteKickAsked(Guid sourceClient, Guid targetClient, string reason)
+        public void OnVoteKickAsked(Guid sourceId, Guid targetId, string reason)
         {
             throw new NotImplementedException();
         }
@@ -562,9 +639,12 @@ namespace TetriNET2.Client
             return true;
         }
 
-        public bool SendPrivateMessage(Guid targetId, string message)
+        public bool SendPrivateMessage(ClientData target, string message)
         {
-            _proxy.Do(x => x.ClientSendPrivateMessage(targetId, message));
+            if (target == null || _clients.All(x => x != target))
+                return false;
+
+            _proxy.Do(x => x.ClientSendPrivateMessage(target.Id, message));
             return true;
         }
 
@@ -580,9 +660,11 @@ namespace TetriNET2.Client
             return true;
         }
 
-        public bool JoinGame(Guid gameId, string password, bool asSpectator)
+        public bool JoinGame(GameData game, string password, bool asSpectator)
         {
-            _proxy.Do(x => x.ClientJoinGame(gameId, password, asSpectator));
+            if (game == null || _games.All(x => x != game))
+                return false;
+            _proxy.Do(x => x.ClientJoinGame(game.Id, password, asSpectator));
             return true;
         }
 
@@ -640,9 +722,12 @@ namespace TetriNET2.Client
             return true;
         }
 
-        public bool VoteKick(Guid targetId, string reason)
+        public bool VoteKick(ClientData target, string reason)
         {
-            _proxy.Do(x => x.ClientVoteKick(targetId, reason));
+            if (target == null || _clients.All(x => x != target))
+                return false;
+
+            _proxy.Do(x => x.ClientVoteKick(target.Id, reason));
             return true;
         }
 

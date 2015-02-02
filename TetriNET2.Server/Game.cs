@@ -722,9 +722,10 @@ namespace TetriNET2.Server
 
         public bool StopGame(IClient client)
         {
+            Log.Default.WriteLine(LogLevels.Info, "Stopping game");
             if (State != GameStates.GameStarted && State != GameStates.GamePaused)
             {
-                Log.Default.WriteLine(LogLevels.Info, "Cannot stop game");
+                Log.Default.WriteLine(LogLevels.Warning, "Game {0} not started", Name);
                 return false;
             }
             if (client != null)

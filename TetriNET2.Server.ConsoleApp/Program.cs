@@ -16,10 +16,10 @@ namespace TetriNET2.Server.ConsoleApp
         {
             Console.WriteLine("Commands:");
             Console.WriteLine("x: Stop server");
-            Console.WriteLine("d: Dump client list");
+            Console.WriteLine("d: Dump");
         }
 
-        private static void Main(string[] args)
+        private static void Main()
         {
             Log.Default.Logger = new NLogger();
             Log.Default.Initialize(@"D:\TEMP\LOG\", "TETRINET2_SERVER.LOG");
