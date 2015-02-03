@@ -314,27 +314,36 @@ namespace TetriNET2.Client
             GameCreated.Do(x => x(result, game));
         }
 
-        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster)
+        public void OnGameJoined(GameJoinResults result, GameData game, bool isGameMaster)
         {
-            GameData game = _games.FirstOrDefault(x => x.Id == gameId);
-            if (result == GameJoinResults.Successfull)
+            GameData innerGame = game == null ? null : _games.FirstOrDefault(x => x.Id == game.Id);
+            if (result == GameJoinResults.Successfull && game != null)
             {
-                Log.Default.WriteLine(LogLevels.Info, "Game {0} joined successfully. Master {1}", gameId, isGameMaster);
+                Log.Default.WriteLine(LogLevels.Info, "Game {0} joined successfully. Master {1}", game.Id, isGameMaster);
 
                 _state = States.WaitInGame;
                 _isGameMaster = isGameMaster;
 
                 _gameClients.Clear();
-
-                // Get clients in game  TODO: players in game as additional parameter ?
-                _proxy.Do(x => x.ClientGetGameClientList());
+                foreach(ClientData client in game.Clients)
+                {
+                    ClientData innerClient = _clients.FirstOrDefault(x => x.Id == client.Id);
+                    if (innerClient != null)
+                        _gameClients.Add(innerClient);
+                }
+                if (innerGame != null)
+                {
+                    innerGame.Name = game.Name;
+                    innerGame.Options = game.Options;
+                    innerGame.Rule = game.Rule;
+                }
             }
             else
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Failed to join game {0} {1}", gameId, result);
+                Log.Default.WriteLine(LogLevels.Warning, "Failed to join game {0} {1}", game == null ? Guid.Empty : game.Id, result);
             }
 
-            GameJoined.Do(x => x(result, game, isGameMaster));
+            GameJoined.Do(x => x(result, innerGame, isGameMaster));
         }
 
         public void OnGameLeft()

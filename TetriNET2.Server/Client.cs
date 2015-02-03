@@ -204,9 +204,9 @@ namespace TetriNET2.Server
             ExceptionFreeAction(() => Callback.OnGameCreated(result, game));
         }
 
-        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster)
+        public void OnGameJoined(GameJoinResults result, GameData game, bool isGameMaster)
         {
-            ExceptionFreeAction(() => Callback.OnGameJoined(result, gameId, options, isGameMaster));
+            ExceptionFreeAction(() => Callback.OnGameJoined(result, game, isGameMaster));
         }
 
         public void OnGameLeft()

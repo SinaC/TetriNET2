@@ -7,8 +7,10 @@ using TetriNET2.Common.DataContracts;
 
 namespace TetriNET2.Admin.Tests.Mocking
 {
-    public class ProxyMock : IProxy
+    public class ProxyMock : IProxy, ICallCount
     {
+        #region ICallCount
+
         private readonly Dictionary<string, int> _callCount = new Dictionary<string, int>();
 
         private void UpdateCallCount([CallerMemberName]string callbackName = null)
@@ -32,6 +34,8 @@ namespace TetriNET2.Admin.Tests.Mocking
         {
             _callCount.Clear();
         }
+
+        #endregion
 
         public ProxyMock(ITetriNETAdminCallback callback, string address, Versioning version)
         {

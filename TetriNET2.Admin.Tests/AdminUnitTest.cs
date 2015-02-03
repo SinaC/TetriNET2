@@ -12,14 +12,15 @@ namespace TetriNET2.Admin.Tests
     public abstract class AbstractAdminUnitTest
     {
         protected abstract IAdmin CreateAdmin();
-        protected abstract ProxyMock ProxyMock { get; }
-        protected LogMock LogMock { get; set; }
+        protected abstract ICallCount ProxyCallCount { get; }
+        protected ILogMock LogMock { get; set; }
 
         [TestInitialize]
         public void Initialize()
         {
-            LogMock = new LogMock();
-            Log.Default.Logger = LogMock;
+            LogMock log = new LogMock();
+            Log.Default.Logger = log;
+            LogMock = log;
         }
 
         [TestCategory("Admin")]
@@ -119,7 +120,7 @@ namespace TetriNET2.Admin.Tests
             bool connected = admin.Connect("127.0.0.1", "admin1", "password1");
 
             Assert.IsTrue(connected);
-            Assert.AreEqual(ProxyMock.GetCallCount("AdminConnect"), 1);
+            Assert.AreEqual(ProxyCallCount.GetCallCount("AdminConnect"), 1);
         }
 
         [TestCategory("Admin")]
@@ -148,7 +149,7 @@ namespace TetriNET2.Admin.Tests
             bool disconnected = admin.Disconnect();
 
             Assert.IsTrue(disconnected);
-            Assert.AreEqual(ProxyMock.GetCallCount("AdminDisconnect"), 1);
+            Assert.AreEqual(ProxyCallCount.GetCallCount("AdminDisconnect"), 1);
         }
 
         [TestCategory("Admin")]
@@ -213,7 +214,7 @@ namespace TetriNET2.Admin.Tests
             bool sent = admin.SendPrivateAdminMessage(Guid.NewGuid(), "msg");
 
             Assert.IsTrue(sent);
-            Assert.AreEqual(ProxyMock.GetCallCount("AdminSendPrivateAdminMessage"), 1);
+            Assert.AreEqual(ProxyCallCount.GetCallCount("AdminSendPrivateAdminMessage"), 1);
         }
 
         // TODO: remaining APIs
@@ -223,23 +224,25 @@ namespace TetriNET2.Admin.Tests
     public class AdminUnitTest : AbstractAdminUnitTest
     {
         private Factory _factory;
-        protected override ProxyMock ProxyMock
+
+        protected override ICallCount ProxyCallCount
         {
-            get { return _factory == null ? null : _factory.Proxy; }
+            get { return _factory == null ? null : _factory.ProxyCallCount; }
         }
 
         private class Factory : IFactory
         {
-            public ProxyMock Proxy { get; private set; }
+            public ICallCount ProxyCallCount { get; private set; }
 
             public IProxy CreateProxy(ITetriNETAdminCallback callback, string address)
             {
-                Proxy = new ProxyMock(callback, address, new Versioning
+                ProxyMock proxy = new ProxyMock(callback, address, new Versioning
                     {
                         Major = 1,
                         Minor = 0
                     });
-                return Proxy;
+                ProxyCallCount = proxy;
+                return proxy;
             }
         }
 

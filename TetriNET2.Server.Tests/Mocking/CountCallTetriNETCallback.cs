@@ -148,9 +148,9 @@ namespace TetriNET2.Server.Tests.Mocking
             UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, game);
         }
 
-        public void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster)
+        public void OnGameJoined(GameJoinResults result, GameData game, bool isGameMaster)
         {
-            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, gameId, options);
+            UpdateCallInfo(System.Reflection.MethodBase.GetCurrentMethod().Name, result, game, isGameMaster);
         }
 
         public void OnGameLeft()

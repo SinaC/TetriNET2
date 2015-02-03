@@ -47,7 +47,7 @@ namespace TetriNET2.Common.Contracts
         void OnGameCreated(GameCreateResults result, GameData game);
 
         [OperationContract(IsOneWay = true)]
-        void OnGameJoined(GameJoinResults result, Guid gameId, GameOptions options, bool isGameMaster);
+        void OnGameJoined(GameJoinResults result, GameData game, bool isGameMaster);
         [OperationContract(IsOneWay = true)]
         void OnGameLeft();
         [OperationContract(IsOneWay = true)]

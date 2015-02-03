@@ -3,10 +3,19 @@ using TetriNET2.Common.Logger;
 
 namespace TetriNET2.Admin.Tests.Mocking
 {
-    public class LogMock : ILog
+    public class LogMock : ILog, ILogMock
     {
+        #region ILogMock
+
         public LogLevels LastLogLevel { get; private set; }
         public string LastLogLine { get; private set; }
+        
+        public void Clear()
+        {
+            LastLogLevel = LogLevels.Debug;
+            LastLogLine = null;
+        }
+        #endregion
 
         #region ILog
 
@@ -22,11 +31,5 @@ namespace TetriNET2.Admin.Tests.Mocking
         }
 
         #endregion
-
-        public void Clear()
-        {
-            LastLogLevel = LogLevels.Debug;
-            LastLogLine = null;
-        }
     }
 }

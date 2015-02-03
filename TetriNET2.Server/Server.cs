@@ -465,7 +465,7 @@ namespace TetriNET2.Server
                 }
             }
             if (result != GameJoinResults.Successfull)
-                client.OnGameJoined(result, game.Id, null, false);
+                client.OnGameJoined(result, null, false);
         }
 
         private void OnClientJoinRandomGame(IClient client, bool asSpectator)
@@ -510,7 +510,7 @@ namespace TetriNET2.Server
                 }
             }
             if (result != GameJoinResults.Successfull)
-                client.OnGameJoined(result, Guid.Empty, null, false);
+                client.OnGameJoined(result, null, false);
         }
 
         private void OnClientCreateAndJoinGame(IClient client, string name, string password, GameRules rule, bool asSpectator)

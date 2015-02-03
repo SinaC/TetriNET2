@@ -51,6 +51,8 @@
   </Choose>
   <ItemGroup>
     <Compile Include="AdminUnitTest.cs" />
+    <Compile Include="Mocking\ICallCount.cs" />
+    <Compile Include="Mocking\ILogMock.cs" />
     <Compile Include="Mocking\LogMock.cs" />
     <Compile Include="Mocking\ProxyMock.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

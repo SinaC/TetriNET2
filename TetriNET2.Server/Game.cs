@@ -250,7 +250,24 @@ namespace TetriNET2.Server
             }
 
             // Inform client
-            client.OnGameJoined(GameJoinResults.Successfull, Id, Options, client.IsGameMaster);
+            GameData gameData = new GameData
+                {
+                    Id = Id,
+                    Name = Name,
+                    Rule = Rule,
+                    Options = Options,
+                    Clients = Clients.Select(x => new ClientData
+                        {
+                            Id = x.Id,
+                            Name = x.Name,
+                            GameId = Id,
+                            Team = x.Team,
+                            IsGameMaster = x.IsGameMaster,
+                            IsPlayer = x.IsPlayer,
+                            IsSpectator = x.IsSpectator
+                        }).ToList()
+                };
+            client.OnGameJoined(GameJoinResults.Successfull, gameData, client.IsGameMaster);
 
             // Inform other clients in game
             foreach (IClient target in Clients.Where(c => c != client))
