@@ -55,6 +55,9 @@ namespace TetriNET2.Client.Interfaces
         string Name { get; }
         string Team { get; }
         Versioning Version { get; }
+        int LinesCleared { get; }
+        int Score { get; }
+        int Level { get; }
 
         // Following list are updated internally with ITetriNETClientCallback notifications
         IEnumerable<ClientData> Clients { get; }

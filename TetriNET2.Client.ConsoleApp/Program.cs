@@ -28,9 +28,24 @@ namespace TetriNET2.Client.ConsoleApp
 
         public class Factory : IFactory
         {
+            public IActionQueue CreateActionQueue()
+            {
+                return new BlockingActionQueue();
+            }
+
             public IProxy CreateProxy(ITetriNETClientCallback callback, string address)
             {
                 return new WCFProxy(callback, address);
+            }
+
+            public IInventory CreateInventory(int size)
+            {
+                return new Inventory(size);
+            }
+
+            public IPieceBag CreatePieceBag(int size)
+            {
+                return new PieceArray(size);
             }
         }
 
@@ -43,9 +58,8 @@ namespace TetriNET2.Client.ConsoleApp
                                    String.Format("TETRINET2_CLIENT_{0}.LOG", clientName));
 
             IFactory factory = new Factory();
-            IActionQueue actionQueue = new BlockingActionQueue();
 
-            _client = new Client(factory, actionQueue);
+            _client = new Client(factory);
             _client.SetVersion(1, 0);
             _client.Connect("net.tcp://localhost:7788/TetriNET2Client", clientName, "team1");
 

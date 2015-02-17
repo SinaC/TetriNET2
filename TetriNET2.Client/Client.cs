@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Timers;
 using TetriNET2.Client.Interfaces;
 using TetriNET2.Common.ActionQueue;
 using TetriNET2.Common.DataContracts;
@@ -35,12 +36,16 @@ namespace TetriNET2.Client
         private const int TimeoutDelay = 500; // in ms
         private const int MaxTimeoutCountBeforeDisconnection = 3;
         private const bool IsTimeoutDetectionActive = false;
+        private const bool AutomaticallyMoveDown = false;
+        private const int GameTimerIntervalStartValue = 1050; // level 0: 1050, level 1: 1040, ..., level 100: 50
 
         private readonly IFactory _factory;
         private readonly IActionQueue _actionQueue;
         private readonly List<ClientData> _clients;
         private readonly List<ClientData> _gameClients;
         private readonly List<GameData> _games;
+        private readonly IInventory _inventory;
+        private readonly IPieceBag _pieceBag;
 
         private DateTime _gameStartTime;
         private DateTime _gamePausedTime;
@@ -49,25 +54,27 @@ namespace TetriNET2.Client
 
         private readonly Task _timeoutTask;
         private readonly CancellationTokenSource _cancellationTokenSource;
+        private readonly System.Timers.Timer _gameTimer;
 
         private States _state;
         private Guid _clientId;
         private bool _isGameMaster;
         private DateTime _lastActionFromServer;
         private int _timeoutCount;
+        private int _pieceIndex;
 
-        public Client(IFactory factory, IActionQueue actionQueue)
+        public Client(IFactory factory)
         {
             if (factory == null)
                 throw new ArgumentNullException("factory");
-            if (actionQueue == null)
-                throw new ArgumentNullException("actionQueue");
 
             _factory = factory;
-            _actionQueue = actionQueue;
+            _actionQueue = factory.CreateActionQueue();
             _clients = new List<ClientData>();
             _gameClients = new List<ClientData>();
             _games = new List<GameData>();
+            _pieceBag = factory.CreatePieceBag(32);
+            _inventory = factory.CreateInventory(10);
 
             Assembly entryAssembly = Assembly.GetEntryAssembly();
             if (entryAssembly != null)
@@ -84,6 +91,13 @@ namespace TetriNET2.Client
             _clientId = Guid.Empty;
             _lastActionFromServer = DateTime.Now;
             _timeoutCount = 0;
+            _pieceIndex = 0;
+
+            _gameTimer = new System.Timers.Timer
+            {
+                Interval = GameTimerIntervalStartValue
+            };
+            _gameTimer.Elapsed += GameTimerOnElapsed;
 
             _cancellationTokenSource = new CancellationTokenSource();
             _timeoutTask = Task.Factory.StartNew(TimeoutTask, _cancellationTokenSource.Token);
@@ -161,6 +175,8 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Game list received");
 
+            ResetTimeout();
+
             _games.Clear();
             _games.AddRange(games);
 
@@ -171,6 +187,8 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Client list received");
 
+            ResetTimeout();
+
             _clients.Clear();
             _clients.AddRange(clients);
 
@@ -180,6 +198,8 @@ namespace TetriNET2.Client
         public void OnGameClientListReceived(List<ClientData> clients)
         {
             Log.Default.WriteLine(LogLevels.Info, "Client in game received");
+            
+            ResetTimeout();
 
             _gameClients.Clear();
             _gameClients.AddRange(clients);
@@ -191,7 +211,7 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Client connected {0} {1} {2}", clientId, name, team);
 
-            
+            ResetTimeout();
 
             ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
             if (client == null)
@@ -214,6 +234,8 @@ namespace TetriNET2.Client
         public void OnClientDisconnected(Guid clientId, LeaveReasons reason)
         {
             Log.Default.WriteLine(LogLevels.Info, "Client disconnected {0} {1}", clientId, reason);
+
+            ResetTimeout();
 
             ClientData clientInGame = _gameClients.FirstOrDefault(x => x.Id == clientId);
 
@@ -238,6 +260,8 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Client {0} creates game {1}", clientId, game == null ? Guid.Empty : game.Id);
 
+            ResetTimeout();
+
             _games.Add(game);
             
             ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
@@ -248,6 +272,8 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Server creates game {0}", game == null ? Guid.Empty : game.Id);
 
+            ResetTimeout();
+
             _games.Add(game);
 
             ServerGameCreated.Do(x => x(game));
@@ -256,6 +282,8 @@ namespace TetriNET2.Client
         public void OnServerGameDeleted(Guid gameId)
         {
             Log.Default.WriteLine(LogLevels.Info, "Server deletes game {0}", gameId);
+
+            ResetTimeout();
 
             GameData game = _games.FirstOrDefault(x => x.Id == gameId);
             if (game != null)
@@ -268,12 +296,16 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Server message {0}", message);
 
+            ResetTimeout();
+
             ServerMessageReceived.Do(x => x(message));
         }
 
         public void OnBroadcastMessageReceived(Guid clientId, string message)
         {
             Log.Default.WriteLine(LogLevels.Info, "Client {0} broadcasts message {1}", clientId, message);
+
+            ResetTimeout();
 
             ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
             BroadcastMessageReceived.Do(x => x(client, message));
@@ -283,6 +315,8 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Client {0} sends message {1}", clientId, message);
 
+            ResetTimeout();
+
             ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
             PrivateMessageReceived.Do(x => x(client, message));
         }
@@ -290,6 +324,8 @@ namespace TetriNET2.Client
         public void OnTeamChanged(Guid clientId, string team)
         {
             Log.Default.WriteLine(LogLevels.Info, "Client {0} changes team {1}", clientId, team);
+
+            ResetTimeout();
 
             ClientData client = _clients.FirstOrDefault(x => x.Id == clientId);
             if (client != null)
@@ -300,6 +336,10 @@ namespace TetriNET2.Client
 
         public void OnGameCreated(GameCreateResults result, GameData game)
         {
+            Log.Default.WriteLine(LogLevels.Info, "Game created {0} {1}", result, game == null ? Guid.Empty : game.Id);
+
+            ResetTimeout();
+
             if (result == GameCreateResults.Successfull)
             {
                 Log.Default.WriteLine(LogLevels.Info, "Game {0} created successfully", game == null ? Guid.Empty : game.Id);
@@ -316,6 +356,10 @@ namespace TetriNET2.Client
 
         public void OnGameJoined(GameJoinResults result, GameData game, bool isGameMaster)
         {
+            Log.Default.WriteLine(LogLevels.Info, "Game jointed {0} {1} {2}", result, game == null ? Guid.Empty : game.Id, isGameMaster);
+
+            ResetTimeout();
+
             GameData innerGame = game == null ? null : _games.FirstOrDefault(x => x.Id == game.Id);
             if (result == GameJoinResults.Successfull && game != null)
             {
@@ -350,6 +394,8 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Game left");
 
+            ResetTimeout();
+
             _state = States.Connected;
 
             GameLeft.Do(x => x());
@@ -357,7 +403,11 @@ namespace TetriNET2.Client
 
         public void OnClientGameJoined(Guid clientId, bool asSpectator)
         {
-            if (_gameClients.Any(x => x.Id == clientId))
+            Log.Default.WriteLine(LogLevels.Info, "Client {0} join game spectator: {1}", clientId, asSpectator);
+
+            ResetTimeout();
+
+            if (_gameClients.All(x => x.Id != clientId))
             {
                 ClientData data = _clients.FirstOrDefault(x => x.Id == clientId);
                 if (data != null)
@@ -385,11 +435,20 @@ namespace TetriNET2.Client
             }
 
             ClientData player = _gameClients.FirstOrDefault(x => x.Id == clientId);
+            if (player != null)
+            {
+                player.IsPlayer = !asSpectator;
+                player.IsSpectator = asSpectator;
+            }
             ClientGameJoined.Do(x => x(player, asSpectator));
         }
 
         public void OnClientGameLeft(Guid clientId)
         {
+            Log.Default.WriteLine(LogLevels.Info, "Client {0} left", clientId);
+
+            ResetTimeout();
+
             if (_gameClients.Any(x => x.Id == clientId))
             {
                 Log.Default.WriteLine(LogLevels.Info, "Client {0} left game", clientId);
@@ -412,6 +471,8 @@ namespace TetriNET2.Client
         {
             Log.Default.WriteLine(LogLevels.Info, "Game master modified {1}", playerId);
 
+            ResetTimeout();
+
             foreach (ClientData client in _gameClients)
                 client.IsGameMaster = client.Id == playerId;
             
@@ -427,12 +488,30 @@ namespace TetriNET2.Client
 
         public void OnGameStarted(List<Pieces> pieces)
         {
+            ResetTimeout();
+
             if (_state == States.WaitInGame)
             {
                 _gameStartTime = DateTime.Now;
                 _state = States.Playing;
 
+                // TODO: handle spectator mode
+
                 // TODO: add piece to queue, start action queue, start various timer, initialize play variables
+                _actionQueue.Clear();
+                _pieceBag.Reset();
+                for (int i = 0; i < pieces.Count; i++)
+                    _pieceBag[i] = pieces[i];
+                _pieceIndex = 0;
+                _inventory.Reset(10); // TODO: get inventory size from options
+                LinesCleared = 0;
+                Level = 0; // TODO: get starting level from options
+                Score = 0;
+                //_gameTimer.Interval = TODO: compute interval from level
+                // TODO: reset player/opponents board/state
+
+                _gameTimer.Start();
+                
                 GameStarted.Do(x => x());
             }
             else
@@ -441,6 +520,8 @@ namespace TetriNET2.Client
 
         public void OnGamePaused()
         {
+            ResetTimeout();
+
             if (_state == States.Playing)
             {
                 _gamePausedTime = DateTime.Now;
@@ -455,6 +536,8 @@ namespace TetriNET2.Client
 
         public void OnGameResumed()
         {
+            ResetTimeout();
+
             if (_state == States.GamePaused)
             {
                 _state = States.Playing;
@@ -468,9 +551,14 @@ namespace TetriNET2.Client
 
         public void OnGameFinished(GameFinishedReasons reason, GameStatistics statistics)
         {
+            ResetTimeout();
+
             if (_state == States.Playing || _state == States.GamePaused || _state == States.GameLost)
             {
                 _state = States.WaitInGame;
+
+                _actionQueue.Clear();
+                _gameTimer.Stop();
 
                 // TODO: update statistics, reset play variables
                 GameFinished.Do(x => x(reason, statistics));
@@ -481,61 +569,85 @@ namespace TetriNET2.Client
 
         public void OnWinListModified(List<WinEntry> winEntries)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnGameOptionsChanged(GameOptions gameOptions)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnVoteKickAsked(Guid sourceId, Guid targetId, string reason)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnAchievementEarned(Guid playerId, int achievementId, string achievementTitle)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnPiecePlaced(int firstIndex, List<Pieces> nextPieces)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnPlayerWon(Guid playerId)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnPlayerLost(Guid playerId)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnServerLinesAdded(int count)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnPlayerLinesAdded(Guid playerId, int specialId, int count)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnSpecialUsed(Guid playerId, Guid targetId, int specialId, Specials special)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnGridModified(Guid playerId, byte[] grid)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
         public void OnContinuousSpecialFinished(Guid playerId, Specials special)
         {
+            ResetTimeout();
+
             throw new NotImplementedException();
         }
 
@@ -546,6 +658,12 @@ namespace TetriNET2.Client
         public string Team { get; private set; }
 
         public Versioning Version { get; private set; }
+
+        public int LinesCleared { get; private set; }
+
+        public int Score { get; private set; }
+
+        public int Level { get; private set; }
 
         public IEnumerable<ClientData> Clients { get { return _clients; } }
 
@@ -816,6 +934,14 @@ namespace TetriNET2.Client
 
         #endregion
 
+        private void GameTimerOnElapsed(object sender, ElapsedEventArgs elapsedEventArgs)
+        {
+            if (AutomaticallyMoveDown && _state == States.Playing)
+            {
+                MoveDown(true);
+            }
+        }
+
         private void InternalDisconnect()
         {
             if (_proxy != null)
@@ -859,7 +985,7 @@ namespace TetriNET2.Client
                 {
                     // Check server timeout
                     TimeSpan timespan = DateTime.Now - _lastActionFromServer;
-                    if (timespan.TotalMilliseconds > TimeoutDelay && IsTimeoutDetectionActive)
+                    if (IsTimeoutDetectionActive && timespan.TotalMilliseconds > TimeoutDelay)
                     {
                         Log.Default.WriteLine(LogLevels.Debug, "Timeout++");
                         // Update timeout count
