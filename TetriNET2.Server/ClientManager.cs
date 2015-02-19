@@ -34,9 +34,9 @@ namespace TetriNET2.Server
             get { return _lockObject; }
         }
 
-        public IEnumerable<IClient> Clients
+        public IReadOnlyCollection<IClient> Clients
         {
-            get { return _clients.Select(x => x.Value); }
+            get { return _clients.Values.ToList(); }
         }
 
         public IClient this[Guid guid]

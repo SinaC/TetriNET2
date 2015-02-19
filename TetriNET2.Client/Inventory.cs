@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using TetriNET2.Client.Interfaces;
 using TetriNET2.Common.DataContracts;
 
@@ -71,12 +72,13 @@ namespace TetriNET2.Client
             return result;
         }
 
-        public IEnumerable<Specials> Specials()
+        public IReadOnlyCollection<Specials> Specials()
         {
-            List<Specials> specials;
+            //http://stackoverflow.com/questions/491375/readonlycollection-or-ienumerable-for-exposing-member-collections
+            IReadOnlyCollection<Specials> specials;
             lock (_lock)
             {
-                specials = new List<Specials>(_queue);
+                specials = _queue.Skip(0).ToList();
             }
             return specials;
         }

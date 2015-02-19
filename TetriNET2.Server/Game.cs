@@ -106,19 +106,19 @@ namespace TetriNET2.Server
 
         public GameRules Rule { get; private set; }
 
-        public IEnumerable<IClient> Clients
+        public IReadOnlyCollection<IClient> Clients
         {
             get { return _clients; }
         }
 
-        public IEnumerable<IClient> Players
+        public IReadOnlyCollection<IClient> Players
         {
-            get { return _clients.Where(x => x.IsPlayer); }
+            get { return _clients.Where(x => x.IsPlayer).ToList(); }
         }
 
-        public IEnumerable<IClient> Spectators
+        public IReadOnlyCollection<IClient> Spectators
         {
-            get { return _clients.Where(x => x.IsSpectator); }
+            get { return _clients.Where(x => x.IsSpectator).ToList(); }
         }
 
         public bool Start(CancellationTokenSource cancellationTokenSource)

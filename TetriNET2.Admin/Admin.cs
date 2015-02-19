@@ -228,22 +228,22 @@ namespace TetriNET2.Admin
 
         public Versioning Version { get; private set; }
 
-        public IEnumerable<ClientAdminData> Clients
+        public IReadOnlyCollection<ClientAdminData> Clients
         {
             get { return _clients; }
         }
 
-        public IEnumerable<AdminData> Admins
+        public IReadOnlyCollection<AdminData> Admins
         {
             get { return _admins; }
         }
-        
-        public IEnumerable<GameAdminData> Games
+
+        public IReadOnlyCollection<GameAdminData> Games
         {
             get { return _games; }
         }
 
-        public IEnumerable<BanEntryData> Banned
+        public IReadOnlyCollection<BanEntryData> Banned
         {
             get { return _banned; }
         }

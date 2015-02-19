@@ -9,6 +9,6 @@ namespace TetriNET2.Client.Interfaces
         bool Enqueue(Specials special);
         void Enqueue(List<Specials> specials);
         bool Dequeue(out Specials special);
-        IEnumerable<Specials> Specials();
+        IReadOnlyCollection<Specials> Specials();
     }
 }

@@ -11,7 +11,7 @@ namespace TetriNET2.Server.Interfaces
         int ClientCount { get; }
         object LockObject { get; }
 
-        IEnumerable<IClient> Clients { get; }
+        IReadOnlyCollection<IClient> Clients { get; }
 
         IClient this[Guid guid] { get; }
         IClient this[string name] { get; }

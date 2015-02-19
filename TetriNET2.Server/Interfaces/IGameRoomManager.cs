@@ -9,7 +9,7 @@ namespace TetriNET2.Server.Interfaces
         int GameCount { get; }
         object LockObject { get; }
 
-        IEnumerable<IGame> Games { get; }
+        IReadOnlyCollection<IGame> Games { get; }
 
         IGame this[Guid guid] { get; }
         IGame this[string name] { get; }

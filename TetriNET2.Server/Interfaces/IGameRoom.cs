@@ -24,9 +24,9 @@ namespace TetriNET2.Server.Interfaces
         GameOptions Options { get; }
         GameRules Rule { get; }
 
-        IEnumerable<IClient> Clients { get; }
-        IEnumerable<IClient> Players { get; }
-        IEnumerable<IClient> Spectators { get; }
+        IReadOnlyCollection<IClient> Clients { get; }
+        IReadOnlyCollection<IClient> Players { get; }
+        IReadOnlyCollection<IClient> Spectators { get; }
 
         bool Start(CancellationTokenSource cancellationTokenSource);
         bool Stop();

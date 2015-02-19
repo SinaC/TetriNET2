@@ -37,10 +37,10 @@ namespace TetriNET2.Admin.Interfaces
         Versioning Version { get; }
 
         // Following list are updated internally with ITetriNETAdminCallback notifications
-        IEnumerable<ClientAdminData> Clients { get; }
-        IEnumerable<AdminData> Admins { get; }
-        IEnumerable<GameAdminData> Games { get; }
-        IEnumerable<BanEntryData> Banned { get; }
+        IReadOnlyCollection<ClientAdminData> Clients { get; }
+        IReadOnlyCollection<AdminData> Admins { get; }
+        IReadOnlyCollection<GameAdminData> Games { get; }
+        IReadOnlyCollection<BanEntryData> Banned { get; }
 
         //
         void SetVersion(int major, int minor);

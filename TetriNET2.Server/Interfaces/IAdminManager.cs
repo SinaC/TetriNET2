@@ -11,7 +11,7 @@ namespace TetriNET2.Server.Interfaces
         int AdminCount { get; }
         object LockObject { get; }
 
-        IEnumerable<IAdmin> Admins { get; }
+        IReadOnlyCollection<IAdmin> Admins { get; }
 
         IAdmin this[Guid guid] { get; }
         IAdmin this[string name] { get; }

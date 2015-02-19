@@ -34,9 +34,9 @@ namespace TetriNET2.Server
             get { return _lockObject; }
         }
 
-        public IEnumerable<IAdmin> Admins
+        public IReadOnlyCollection<IAdmin> Admins
         {
-            get { return _admins.Select(x => x.Value); }
+            get { return _admins.Values.ToList(); }
         }
 
         public IAdmin this[Guid guid]

@@ -33,9 +33,9 @@ namespace TetriNET2.Server
             get { return _lockObject; }
         }
 
-        public IEnumerable<IGame> Games
+        public IReadOnlyCollection<IGame> Games
         {
-            get { return _games.Select(x => x.Value); }
+            get { return _games.Values.ToList(); }
         }
 
         public IGame this[Guid guid]

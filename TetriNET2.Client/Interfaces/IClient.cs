@@ -60,9 +60,9 @@ namespace TetriNET2.Client.Interfaces
         int Level { get; }
 
         // Following list are updated internally with ITetriNETClientCallback notifications
-        IEnumerable<ClientData> Clients { get; }
-        IEnumerable<ClientData> GameClients { get; }
-        IEnumerable<GameData> Games { get; }
+        IReadOnlyCollection<ClientData> Clients { get; }
+        IReadOnlyCollection<ClientData> GameClients { get; }
+        IReadOnlyCollection<GameData> Games { get; }
 
         //
         void SetVersion(int major, int minor);

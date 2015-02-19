@@ -127,7 +127,7 @@ namespace TetriNET2.Server
             }
         }
 
-        public IEnumerable<Common.DataContracts.BanEntryData> Entries
+        public IReadOnlyCollection<Common.DataContracts.BanEntryData> Entries
         {
             get
             {
@@ -136,7 +136,7 @@ namespace TetriNET2.Server
                         Name = x.Name,
                         Address = x.Address.ToString(),
                         Reason = x.Reason
-                    });
+                    }).ToList();
             }
         }
 

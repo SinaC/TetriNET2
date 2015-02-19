@@ -665,11 +665,11 @@ namespace TetriNET2.Client
 
         public int Level { get; private set; }
 
-        public IEnumerable<ClientData> Clients { get { return _clients; } }
+        public IReadOnlyCollection<ClientData> Clients { get { return _clients; } }
 
-        public IEnumerable<ClientData> GameClients { get { return _gameClients; } }
+        public IReadOnlyCollection<ClientData> GameClients { get { return _gameClients; } }
 
-        public IEnumerable<GameData> Games { get { return _games; } }
+        public IReadOnlyCollection<GameData> Games { get { return _games; } }
 
         public void SetVersion(int major, int minor)
         {
