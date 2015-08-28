@@ -11,7 +11,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TetriNET2.Server.Tests", "T
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TetriNET2.Client.ConsoleApp", "TetriNET2.Client.ConsoleApp\TetriNET2.Client.ConsoleApp.csproj", "{1A420379-8B09-4DF8-9F37-A9E52574336E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TetriNET2.Admin.ConsoleApp", "TetriNET.Admin.ConsoleApp\TetriNET2.Admin.ConsoleApp.csproj", "{39921BE3-5A87-489F-999A-73F1FE20ADDC}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TetriNET2.Admin.ConsoleApp", "TetriNET2.Admin.ConsoleApp\TetriNET2.Admin.ConsoleApp.csproj", "{39921BE3-5A87-489F-999A-73F1FE20ADDC}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Admin", "Admin", "{88D76116-67B8-4462-9BE8-F5E307FD7EE1}"
 EndProject
