@@ -40,13 +40,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Board.cs" />
+    <Compile Include="BoardWithWallKick.cs" />
+    <Compile Include="CellHelper.cs" />
     <Compile Include="Client.cs" />
+    <Compile Include="Interfaces\IBoard.cs" />
     <Compile Include="Interfaces\IClient.cs" />
     <Compile Include="Interfaces\IFactory.cs" />
+    <Compile Include="Interfaces\IGameController.cs" />
     <Compile Include="Interfaces\IInventory.cs" />
+    <Compile Include="Interfaces\IPiece.cs" />
     <Compile Include="Interfaces\IPieceBag.cs" />
     <Compile Include="Interfaces\IProxy.cs" />
     <Compile Include="Inventory.cs" />
+    <Compile Include="Models\ClientInfo.cs" />
     <Compile Include="PieceArray.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="WCFProxy.cs" />

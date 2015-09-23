@@ -278,9 +278,12 @@ namespace TetriNET2.Server
                 host.Stop();
 
             // Clear clients, games, wait, admins
-            _clientManager.Clear();
-            _gameManager.Clear();
-            _adminManager.Clear();
+            lock (_clientManager.LockObject)
+                _clientManager.Clear();
+            lock (_gameManager.LockObject)
+                _gameManager.Clear();
+            lock (_adminManager.LockObject)
+                _adminManager.Clear();
 
             //
             State = ServerStates.Waiting;
@@ -1312,10 +1315,12 @@ namespace TetriNET2.Server
             //client.OnDisconnected();
 
             // Inform clients and admins
-            foreach (IClient target in _clientManager.Clients) // no need to check on client, already removed from collection
-                target.OnClientDisconnected(client.Id, reason);
-            foreach (IAdmin admin in _adminManager.Admins)
-                admin.OnClientDisconnected(client.Id, reason);
+            lock (_clientManager.LockObject)
+                foreach (IClient target in _clientManager.Clients) // no need to check on client, already removed from collection
+                    target.OnClientDisconnected(client.Id, reason);
+            lock (_adminManager.LockObject)
+                foreach (IAdmin admin in _adminManager.Admins)
+                    admin.OnClientDisconnected(client.Id, reason);
 
             // Hosts
             foreach (IHost host in _hosts)
@@ -1334,8 +1339,9 @@ namespace TetriNET2.Server
             admin.OnDisconnected();
 
             // Inform other admins
-            foreach (IAdmin other in _adminManager.Admins) // no need to check on admin, already removed from collection
-                other.OnAdminDisconnected(admin.Id, reason);
+            lock(_adminManager.LockObject)
+                foreach (IAdmin other in _adminManager.Admins) // no need to check on admin, already removed from collection
+                    other.OnAdminDisconnected(admin.Id, reason);
 
             // Hosts
             foreach (IHost host in _hosts)

@@ -2,6 +2,8 @@
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
 
+// TODO:
+//  use ClientInfo instead of ClientData
 namespace TetriNET2.Client.Interfaces
 {
     public delegate void ConnectionLostEventHandler();
@@ -58,6 +60,8 @@ namespace TetriNET2.Client.Interfaces
         int LinesCleared { get; }
         int Score { get; }
         int Level { get; }
+
+        bool IsPlaying { get; } // is client
 
         // Following list are updated internally with ITetriNETClientCallback notifications
         IReadOnlyCollection<ClientData> Clients { get; }
@@ -152,6 +156,8 @@ namespace TetriNET2.Client.Interfaces
         void RotateCounterClockwise();
         void DiscardFirstSpecial();
         bool UseFirstSpecial(int targetId);
+        bool UseFirstSpecialOnSelf();
+        bool UseFirstSpecialOnRandomOpponent();
 
         // Achievement
         void ResetAchievements();

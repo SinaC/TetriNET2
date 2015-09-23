@@ -12,6 +12,7 @@ using TetriNET2.Common.Helpers;
 using TetriNET2.Common.Logger;
 
 // TODO: 
+//  use ClientInfo instead of ClientData
 //  check state on every callback and call
 //  move
 //  board
@@ -665,6 +666,11 @@ namespace TetriNET2.Client
 
         public int Level { get; private set; }
 
+        public bool IsPlaying
+        {
+            get { return _state == States.Playing; }
+        }
+
         public IReadOnlyCollection<ClientData> Clients { get { return _clients; } }
 
         public IReadOnlyCollection<ClientData> GameClients { get { return _gameClients; } }
@@ -923,6 +929,16 @@ namespace TetriNET2.Client
         }
 
         public bool UseFirstSpecial(int targetId)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool UseFirstSpecialOnSelf()
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool UseFirstSpecialOnRandomOpponent()
         {
             throw new NotImplementedException();
         }
