@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TetriNET2.Common.DataContracts;
 using TetriNET2.Common.Logger;
@@ -13,7 +12,15 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public abstract class AbstractBanManagerUnitTest
     {
-        protected abstract IBanManager CreateBanManager(string filename = @"d:\temp\banmanagerunittest.lst");
+        public class Settings : ISettings
+        {
+            public int MaxAdmins { get; }
+            public int MaxClients { get; }
+            public int MaxGames { get; }
+            public string BanFilename => @"c:\temp\banmanagerunittest.lst";
+        }
+
+        protected abstract IBanManager CreateBanManager(ISettings settings);
 
         [TestInitialize]
         public void Initialize()
@@ -29,10 +36,10 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestIsBannedFalseWhenNoBannedPlayers()
         {
-            IBanManager banManager = CreateBanManager();
+            IBanManager banManager = CreateBanManager(new Settings());
             banManager.Clear();
 
-            bool isBanned = banManager.IsBanned(IPAddress.Parse("127.0.0.1"));
+            bool isBanned = banManager.IsBanned(new AddressMock("127.0.0.1"));
 
             Assert.IsFalse(isBanned);
         }
@@ -43,12 +50,12 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestIsBannedTrueWhenBannedPlayers()
         {
-            IBanManager banManager = CreateBanManager();
+            IBanManager banManager = CreateBanManager(new Settings());
             banManager.Clear();
-            banManager.Ban("player1", IPAddress.Parse("127.0.0.1"), "spam");
-            banManager.Ban("player2", IPAddress.Parse("127.0.0.2"), "spam");
+            banManager.Ban("player1", new AddressMock("127.0.0.1"), "spam");
+            banManager.Ban("player2", new AddressMock("127.0.0.2"), "spam");
 
-            bool isBanned = banManager.IsBanned(IPAddress.Parse("127.0.0.1"));
+            bool isBanned = banManager.IsBanned(new AddressMock("127.0.0.1"));
 
             Assert.IsTrue(isBanned);
         }
@@ -59,12 +66,12 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestIsBannedFalseOnUnknownAddress()
         {
-            IBanManager banManager = CreateBanManager();
+            IBanManager banManager = CreateBanManager(new Settings());
             banManager.Clear();
-            banManager.Ban("player1", IPAddress.Parse("127.0.0.1"), "spam");
-            banManager.Ban("player2", IPAddress.Parse("127.0.0.2"), "spam");
+            banManager.Ban("player1", new AddressMock("127.0.0.1"), "spam");
+            banManager.Ban("player2", new AddressMock("127.0.0.2"), "spam");
 
-            bool isBanned = banManager.IsBanned(IPAddress.Parse("127.1.1.1"));
+            bool isBanned = banManager.IsBanned(new AddressMock("127.1.1.1"));
 
             Assert.IsFalse(isBanned);
         }
@@ -80,11 +87,11 @@ namespace TetriNET2.Server.Tests
         public void TestBannedReasonOnBannedPlayers()
         {
             const string reason = "spam";
-            IBanManager banManager = CreateBanManager();
+            IBanManager banManager = CreateBanManager(new Settings());
             banManager.Clear();
-            banManager.Ban("player1", IPAddress.Parse("127.0.0.1"), reason);
+            banManager.Ban("player1", new AddressMock("127.0.0.1"), reason);
 
-            string bannedReason = banManager.BannedReason(IPAddress.Parse("127.0.0.1"));
+            string bannedReason = banManager.BannedReason(new AddressMock("127.0.0.1"));
 
             Assert.AreEqual(reason, bannedReason);
         }
@@ -95,11 +102,11 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestBannedReasonOnUnknownAddress()
         {
-            IBanManager banManager = CreateBanManager();
+            IBanManager banManager = CreateBanManager(new Settings());
             banManager.Clear();
-            banManager.Ban("player1", IPAddress.Parse("127.0.0.1"), "spam");
+            banManager.Ban("player1", new AddressMock("127.0.0.1"), "spam");
 
-            string bannedReason = banManager.BannedReason(IPAddress.Parse("127.1.1.1"));
+            string bannedReason = banManager.BannedReason(new AddressMock("127.1.1.1"));
 
             Assert.IsNull(bannedReason);
         }
@@ -112,10 +119,10 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestEntries()
         {
-            IBanManager banManager = CreateBanManager();
+            IBanManager banManager = CreateBanManager(new Settings());
             banManager.Clear();
-            banManager.Ban("player1", IPAddress.Parse("127.0.0.1"), "spam");
-            banManager.Ban("player2", IPAddress.Parse("127.0.0.2"), "spam");
+            banManager.Ban("player1", new AddressMock("127.0.0.1"), "spam");
+            banManager.Ban("player2", new AddressMock("127.0.0.2"), "spam");
 
             List<BanEntryData> entries = banManager.Entries.ToList();
 
@@ -129,10 +136,10 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestBan2IdenticalAddress()
         {
-            IBanManager banManager = CreateBanManager();
+            IBanManager banManager = CreateBanManager(new Settings());
             banManager.Clear();
-            banManager.Ban("player1", IPAddress.Parse("127.0.0.1"), "spam");
-            banManager.Ban("player2", IPAddress.Parse("127.0.0.1"), "spam");
+            banManager.Ban("player1", new AddressMock("127.0.0.1"), "spam");
+            banManager.Ban("player2", new AddressMock("127.0.0.1"), "spam");
 
             List<BanEntryData> entries = banManager.Entries.ToList();
 
@@ -145,9 +152,9 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestClear()
         {
-            IBanManager banManager = CreateBanManager();
-            banManager.Ban("player1", IPAddress.Parse("127.0.0.1"), "spam");
-            banManager.Ban("player2", IPAddress.Parse("127.0.0.2"), "spam");
+            IBanManager banManager = CreateBanManager(new Settings());
+            banManager.Ban("player1", new AddressMock("127.0.0.1"), "spam");
+            banManager.Ban("player2", new AddressMock("127.0.0.2"), "spam");
             banManager.Clear();
 
             List<BanEntryData> entries = banManager.Entries.ToList();
@@ -161,23 +168,23 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestInternalLoadSave()
         {
-            IBanManager banManager = CreateBanManager();
-            banManager.Ban("player1", IPAddress.Parse("127.0.0.1"), "spam");
-            banManager.Ban("player2", IPAddress.Parse("127.0.0.2"), "spam");
+            IBanManager banManager = CreateBanManager(new Settings());
+            banManager.Ban("player1", new AddressMock("127.0.0.1"), "spam");
+            banManager.Ban("player2", new AddressMock("127.0.0.2"), "spam");
 
-            IBanManager banManager2 = CreateBanManager();
+            IBanManager banManager2 = CreateBanManager(new Settings());
             List<BanEntryData> entries = banManager2.Entries.ToList();
 
-            Assert.AreEqual(banManager.Entries.Count(), entries.Count);
+            Assert.AreEqual(banManager.Entries.Count, entries.Count);
         }
     }
 
     [TestClass]
     public class BanManagerUnitTest : AbstractBanManagerUnitTest
     {
-        protected override IBanManager CreateBanManager(string filename = @"d:\temp\banmanagerunittest.lst")
+        protected override IBanManager CreateBanManager(ISettings settings)
         {
-            return new BanManager(filename);
+            return new BanManager(settings);
         }
 
         #region Constructor
@@ -196,7 +203,7 @@ namespace TetriNET2.Server.Tests
             }
             catch (ArgumentNullException ex)
             {
-                Assert.AreEqual("filename", ex.ParamName);
+                Assert.AreEqual("settings", ex.ParamName);
             }
         }
 

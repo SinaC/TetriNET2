@@ -26,8 +26,15 @@ namespace TetriNET2.Admin.Tests.Mocking
 
         public void WriteLine(LogLevels level, string format, params object[] args)
         {
-            LastLogLevel = level;
-            LastLogLine = String.Format(format, args);
+            try
+            {
+                LastLogLevel = level;
+                LastLogLine = string.Format(format, args);
+            }
+            catch
+            {
+                // ignored
+            }
         }
 
         #endregion

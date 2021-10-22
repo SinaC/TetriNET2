@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -39,25 +38,12 @@ namespace TetriNET2.Server
 
         public Server(IFactory factory, IPasswordManager passwordManager, IBanManager banManager, IClientManager clientManager, IAdminManager adminManager, IGameManager gameManager)
         {
-            if (factory == null)
-                throw new ArgumentNullException("factory");
-            if (passwordManager == null)
-                throw new ArgumentNullException("passwordManager");
-            if (banManager == null)
-                throw new ArgumentNullException("banManager");
-            if (clientManager == null)
-                throw new ArgumentNullException("clientManager");
-            if (adminManager == null)
-                throw new ArgumentNullException("adminManager");
-            if (gameManager == null)
-                throw new ArgumentNullException("gameManager");
-
-            _factory = factory;
-            _passwordManager = passwordManager;
-            _banManager = banManager;
-            _clientManager = clientManager;
-            _adminManager = adminManager;
-            _gameManager = gameManager;
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+            _passwordManager = passwordManager ?? throw new ArgumentNullException(nameof(passwordManager));
+            _banManager = banManager ?? throw new ArgumentNullException(nameof(banManager));
+            _clientManager = clientManager ?? throw new ArgumentNullException(nameof(clientManager));
+            _adminManager = adminManager ?? throw new ArgumentNullException(nameof(adminManager));
+            _gameManager = gameManager ?? throw new ArgumentNullException(nameof(gameManager));
 
             State = ServerStates.Waiting;
 
@@ -84,7 +70,7 @@ namespace TetriNET2.Server
         public bool AddHost(IHost host)
         {
             if (host == null)
-                throw new ArgumentNullException("host");
+                throw new ArgumentNullException(nameof(host));
 
             if (_hosts.Any(x => x == host))
             {
@@ -297,9 +283,9 @@ namespace TetriNET2.Server
         #region IHost events handler
 
         // Client
-        private void OnClientConnect(ITetriNETClientCallback callback, IPAddress address, Versioning version, string name, string team)
+        private void OnClientConnect(ITetriNETClientCallback callback, IAddress address, Versioning version, string name, string team)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Connect client {0}[{1}] {2}.{3}", name, address == null ? "???" : address.ToString(), version == null ? -1 : version.Major, version == null ? -1 : version.Minor);
+            Log.Default.WriteLine(LogLevels.Info, "Connect client {0}[{1}] {2}.{3}", name, address?.ToString() ?? "???", version?.Major ?? -1, version?.Minor ?? -1);
 
             if (callback == null)
             {
@@ -311,7 +297,7 @@ namespace TetriNET2.Server
             if (version == null || Version.Major != version.Major || Version.Minor != version.Minor)
             {
                 result = ConnectResults.FailedIncompatibleVersion;
-                Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] server version {2}.{3} is incompatible", name, address == null ? "???" : address.ToString(), Version.Major, Version.Minor);
+                Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] server version {2}.{3} is incompatible", name, address?.ToString() ?? "???", Version.Major, Version.Minor);
             }
             else
             {
@@ -320,22 +306,22 @@ namespace TetriNET2.Server
                     if (_clientManager.Contains(name, callback))
                     {
                         result = ConnectResults.FailedClientAlreadyExists;
-                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it already exists", name, address == null ? "???" : address.ToString());
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it already exists", name, address?.ToString() ?? "???");
                     }
                     else if (_clientManager.ClientCount >= _clientManager.MaxClients)
                     {
                         result = ConnectResults.FailedTooManyClients;
-                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because too many clients already connected", name, address == null ? "???" : address.ToString());
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because too many clients already connected", name, address?.ToString() ?? "???");
                     }
-                    else if (String.IsNullOrEmpty(name) || name.Length > 20 || name.Any(x => !Char.IsLetterOrDigit(x)))
+                    else if (string.IsNullOrEmpty(name) || name.Length > 20 || name.Any(x => !char.IsLetterOrDigit(x)))
                     {
                         result = ConnectResults.FailedInvalidName;
-                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because name is invalid", name, address == null ? "???" : address.ToString());
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because name is invalid", name, address?.ToString() ?? "???");
                     }
                     else if (_banManager.IsBanned(address))
                     {
                         result = ConnectResults.FailedBanned;
-                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because client is banned", name, address == null ? "???" : address.ToString());
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because client is banned", name, address?.ToString() ?? "???");
                     }
                     else
                     {
@@ -344,7 +330,7 @@ namespace TetriNET2.Server
                         if (!added)
                         {
                             result = ConnectResults.FailedInternalError;
-                            Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it cannot be added to client manager", name, address == null ? "???" : address.ToString());
+                            Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it cannot be added to client manager", name, address?.ToString() ?? "???");
                         }
                         else
                         {
@@ -375,7 +361,7 @@ namespace TetriNET2.Server
                             foreach (IHost host in _hosts)
                                 host.AddClient(client);
                             //
-                            Log.Default.WriteLine(LogLevels.Info, "Connect Client {0}[{1}] succeed", name, address == null ? "???" : address.ToString());
+                            Log.Default.WriteLine(LogLevels.Info, "Connect Client {0}[{1}] succeed", name, address?.ToString() ?? "???");
                         }
                     }
                 }
@@ -422,7 +408,7 @@ namespace TetriNET2.Server
         {
             Log.Default.WriteLine(LogLevels.Info, "Client change team:{0} {1}", client.Name, team);
 
-            client.Team = String.IsNullOrWhiteSpace(team) ? null : team;
+            client.Team = string.IsNullOrWhiteSpace(team) ? null : team;
             // Send message to clients
             lock (_clientManager.LockObject)
                 foreach (IClient target in _clientManager.Clients)
@@ -926,9 +912,9 @@ namespace TetriNET2.Server
         }
 
         // Admin
-        private void OnAdminConnect(ITetriNETAdminCallback callback, IPAddress address, Versioning version, string name, string password)
+        private void OnAdminConnect(ITetriNETAdminCallback callback, IAddress address, Versioning version, string name, string password)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Connect admin {0}[1] {2}.{3}", name, address == null ? "???" : address.ToString(), version == null ? -1 : version.Major, version == null ? -1 : version.Minor);
+            Log.Default.WriteLine(LogLevels.Info, "Connect admin {0}[1] {2}.{3}", name, address?.ToString() ?? "???", version?.Major ?? -1, version?.Minor ?? -1);
 
             ConnectResults result = ConnectResults.Successfull;
 
@@ -941,27 +927,27 @@ namespace TetriNET2.Server
                     if (_adminManager.Contains(name, callback))
                     {
                         result = ConnectResults.FailedAdminAlreadyExists;
-                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it already exists", name, address == null ? "???" : address.ToString());
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it already exists", name, address?.ToString() ?? "???");
                     }
                     else if (_adminManager.AdminCount >= _adminManager.MaxAdmins)
                     {
                         result = ConnectResults.FailedTooManyAdmins;
-                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because too many admins already connected", name, address == null ? "???" : address.ToString());
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because too many admins already connected", name, address?.ToString() ?? "???");
                     }
-                    else if (String.IsNullOrEmpty(name) || name.Length > 20 || name.Any(x => !Char.IsLetterOrDigit(x)))
+                    else if (string.IsNullOrEmpty(name) || name.Length > 20 || name.Any(x => !char.IsLetterOrDigit(x)))
                     {
                         result = ConnectResults.FailedInvalidName;
-                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because name is invalid", name, address == null ? "???" : address.ToString());
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because name is invalid", name, address?.ToString() ?? "???");
                     }
                     else if (_banManager.IsBanned(address))
                     {
                         result = ConnectResults.FailedBanned;
-                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because admin is banned", name, address == null ? "???" : address.ToString());
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because admin is banned", name, address?.ToString() ?? "???");
                     }
                     else if (!_passwordManager.Check(DomainTypes.Admin, name, password))
                     {
                         result = ConnectResults.FailedWrongAdminPassword;
-                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because wrong password", name, address == null ? "???" : address.ToString());
+                        Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because wrong password", name, address?.ToString() ?? "???");
                     }
                     else
                     {
@@ -970,7 +956,7 @@ namespace TetriNET2.Server
                         if (!added)
                         {
                             result = ConnectResults.FailedInternalError;
-                            Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it cannot be added to admin manager", name, address == null ? "???" : address.ToString());
+                            Log.Default.WriteLine(LogLevels.Warning, "Cannot connect {0}[{1}] because it cannot be added to admin manager", name, address?.ToString() ?? "???");
                         }
                         else
                         {
@@ -986,7 +972,7 @@ namespace TetriNET2.Server
                             foreach (IHost host in _hosts)
                                 host.AddAdmin(admin);
                             //
-                            Log.Default.WriteLine(LogLevels.Info, "Connect Admin {0}[{1}] succeed", name, address == null ? "???" : address.ToString());
+                            Log.Default.WriteLine(LogLevels.Info, "Connect Admin {0}[{1}] succeed", name, address?.ToString() ?? "???");
                         }
                     }
                 }
@@ -1188,19 +1174,19 @@ namespace TetriNET2.Server
             // Inform target and other clients
             lock (_clientManager.LockObject)
             {
-                string message = String.Format("{0} has been kicked (reason: {1})", client.Name, reason);
+                string message = $"{client.Name} has been kicked (reason: {reason})";
                 foreach (IClient other in _clientManager.Clients.Where(c => c != client))
                     other.OnServerMessageReceived(message);
-                client.OnServerMessageReceived(String.Format("You have been kicked (reason: {0}", reason));
+                client.OnServerMessageReceived($"You have been kicked (reason: {reason}");
             }
 
             // Inform admin and other admins
             lock (_adminManager.LockObject)
             {
-                string message = String.Format("{0} has been kicked by {1} (reason: {2})", client.Name, admin.Name, reason);
+                string message = $"{client.Name} has been kicked by {admin.Name} (reason: {reason})";
                 foreach(IAdmin other in _adminManager.Admins.Where(a => a != admin))
                     other.OnServerMessageReceived(message);
-                admin.OnServerMessageReceived(String.Format("You have kicked {0} (reason: {1})", client.Name, reason));
+                admin.OnServerMessageReceived($"You have kicked {client.Name} (reason: {reason})");
             }
 
             // Kick
@@ -1214,19 +1200,19 @@ namespace TetriNET2.Server
             // Inform target and other clients
             lock (_clientManager.LockObject)
             {
-                string message = String.Format("{0} has been banned (reason: {1})", client.Name, reason);
+                string message = $"{client.Name} has been banned (reason: {reason})";
                 foreach (IClient other in _clientManager.Clients.Where(c => c != client))
                     other.OnServerMessageReceived(message);
-                client.OnServerMessageReceived(String.Format("You have been banned (reason: {0}", reason));
+                client.OnServerMessageReceived($"You have been banned (reason: {reason}");
             }
 
             // Inform admin and other admins
             lock (_adminManager.LockObject)
             {
-                string message = String.Format("{0} has been banned by {1} (reason: {2})", client.Name, admin.Name, reason);
+                string message = $"{client.Name} has been banned by {admin.Name} (reason: {reason})";
                 foreach (IAdmin other in _adminManager.Admins.Where(a => a != admin))
                     other.OnServerMessageReceived(message);
-                admin.OnServerMessageReceived(String.Format("You have banned {0} (reason: {1})", client.Name, reason));
+                admin.OnServerMessageReceived($"You have banned {client.Name} (reason: {reason})");
             }
 
             // Ban
@@ -1271,10 +1257,8 @@ namespace TetriNET2.Server
         {
             if (disposing)
             {
-                if (_cancellationTokenSource != null)
-                    _cancellationTokenSource.Dispose();
-                if (_restartTimer != null)
-                    _restartTimer.Dispose();
+                _cancellationTokenSource?.Dispose();
+                _restartTimer?.Dispose();
             }
         }
 
@@ -1456,7 +1440,7 @@ namespace TetriNET2.Server
         {
             return seconds <= 0
                 ? "***Server will restart NOW***"
-                : String.Format("***Server will restart in {0} seconds***", seconds);
+                : $"***Server will restart in {seconds} seconds***";
         }
 
         private static List<ClientAdminData> BuildClientAdminDatas(IGame game)
@@ -1495,7 +1479,7 @@ namespace TetriNET2.Server
                 Id = client.Id,
                 Name = client.Name,
                 Team = client.Team,
-                GameId = client.Game == null ? Guid.Empty : client.Game.Id,
+                GameId = client.Game?.Id ?? Guid.Empty,
                 IsPlayer = client.IsPlayer,
                 IsSpectator = client.IsSpectator,
                 IsGameMaster = client.IsGameMaster

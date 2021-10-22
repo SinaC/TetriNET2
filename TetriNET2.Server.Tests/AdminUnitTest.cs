@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.Logger;
@@ -11,7 +10,7 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public abstract class AbstractAdminUnitTest
     {
-        protected abstract IAdmin CreateAdmin(string name, IPAddress address, ITetriNETAdminCallback callback);
+        protected abstract IAdmin CreateAdmin(string name, IAddress address, ITetriNETAdminCallback callback);
 
         [TestInitialize]
         public void Initialize()
@@ -27,7 +26,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestExceptionFreeAction()
         {
-            IAdmin admin = CreateAdmin("admin1", IPAddress.Any, new RaiseExceptionTetriNETAdminCallback());
+            IAdmin admin = CreateAdmin("admin1", AddressMock.Any, new RaiseExceptionTetriNETAdminCallback());
 
             admin.OnDisconnected();
 
@@ -41,7 +40,7 @@ namespace TetriNET2.Server.Tests
         public void TestConnectionLostCalledOnException()
         {
             bool called = false;
-            IAdmin admin = CreateAdmin("admin1", IPAddress.Any, new RaiseExceptionTetriNETAdminCallback());
+            IAdmin admin = CreateAdmin("admin1", AddressMock.Any, new RaiseExceptionTetriNETAdminCallback());
             admin.ConnectionLost += entity => called = true;
 
             admin.OnDisconnected();
@@ -55,7 +54,7 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public class AdminUnitTest : AbstractAdminUnitTest
     {
-        protected override IAdmin CreateAdmin(string name, IPAddress address, ITetriNETAdminCallback callback)
+        protected override IAdmin CreateAdmin(string name, IAddress address, ITetriNETAdminCallback callback)
         {
             return new Admin(name, address, callback);
         }
@@ -70,7 +69,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IAdmin admin = CreateAdmin(null, IPAddress.Any, new CountCallTetriNETAdminCallback());
+                IAdmin admin = CreateAdmin(null, AddressMock.Any, new CountCallTetriNETAdminCallback());
 
                 Assert.Fail("ArgumentNullException on name not raised");
             }
@@ -106,7 +105,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IAdmin admin = CreateAdmin("admin1", IPAddress.Any, null);
+                IAdmin admin = CreateAdmin("admin1", AddressMock.Any, null);
 
                 Assert.Fail("ArgumentNullException on callback not raised");
             }
@@ -123,7 +122,7 @@ namespace TetriNET2.Server.Tests
         public void TestConstructorSetProperties()
         {
             const string name = "admin1";
-            IPAddress address = IPAddress.Any;
+            IAddress address = AddressMock.Any;
             ITetriNETAdminCallback callback = new CountCallTetriNETAdminCallback();
 
             IAdmin admin = CreateAdmin(name, address, callback);

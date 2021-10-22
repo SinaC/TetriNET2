@@ -23,10 +23,7 @@ namespace TetriNET2.Common.Logger
 
         private static readonly Lazy<Log> Lazy = new Lazy<Log>(() => new Log());
 
-        public static Log Default
-        {
-            get { return Lazy.Value; }
-        }
+        public static Log Default => Lazy.Value;
 
         private Log()
         {
@@ -47,7 +44,14 @@ namespace TetriNET2.Common.Logger
         {
             if (Logger == null)
                 throw new InvalidOperationException("Logger has not been initialized");
-            Logger.WriteLine(level, format, args);
+            try
+            {
+                Logger.WriteLine(level, format, args);
+            }
+            catch
+            {
+                // ignored
+            }
         }
     }
 }

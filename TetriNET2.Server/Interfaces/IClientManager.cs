@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using TetriNET2.Common.Contracts;
 
 namespace TetriNET2.Server.Interfaces
@@ -16,7 +15,7 @@ namespace TetriNET2.Server.Interfaces
         IClient this[Guid guid] { get; }
         IClient this[string name] { get; }
         IClient this[ITetriNETClientCallback callback] { get; }
-        IClient this[IPAddress address] { get; }
+        IClient this[IAddress address] { get; }
 
         bool Add(IClient client);
         bool Remove(IClient client);

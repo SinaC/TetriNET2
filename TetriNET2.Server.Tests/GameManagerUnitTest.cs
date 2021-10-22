@@ -11,7 +11,20 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public abstract class AbstractGameManagerUnitTest
     {
-        protected abstract IGameManager CreateGameManager(int maxGames);
+        public class Settings : ISettings
+        {
+            public int MaxAdmins { get; }
+            public int MaxClients { get; }
+            public int MaxGames { get; }
+            public string BanFilename { get; }
+
+            public Settings(int maxGames)
+            {
+                MaxGames = maxGames;
+            }
+        }
+
+        protected abstract IGameManager CreateGameManager(ISettings settings);
         protected abstract IGame CreateGame(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password);
 
         [TestInitialize]
@@ -28,7 +41,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestAddNullAdmin()
         {
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
 
             try
             {
@@ -42,7 +55,7 @@ namespace TetriNET2.Server.Tests
             }
 
             Assert.AreEqual(0, gameManager.GameCount);
-            Assert.AreEqual(0, gameManager.Games.Count());
+            Assert.AreEqual(0, gameManager.Games.Count);
         }
 
         [TestCategory("Server")]
@@ -51,7 +64,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestAddNoMaxGames()
         {
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
 
             bool inserted1 = gameManager.Add(CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null));
             bool inserted2 = gameManager.Add(CreateGame("game2", 5, 5, GameRules.Custom, new GameOptions(), null));
@@ -59,7 +72,7 @@ namespace TetriNET2.Server.Tests
             Assert.IsTrue(inserted1);
             Assert.IsTrue(inserted2);
             Assert.AreEqual(2, gameManager.GameCount);
-            Assert.AreEqual(2, gameManager.Games.Count());
+            Assert.AreEqual(2, gameManager.Games.Count);
             Assert.IsTrue(gameManager.Games.Any(x => x.Name == "game1") && gameManager.Games.Any(x => x.Name == "game2"));
         }
 
@@ -69,7 +82,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestAddWithMaxGames()
         {
-            IGameManager gameManager = CreateGameManager(1);
+            IGameManager gameManager = CreateGameManager(new Settings(1));
             gameManager.Add(CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null));
 
             bool inserted = gameManager.Add(CreateGame("game2", 5, 5, GameRules.Custom, new GameOptions(), null));
@@ -86,14 +99,14 @@ namespace TetriNET2.Server.Tests
         public void TestAddSameGame()
         {
             IGame game1 = CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null);
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
             gameManager.Add(game1);
 
             bool inserted = gameManager.Add(game1);
 
             Assert.IsFalse(inserted);
             Assert.AreEqual(1, gameManager.GameCount);
-            Assert.AreEqual(1, gameManager.Games.Count());
+            Assert.AreEqual(1, gameManager.Games.Count);
         }
 
         #endregion
@@ -106,7 +119,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestRemoveExistingGame()
         {
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
             IGame game = CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null);
             gameManager.Add(game);
 
@@ -114,7 +127,7 @@ namespace TetriNET2.Server.Tests
 
             Assert.IsTrue(removed);
             Assert.AreEqual(0, gameManager.GameCount);
-            Assert.AreEqual(0, gameManager.Games.Count());
+            Assert.AreEqual(0, gameManager.Games.Count);
         }
 
         [TestCategory("Server")]
@@ -123,7 +136,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestRemoveNonExistingGame()
         {
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
             IGame game1 = CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGame game2 = CreateGame("game2", 5, 5, GameRules.Custom, new GameOptions(), null);
             gameManager.Add(game1);
@@ -132,7 +145,7 @@ namespace TetriNET2.Server.Tests
 
             Assert.IsFalse(removed);
             Assert.AreEqual(1, gameManager.GameCount);
-            Assert.AreEqual(1, gameManager.Games.Count());
+            Assert.AreEqual(1, gameManager.Games.Count);
         }
 
         [TestCategory("Server")]
@@ -141,7 +154,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestRemoveNullGame()
         {
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
             gameManager.Add(CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null));
 
             try
@@ -155,7 +168,7 @@ namespace TetriNET2.Server.Tests
             }
 
             Assert.AreEqual(1, gameManager.GameCount);
-            Assert.AreEqual(1, gameManager.Games.Count());
+            Assert.AreEqual(1, gameManager.Games.Count);
         }
 
         #endregion
@@ -168,7 +181,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestClearNoGames()
         {
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
 
             gameManager.Clear();
 
@@ -181,7 +194,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestClearSomeGames()
         {
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
             gameManager.Add(CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null));
             gameManager.Add(CreateGame("game2", 5, 5, GameRules.Custom, new GameOptions(), null));
             gameManager.Add(CreateGame("game3", 5, 5, GameRules.Custom, new GameOptions(), null));
@@ -204,7 +217,7 @@ namespace TetriNET2.Server.Tests
             IGame game1 = CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGame game2 = CreateGame("game2", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGame game3 = CreateGame("game3", 5, 5, GameRules.Custom, new GameOptions(), null);
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
             gameManager.Add(game1);
             gameManager.Add(game2);
             gameManager.Add(game3);
@@ -224,7 +237,7 @@ namespace TetriNET2.Server.Tests
             IGame game1 = CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGame game2 = CreateGame("game2", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGame game3 = CreateGame("game3", 5, 5, GameRules.Custom, new GameOptions(), null);
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
             gameManager.Add(game1);
             gameManager.Add(game2);
             gameManager.Add(game3);
@@ -243,7 +256,7 @@ namespace TetriNET2.Server.Tests
             IGame game1 = CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGame game2 = CreateGame("game2", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGame game3 = CreateGame("game3", 5, 5, GameRules.Custom, new GameOptions(), null);
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
             gameManager.Add(game1);
             gameManager.Add(game2);
             gameManager.Add(game3);
@@ -263,7 +276,7 @@ namespace TetriNET2.Server.Tests
             IGame game1 = CreateGame("game1", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGame game2 = CreateGame("game2", 5, 5, GameRules.Custom, new GameOptions(), null);
             IGame game3 = CreateGame("game3", 5, 5, GameRules.Custom, new GameOptions(), null);
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
             gameManager.Add(game1);
             gameManager.Add(game2);
             gameManager.Add(game3);
@@ -279,9 +292,9 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public class GameManagerUnitTest : AbstractGameManagerUnitTest
     {
-        protected override IGameManager CreateGameManager(int maxGames)
+        protected override IGameManager CreateGameManager(ISettings settings)
         {
-            return new GameManager(maxGames);
+            return new GameManager(settings);
         }
 
         protected override IGame CreateGame(string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password)
@@ -299,7 +312,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IGameManager gameManager = CreateGameManager(0);
+                IGameManager gameManager = CreateGameManager(new Settings(0));
                 Assert.Fail("ArgumentOutOfRange exception not raised");
             }
             catch (ArgumentOutOfRangeException ex)
@@ -316,7 +329,7 @@ namespace TetriNET2.Server.Tests
         {
             const int maxGames = 10;
 
-            IGameManager gameManager = CreateGameManager(maxGames);
+            IGameManager gameManager = CreateGameManager(new Settings(maxGames));
 
             Assert.AreEqual(maxGames, gameManager.MaxGames);
         }
@@ -327,7 +340,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestConstructorLockObjectNotNull()
         {
-            IGameManager gameManager = CreateGameManager(10);
+            IGameManager gameManager = CreateGameManager(new Settings(10));
 
             Assert.IsNotNull(gameManager.LockObject);
         }

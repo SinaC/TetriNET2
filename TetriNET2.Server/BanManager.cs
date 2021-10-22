@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Net;
 using System.Xml;
 using System.Xml.Schema;
 using System.Xml.Serialization;
@@ -17,15 +16,15 @@ namespace TetriNET2.Server
     {
         public sealed class BanEntry: IXmlSerializable
         {
-            public string Name { get; private set; }
-            public IPAddress Address { get; private set; }
-            public string Reason { get; private set; }
+            public string Name { get; set; }
+            public string Address { get; set; }
+            public string Reason { get; set; }
 
-            public BanEntry()
+            public BanEntry() // needed for serialization
             {
             }
 
-            public BanEntry(string name, IPAddress address, string reason)
+            public BanEntry(string name, string address, string reason)
             {
                 Name = name;
                 Address = address;
@@ -41,8 +40,7 @@ namespace TetriNET2.Server
             {
                 Name = reader.GetAttribute("Name");
                 Reason = reader.GetAttribute("Reason");
-                string address = reader.GetAttribute("Address");
-                Address = address == null ? IPAddress.None : IPAddress.Parse(address);
+                Address = reader.GetAttribute("Address");
                 reader.Read();
             }
 
@@ -50,18 +48,21 @@ namespace TetriNET2.Server
             {
                 writer.WriteAttributeString("Name", Name);
                 writer.WriteAttributeString("Reason", Reason);
-                writer.WriteAttributeString("Address", Address.ToString());
+                writer.WriteAttributeString("Address", Address);
             }
         }
 
         private readonly string _banFilename;
-        private Dictionary<IPAddress, BanEntry> _banList;
+        private Dictionary<string, BanEntry> _banList;
 
-        public BanManager(string filename)
+        public BanManager(ISettings settings)
         {
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+            string filename = settings.BanFilename;
             if (filename == null)
-                throw new ArgumentNullException("filename");
-            _banList = new Dictionary<IPAddress, BanEntry>();
+                throw new ArgumentNullException(nameof(filename));
+            _banList = new Dictionary<string, BanEntry>();
             lock (_banList)
             {
                 _banFilename = filename;
@@ -71,47 +72,44 @@ namespace TetriNET2.Server
 
         #region IBanManager
 
-        public bool IsBanned(IPAddress address)
+        public bool IsBanned(IAddress address)
         {
-            address = FixAddress(address);
-
-            return _banList.ContainsKey(address);
+            lock (_banList)
+                return _banList.ContainsKey(address.Serialize());
         }
 
-        public string BannedReason(IPAddress address)
+        public string BannedReason(IAddress address)
         {
-            address = FixAddress(address);
-
-            BanEntry entry;
-            if (_banList.TryGetValue(address, out entry))
-                return entry.Reason;
+            lock (_banList)
+            {
+                if (_banList.TryGetValue(address.Serialize(), out var entry))
+                    return entry.Reason;
+            }
             return null;
         }
 
-        public void Ban(string name, IPAddress address, string reason)
+        public void Ban(string name, IAddress address, string reason)
         {
-            address = FixAddress(address);
-
             lock (_banList)
             {
-                if (_banList.ContainsKey(address))
+                var serialized = address.Serialize();
+                if (_banList.ContainsKey(serialized))
                     return;
-                BanEntry banEntry = new BanEntry(name, address, reason);
-                _banList.Add(address, banEntry);
+                BanEntry banEntry = new BanEntry(name, serialized, reason);
+                _banList.Add(serialized, banEntry);
 
                 Save();
             }
         }
 
-        public void Unban(IPAddress address)
+        public void Unban(IAddress address)
         {
-            address = FixAddress(address);
-
             lock (_banList)
             {
-                if (!_banList.ContainsKey(address))
+                var serialized = address.Serialize();
+                if (!_banList.ContainsKey(serialized))
                     return;
-                _banList.Remove(address);
+                _banList.Remove(serialized);
 
                 Save();
             }
@@ -131,7 +129,8 @@ namespace TetriNET2.Server
         {
             get
             {
-                return _banList.Values.Select(x => new Common.DataContracts.BanEntryData
+                lock (_banList)
+                    return _banList.Values.Select(x => new Common.DataContracts.BanEntryData
                     {
                         Name = x.Name,
                         Address = x.Address.ToString(),
@@ -184,29 +183,6 @@ namespace TetriNET2.Server
             {
                 Log.Default.WriteLine(LogLevels.Error, "Error while writing banned file {0}. Exception: {1}", _banFilename, ex);
             }
-        }
-
-        private static IPAddress FixAddress(IPAddress address)
-        {
-            if (address.AddressFamily != System.Net.Sockets.AddressFamily.InterNetwork)
-            {
-                IPAddress addressIPV4 = GetIPv4Address(address);
-                if (addressIPV4 != null)
-                    address = addressIPV4;
-                else
-                    Log.Default.WriteLine(LogLevels.Error, "IPv4 supported only. {0} Address family: {1}", address, address.AddressFamily);
-            }
-            return address;
-        }
-
-        private static IPAddress GetIPv4Address(IPAddress address)
-        {
-            if (IPAddress.IPv6Loopback.Equals(address))
-            {
-                return new IPAddress(0x0100007F);
-            }
-            IPAddress[] addresses = Dns.GetHostAddresses(address.ToString());
-            return addresses.FirstOrDefault(i => i.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork);
         }
     }
 }

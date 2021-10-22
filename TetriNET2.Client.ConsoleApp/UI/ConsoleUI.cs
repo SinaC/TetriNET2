@@ -11,10 +11,7 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         public ConsoleUI(IClient client)
         {
-            if (client == null)
-                throw new ArgumentNullException("client");
-
-            _client = client;
+            _client = client ?? throw new ArgumentNullException(nameof(client));
 
             // TODO: _client.ConnectionLost
 
@@ -76,7 +73,7 @@ namespace TetriNET2.Client.ConsoleApp.UI
             foreach (GameData game in _client.Games)
             {
                 Console.WriteLine("Game: {0} {1} {2}", game.Id, game.Name, game.Rule);
-                Console.WriteLine("\tClients: {0}", game.Clients == null ? 0 : game.Clients.Count);
+                Console.WriteLine("\tClients: {0}", game.Clients?.Count ?? 0);
                 if (game.Clients != null)
                     foreach (ClientData client in game.Clients)
                         Console.WriteLine("\tClient: {0} {1} {2} {3} {4} {5} ", client.Id, client.Name, client.IsGameMaster, client.GameId, client.IsPlayer, client.IsSpectator);
@@ -85,22 +82,22 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         private void OnContinuousSpecialFinished(ClientData client, Specials special)
         {
-            Console.WriteLine("OnContinuousSpecialFinished: {0} {1}", client == null ? Guid.Empty : client.Id, special);
+            Console.WriteLine("OnContinuousSpecialFinished: {0} {1}", client?.Id ?? Guid.Empty, special);
         }
 
         private void OnGridModified(ClientData client, byte[] grid)
         {
-            Console.WriteLine("OnGridModified: {0}", client == null ? Guid.Empty : client.Id);
+            Console.WriteLine("OnGridModified: {0}", client?.Id ?? Guid.Empty);
         }
 
         private void OnSpecialUsed(ClientData client, ClientData target, int specialId, Specials special)
         {
-            Console.WriteLine("OnSpecialUsed: {0} {1} {2} {3}", client == null ? Guid.Empty : client.Id, target == null ? Guid.Empty : target.Id, specialId, special);
+            Console.WriteLine("OnSpecialUsed: {0} {1} {2} {3}", client?.Id ?? Guid.Empty, target?.Id ?? Guid.Empty, specialId, special);
         }
 
         private void OnPlayerLinesAdded(ClientData client, int specialId, int count)
         {
-            Console.WriteLine("OnPlayerLinesAdded: {0} {1} {2}", client == null ? Guid.Empty : client.Id, specialId, count);
+            Console.WriteLine("OnPlayerLinesAdded: {0} {1} {2}", client?.Id ?? Guid.Empty, specialId, count);
         }
 
         private void OnServerLinesAdded(int count)
@@ -110,27 +107,27 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         private void OnPlayerLost(ClientData client)
         {
-            Console.WriteLine("OnPlayerLost: {0}", client == null ? Guid.Empty : client.Id);
+            Console.WriteLine("OnPlayerLost: {0}", client?.Id ?? Guid.Empty);
         }
 
         private void OnPlayerWon(ClientData client)
         {
-            Console.WriteLine("OnPlayerWon: {0}", client == null ? Guid.Empty : client.Id);
+            Console.WriteLine("OnPlayerWon: {0}", client?.Id ?? Guid.Empty);
         }
 
         private void OnPiecePlaced(int firstIndex, List<Pieces> nextPieces)
         {
-            Console.WriteLine("OnPiecePlaced: {0} {1}", firstIndex, nextPieces == null ? 0 : nextPieces.Count);
+            Console.WriteLine("OnPiecePlaced: {0} {1}", firstIndex, nextPieces?.Count ?? 0);
         }
 
         private void OnAchievementEarned(ClientData client, int achievementId, string achievementTitle)
         {
-            Console.WriteLine("OnAchievementEarned: {0} {1} {2}", client == null ? Guid.Empty : client.Id, achievementId, achievementTitle);
+            Console.WriteLine("OnAchievementEarned: {0} {1} {2}", client?.Id ?? Guid.Empty, achievementId, achievementTitle);
         }
 
         private void OnVoteKickAsked(ClientData sourceClient, ClientData targetClient, string reason)
         {
-            Console.WriteLine("OnVoteKickAsked: {0} {1} {2}", sourceClient == null ? Guid.Empty : sourceClient.Id, targetClient == null ? Guid.Empty : targetClient.Id, reason);
+            Console.WriteLine("OnVoteKickAsked: {0} {1} {2}", sourceClient?.Id ?? Guid.Empty, targetClient?.Id ?? Guid.Empty, reason);
         }
 
         private void OnGameOptionsChanged(GameOptions gameOptions)
@@ -165,17 +162,17 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         private void OnGameMasterModified(ClientData client)
         {
-            Console.WriteLine("OnGameMasterModified: {0}", client == null ? Guid.Empty : client.Id);
+            Console.WriteLine("OnGameMasterModified: {0}", client?.Id ?? Guid.Empty);
         }
 
         private void OnClientGameLeft(ClientData client)
         {
-            Console.WriteLine("OnClientGameLeft: {0}", client == null ? Guid.Empty : client.Id);
+            Console.WriteLine("OnClientGameLeft: {0}", client?.Id ?? Guid.Empty);
         }
 
         private void OnClientGameJoined(ClientData client, bool asSpectator)
         {
-            Console.WriteLine("OnClientGameJoined: {0} {1}", client == null ? Guid.Empty : client.Id, asSpectator);
+            Console.WriteLine("OnClientGameJoined: {0} {1}", client?.Id ?? Guid.Empty, asSpectator);
         }
 
         private void OnGameLeft()
@@ -185,27 +182,27 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         private void OnGameJoined(GameJoinResults result, GameData game, bool isGameMaster)
         {
-            Console.WriteLine("OnGameJoined: {0} {1} {2}", result, game == null ? Guid.Empty : game.Id, isGameMaster);
+            Console.WriteLine("OnGameJoined: {0} {1} {2}", result, game?.Id ?? Guid.Empty, isGameMaster);
         }
 
         private void OnGameCreated(GameCreateResults result, GameData game)
         {
-            Console.WriteLine("OnGameCreated: {0} {1} {2} {3}", result, game.Id, game.Name, game.Rule);
+            Console.WriteLine("OnGameCreated: {0} {1} {2} {3}", result, game?.Id ?? Guid.Empty, game?.Name ?? string.Empty, game?.Rule ?? GameRules.Custom);
         }
 
         private void OnTeamChanged(ClientData client, string team)
         {
-            Console.WriteLine("OnTeamChanged: {0} {1}", client == null ? Guid.Empty : client.Id, team);
+            Console.WriteLine("OnTeamChanged: {0} {1}", client?.Id ?? Guid.Empty, team);
         }
 
         private void OnPrivateMessageReceived(ClientData client, string message)
         {
-            Console.WriteLine("OnPrivateMessageReceived: {0} {1}", client == null ? Guid.Empty : client.Id, message);
+            Console.WriteLine("OnPrivateMessageReceived: {0} {1}", client?.Id ?? Guid.Empty, message);
         }
 
         private void OnBroadcastMessageReceived(ClientData client, string message)
         {
-            Console.WriteLine("OnBroadcastMessageReceived: {0} {1}", client == null ? Guid.Empty : client.Id, message);
+            Console.WriteLine("OnBroadcastMessageReceived: {0} {1}", client?.Id ?? Guid.Empty, message);
         }
 
         private void OnServerMessageReceived(string message)
@@ -215,15 +212,15 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         private void OnServerGameDeleted(GameData game)
         {
-            Console.WriteLine("OnGameDeleted: {0}", game == null ? Guid.Empty : game.Id);
+            Console.WriteLine("OnGameDeleted: {0}", game?.Id ?? Guid.Empty);
 
             DisplayGameList();
         }
 
         private void OnServerGameCreated(GameData game)
         {
-            Console.WriteLine("OnServerGameCreated: {0} {1} {2}", game.Id, game.Name, game.Rule);
-            if (game.Clients != null)
+            Console.WriteLine("OnServerGameCreated: {0} {1} {2}", game?.Id ?? Guid.Empty, game?.Name ?? string.Empty, game?.Rule ?? GameRules.Custom);
+            if (game?.Clients != null)
             {
                 Console.WriteLine("\tClients: {0}", game.Clients.Count);
                 foreach (ClientData client in game.Clients)
@@ -235,8 +232,8 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         private void OnClientGameCreated(ClientData client, GameData game)
         {
-            Console.WriteLine("OnClientGameCreated: {0} {1} {2} {3}", client == null ? Guid.Empty : client.Id, game.Id, game.Name, game.Rule);
-            if (game.Clients != null)
+            Console.WriteLine("OnClientGameCreated: {0} {1} {2} {3}", client?.Id ?? Guid.Empty, game?.Id ?? Guid.Empty, game?.Name ?? string.Empty, game?.Rule ?? GameRules.Custom);
+            if (game?.Clients != null)
             {
                 Console.WriteLine("\tClients: {0}", game.Clients.Count);
                 foreach (ClientData gameClient in game.Clients)
@@ -248,21 +245,21 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         private void OnClientDisconnected(ClientData client, LeaveReasons reason)
         {
-            Console.WriteLine("OnClientDisconnected: {0} {1}", client == null ? Guid.Empty : client.Id, reason);
+            Console.WriteLine("OnClientDisconnected: {0} {1}", client?.Id ?? Guid.Empty, reason);
 
             DisplayClientList();
         }
 
         private void OnClientConnected(ClientData client, string name, string team)
         {
-            Console.WriteLine("OnClientConnected: {0} {1} {2}", client == null ? Guid.Empty : client.Id, name, team);
+            Console.WriteLine("OnClientConnected: {0} {1} {2}", client?.Id ?? Guid.Empty, name, team);
 
             DisplayClientList();
         }
 
         private void OnGameClientListReceived(List<ClientData> clients)
         {
-            Console.WriteLine("Clients in game: {0}", clients == null ? 0 : clients.Count);
+            Console.WriteLine("Clients in game: {0}", clients?.Count ?? 0);
             if (clients != null)
                 foreach (ClientData client in clients)
                     Console.WriteLine("Client: {0} {1} {2} {3} {4} {5}", client.Id, client.Name, client.GameId, client.IsGameMaster, client.IsPlayer, client.IsSpectator);
@@ -270,7 +267,7 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         private void OnClientListReceived(List<ClientData> clients)
         {
-            Console.WriteLine("Clients: {0}", clients == null ? 0 : clients.Count);
+            Console.WriteLine("Clients: {0}", clients?.Count ?? 0);
             if (clients != null)
                 foreach (ClientData client in clients)
                     Console.WriteLine("Client: {0} {1} {2} {3} {4} {5}", client.Id, client.Name, client.GameId, client.IsGameMaster, client.IsPlayer, client.IsSpectator);
@@ -278,12 +275,12 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         private void OnGameListReceived(List<GameData> games)
         {
-            Console.WriteLine("Games: {0}", games == null ? 0 : games.Count);
+            Console.WriteLine("Games: {0}", games?.Count ?? 0);
             if (games != null)
                 foreach (GameData game in games)
                 {
                     Console.WriteLine("Game: {0} {1} {2}", game.Id, game.Name, game.Rule);
-                    Console.WriteLine("\tClients: {0}", game.Clients == null ? 0 : game.Clients.Count);
+                    Console.WriteLine("\tClients: {0}", game.Clients?.Count ?? 0);
                     if (game.Clients != null)
                         foreach (ClientData client in game.Clients)
                             Console.WriteLine("\tClient: {0} {1} {2} {3} {4} {5}", client.Id, client.Name, client.GameId, client.IsGameMaster, client.IsPlayer, client.IsSpectator);
@@ -302,13 +299,13 @@ namespace TetriNET2.Client.ConsoleApp.UI
 
         private void OnConnected(ConnectResults result, Versioning serverVersion, ClientData client, List<GameData> games)
         {
-            Console.WriteLine("OnConnected: {0} {1}.{2} {3}", result, serverVersion == null ? -1 : serverVersion.Major, serverVersion == null ? -1 : serverVersion.Minor, client.Id);
-            Console.WriteLine("Game list: {0}", games == null ? 0 : games.Count);
+            Console.WriteLine("OnConnected: {0} {1}.{2} {3}", result, serverVersion?.Major ?? -1, serverVersion?.Minor ?? -1, client?.Id ?? Guid.Empty);
+            Console.WriteLine("Game list: {0}", games?.Count ?? 0);
             if (games != null)
                 foreach (GameData game in games)
                 {
                     Console.WriteLine("Game: {0} {1} {2}", game.Id, game.Name, game.Rule);
-                    Console.WriteLine("\tClients: {0}", game.Clients == null ? 0 : game.Clients.Count);
+                    Console.WriteLine("\tClients: {0}", game.Clients?.Count ?? 0);
                     if (game.Clients != null)
                         foreach (ClientData gameClient in game.Clients)
                             Console.WriteLine("\tClient: {0} {1} {2} {3} {4} {5}", gameClient.Id, gameClient.Name, gameClient.GameId, gameClient.IsGameMaster, gameClient.IsPlayer, gameClient.IsSpectator);
@@ -819,7 +816,7 @@ namespace TetriNET2.Client.ConsoleApp.UI
     //            foreach(Specials special in specials)
     //            {
     //                if (i == 0)
-    //                    sb2.Append(String.Format("[{0}]", ConvertSpecial(special)));
+    //                    sb2.Append(string.Format("[{0}]", ConvertSpecial(special)));
     //                else
     //                    sb2.Append(ConvertSpecial(special));
     //                i++;

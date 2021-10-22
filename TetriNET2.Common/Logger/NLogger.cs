@@ -13,7 +13,7 @@ namespace TetriNET2.Common.Logger
             string logfile = System.IO.Path.Combine(path, file);
             NLog.Targets.FileTarget target = NLog.LogManager.Configuration.FindTargetByName(fileTarget) as NLog.Targets.FileTarget;
             if (target == null)
-                throw new ApplicationException(String.Format("Couldn't find target {0} in NLog config", fileTarget));
+                throw new ApplicationException($"Couldn't find target {fileTarget} in NLog config");
             target.FileName = logfile;
         }
 

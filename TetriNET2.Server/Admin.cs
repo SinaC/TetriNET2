@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.ServiceModel;
 using TetriNET2.Common.Contracts;
@@ -15,19 +14,12 @@ namespace TetriNET2.Server
     {
         private bool _disconnected;
 
-        public Admin(string name, IPAddress address, ITetriNETAdminCallback callback)
+        public Admin(string name, IAddress address, ITetriNETAdminCallback callback)
         {
-            if (name == null)
-                throw new ArgumentNullException("name");
-            if (address == null)
-                throw new ArgumentNullException("address");
-            if (callback == null)
-                throw new ArgumentNullException("callback");
-
             Id = Guid.NewGuid();
-            Name = name;
-            Address = address;
-            Callback = callback;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Address = address ?? throw new ArgumentNullException(nameof(address));
+            Callback = callback ?? throw new ArgumentNullException(nameof(callback));
             ConnectTime = DateTime.Now;
             _disconnected = false;
         }
@@ -56,11 +48,11 @@ namespace TetriNET2.Server
 
         public event AdminConnectionLostEventHandler ConnectionLost;
 
-        public Guid Id { get; private set; }
-        public string Name { get; private set; }
-        public IPAddress Address { get; private set; }
-        public ITetriNETAdminCallback Callback { get; private set; }
-        public DateTime ConnectTime { get; private set; }
+        public Guid Id { get; }
+        public string Name { get; }
+        public IAddress Address { get; }
+        public ITetriNETAdminCallback Callback { get; }
+        public DateTime ConnectTime { get; }
 
         #endregion
 

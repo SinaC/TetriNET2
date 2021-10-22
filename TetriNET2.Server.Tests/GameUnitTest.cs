@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TetriNET2.Common.ActionQueue;
@@ -183,8 +182,8 @@ namespace TetriNET2.Server.Tests
             Assert.IsTrue(succeed);
             Assert.AreEqual(1, game.PlayerCount);
             Assert.AreEqual(0, game.SpectatorCount);
-            Assert.AreEqual(1, game.Players.Count());
-            Assert.AreEqual(0, game.Spectators.Count());
+            Assert.AreEqual(1, game.Players.Count);
+            Assert.AreEqual(0, game.Spectators.Count);
         }
 
         [TestCategory("Server")]
@@ -202,8 +201,8 @@ namespace TetriNET2.Server.Tests
             Assert.IsTrue(succeed);
             Assert.AreEqual(0, game.PlayerCount);
             Assert.AreEqual(1, game.SpectatorCount);
-            Assert.AreEqual(0, game.Players.Count());
-            Assert.AreEqual(1, game.Spectators.Count());
+            Assert.AreEqual(0, game.Players.Count);
+            Assert.AreEqual(1, game.Spectators.Count);
         }
 
         [TestCategory("Server")]
@@ -223,8 +222,8 @@ namespace TetriNET2.Server.Tests
             Assert.IsFalse(succeed);
             Assert.AreEqual(1, game.PlayerCount);
             Assert.AreEqual(0, game.SpectatorCount);
-            Assert.AreEqual(1, game.Players.Count());
-            Assert.AreEqual(0, game.Spectators.Count());
+            Assert.AreEqual(1, game.Players.Count);
+            Assert.AreEqual(0, game.Spectators.Count);
         }
 
         [TestCategory("Server")]
@@ -244,8 +243,8 @@ namespace TetriNET2.Server.Tests
             Assert.IsFalse(succeed);
             Assert.AreEqual(0, game.PlayerCount);
             Assert.AreEqual(1, game.SpectatorCount);
-            Assert.AreEqual(0, game.Players.Count());
-            Assert.AreEqual(1, game.Spectators.Count());
+            Assert.AreEqual(0, game.Players.Count);
+            Assert.AreEqual(1, game.Spectators.Count);
         }
 
         [TestCategory("Server")]
@@ -2918,7 +2917,7 @@ namespace TetriNET2.Server.Tests
 
         protected override IClient CreateClient(string name, ITetriNETClientCallback callback)
         {
-            return new Client(name, IPAddress.Any, callback);
+            return new Client(name, AddressMock.Any, callback);
         }
 
         protected override IGame CreateGame(string name, int maxPlayers, int maxSpectators)
@@ -2957,7 +2956,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IGame fgame = new Game(null, new PieceProviderMock(), "game1", 5, 5, GameRules.Classic, new GameOptions(), "password");
+                IGame _ = new Game(null, new PieceProviderMock(), "game1", 5, 5, GameRules.Classic, new GameOptions(), "password");
 
                 Assert.Fail("Exception not thrown");
             }

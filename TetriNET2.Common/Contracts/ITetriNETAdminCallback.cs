@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ServiceModel;
 using TetriNET2.Common.DataContracts;
+// ReSharper disable OperationContractWithoutServiceContract
 
 namespace TetriNET2.Common.Contracts
 {

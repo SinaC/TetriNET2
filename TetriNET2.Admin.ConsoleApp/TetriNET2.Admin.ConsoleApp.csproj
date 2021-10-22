@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -9,8 +9,9 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TetriNET2.Admin.ConsoleApp</RootNamespace>
     <AssemblyName>TetriNET2.Admin.ConsoleApp</AssemblyName>
-    <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -39,6 +40,7 @@
   <ItemGroup>
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="UI\ConsoleUI.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />
@@ -47,6 +49,10 @@
     </None>
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\TetriNET2.Admin.WCFProxy\TetriNET2.Admin.WCFProxy.csproj">
+      <Project>{7b063782-09d7-4b22-a53a-fd0cc166b782}</Project>
+      <Name>TetriNET2.Admin.WCFProxy</Name>
+    </ProjectReference>
     <ProjectReference Include="..\TetriNET2.Admin\TetriNET2.Admin.csproj">
       <Project>{8f71bb94-5d82-453a-b05e-9323d380531e}</Project>
       <Name>TetriNET2.Admin</Name>

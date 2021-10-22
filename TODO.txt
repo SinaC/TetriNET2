@@ -1,3 +1,10 @@
+ISSUE
+	when a client starts a game then disconnect, game should be deleted if no player left
+	client list handled in Client is not updated when a new client connects (in fact OnClientGameJoined is received before client list has been updated -> client is not found locally -> id is null)
+
+TYPO
+	jointed instead joined in log/console
+
 admin
 	get one client/admin/room full information
 client

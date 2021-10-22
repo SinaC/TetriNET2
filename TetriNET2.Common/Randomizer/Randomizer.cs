@@ -10,10 +10,7 @@ namespace TetriNET2.Common.Randomizer
 
         private static readonly Lazy<Randomizer> Lazy = new Lazy<Randomizer>(() => new Randomizer());
 
-        public static Randomizer Instance
-        {
-            get { return Lazy.Value; }
-        }
+        public static Randomizer Instance => Lazy.Value;
 
         private Randomizer()
         {

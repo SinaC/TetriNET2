@@ -9,41 +9,33 @@ namespace TetriNET2.Server
     public sealed  class GameManager : IGameManager
     {
         private readonly Dictionary<Guid, IGame> _games = new Dictionary<Guid, IGame>();
-        private readonly object _lockObject = new object();
 
-        public GameManager(int maxGames)
+        public GameManager(ISettings settings)
         {
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+            int maxGames = settings.MaxGames;
             if (maxGames <= 0)
-                throw new ArgumentOutOfRangeException("maxGames", "maxGames must be strictly positive");
+                throw new ArgumentOutOfRangeException(nameof(maxGames), "maxGames must be strictly positive");
 
             MaxGames = maxGames;
         }
 
         #region IGameManager
 
-        public int MaxGames { get; private set; }
+        public int MaxGames { get; }
 
-        public int GameCount
-        {
-            get { return _games.Count; }
-        }
+        public int GameCount => _games.Count;
 
-        public object LockObject
-        {
-            get { return _lockObject; }
-        }
+        public object LockObject { get; } = new object();
 
-        public IReadOnlyCollection<IGame> Games
-        {
-            get { return _games.Values.ToList(); }
-        }
+        public IReadOnlyCollection<IGame> Games => _games.Values.ToList();
 
         public IGame this[Guid guid]
         {
             get
             {
-                IGame game;
-                _games.TryGetValue(guid, out game);
+                _games.TryGetValue(guid, out var game);
                 return game;
             }
         }
@@ -62,7 +54,7 @@ namespace TetriNET2.Server
         public bool Add(IGame game)
         {
             if (game == null)
-                throw new ArgumentNullException("game");
+                throw new ArgumentNullException(nameof(game));
 
             if (GameCount >= MaxGames)
             {
@@ -86,7 +78,7 @@ namespace TetriNET2.Server
         public bool Remove(IGame game)
         {
             if (game == null)
-                throw new ArgumentNullException("game");
+                throw new ArgumentNullException(nameof(game));
 
             bool removed = _games.Remove(game.Id);
             return removed;

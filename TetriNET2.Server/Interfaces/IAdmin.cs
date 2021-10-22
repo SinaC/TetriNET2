@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using TetriNET2.Common.Contracts;
 
 namespace TetriNET2.Server.Interfaces
@@ -13,7 +12,7 @@ namespace TetriNET2.Server.Interfaces
         //
         Guid Id { get; }
         string Name { get; }
-        IPAddress Address { get; }
+        IAddress Address { get; }
         ITetriNETAdminCallback Callback { get; }
         DateTime ConnectTime { get; }
     }

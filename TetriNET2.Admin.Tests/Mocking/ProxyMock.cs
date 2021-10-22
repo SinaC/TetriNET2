@@ -15,7 +15,7 @@ namespace TetriNET2.Admin.Tests.Mocking
 
         private void UpdateCallCount([CallerMemberName]string callbackName = null)
         {
-            if (String.IsNullOrWhiteSpace(callbackName))
+            if (string.IsNullOrWhiteSpace(callbackName))
                 return;
             if (!_callCount.ContainsKey(callbackName))
                 _callCount.Add(callbackName, 1);

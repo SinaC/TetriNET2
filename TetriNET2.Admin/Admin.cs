@@ -21,10 +21,7 @@ namespace TetriNET2.Admin
 
         public Admin(IFactory factory)
         {
-            if (factory == null)
-                throw new ArgumentNullException("factory");
-
-            _factory = factory;
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _clients = new List<ClientAdminData>();
             _admins = new List<AdminData>();
             _games = new List<GameAdminData>();
@@ -228,25 +225,13 @@ namespace TetriNET2.Admin
 
         public Versioning Version { get; private set; }
 
-        public IReadOnlyCollection<ClientAdminData> Clients
-        {
-            get { return _clients; }
-        }
+        public IReadOnlyCollection<ClientAdminData> Clients => _clients;
 
-        public IReadOnlyCollection<AdminData> Admins
-        {
-            get { return _admins; }
-        }
+        public IReadOnlyCollection<AdminData> Admins => _admins;
 
-        public IReadOnlyCollection<GameAdminData> Games
-        {
-            get { return _games; }
-        }
+        public IReadOnlyCollection<GameAdminData> Games => _games;
 
-        public IReadOnlyCollection<BanEntryData> Banned
-        {
-            get { return _banned; }
-        }
+        public IReadOnlyCollection<BanEntryData> Banned => _banned;
 
         public void SetVersion(int major, int minor)
         {
@@ -279,9 +264,9 @@ namespace TetriNET2.Admin
         public bool Connect(string address, string name, string password)
         {
             if (address == null)
-                throw new ArgumentNullException("address");
+                throw new ArgumentNullException(nameof(address));
             if (name == null)
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
 
             if (Version == null)
             {
@@ -341,7 +326,7 @@ namespace TetriNET2.Admin
                 return false;
             }
 
-            if (String.IsNullOrWhiteSpace(message))
+            if (string.IsNullOrWhiteSpace(message))
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot send empty message");
                 return false;
@@ -465,7 +450,7 @@ namespace TetriNET2.Admin
             {
                 Log.Default.WriteLine(LogLevels.Error, "Proxy is null");
                 return false;
-            };
+            }
 
             _proxy.Do(x => x.AdminRestartServer(seconds));
             return true;

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TetriNET2.Common.Contracts;
@@ -12,7 +11,7 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public abstract class AbstractClientUnitTest
     {
-        protected abstract IClient CreateClient(string name, IPAddress address, ITetriNETClientCallback callback, string team = null);
+        protected abstract IClient CreateClient(string name, IAddress address, ITetriNETClientCallback callback, string team = null);
 
         [TestInitialize]
         public void Initialize()
@@ -28,7 +27,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestExceptionFreeAction()
         {
-            IClient client = CreateClient("Client1", IPAddress.Parse("127.0.0.1"), new RaiseExceptionTetriNETCallback());
+            IClient client = CreateClient("Client1", new AddressMock("127.0.0.1"), new RaiseExceptionTetriNETCallback());
 
             client.OnDisconnected();
 
@@ -42,7 +41,7 @@ namespace TetriNET2.Server.Tests
         public void TestConnectionLostCalledOnException()
         {
             bool called = false;
-            IClient client = CreateClient("Client1", IPAddress.Parse("127.0.0.1"), new RaiseExceptionTetriNETCallback());
+            IClient client = CreateClient("Client1", new AddressMock("127.0.0.1"), new RaiseExceptionTetriNETCallback());
             client.ConnectionLost += entity => called = true;
 
             client.OnDisconnected();
@@ -60,7 +59,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestLastActionToClientUpdate()
         {
-            IClient client = CreateClient("Client1", IPAddress.Parse("127.0.0.1"), new CountCallTetriNETCallback());
+            IClient client = CreateClient("Client1", new AddressMock("127.0.0.1"), new CountCallTetriNETCallback());
             DateTime lastActionToClient = client.LastActionToClient;
 
             Thread.Sleep(1);
@@ -75,7 +74,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestSetTimeout()
         {
-            IClient client = CreateClient("Client1", IPAddress.Parse("127.0.0.1"), new CountCallTetriNETCallback());
+            IClient client = CreateClient("Client1", new AddressMock("127.0.0.1"), new CountCallTetriNETCallback());
             DateTime lastActionFromClient = DateTime.Now;
 
             Thread.Sleep(1);
@@ -91,7 +90,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestResetTimeout()
         {
-            IClient client = CreateClient("Client1", IPAddress.Parse("127.0.0.1"), new CountCallTetriNETCallback());
+            IClient client = CreateClient("Client1", new AddressMock("127.0.0.1"), new CountCallTetriNETCallback());
             client.SetTimeout();
             DateTime lastActionFromClient = DateTime.Now;
 
@@ -108,7 +107,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestLastActionToClientNotUpdatedOnException()
         {
-            IClient client = CreateClient("Client1", IPAddress.Parse("127.0.0.1"), new RaiseExceptionTetriNETCallback());
+            IClient client = CreateClient("Client1", new AddressMock("127.0.0.1"), new RaiseExceptionTetriNETCallback());
             DateTime lastActionToClient = client.LastActionToClient;
 
             Thread.Sleep(1);
@@ -123,7 +122,7 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public class ClientUnitTest : AbstractClientUnitTest
     {
-        protected override IClient CreateClient(string name, IPAddress address, ITetriNETClientCallback callback, string team = null)
+        protected override IClient CreateClient(string name, IAddress address, ITetriNETClientCallback callback, string team = null)
         {
             return new Client(name, address, callback, team);
         }
@@ -138,7 +137,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IClient client = CreateClient(null, IPAddress.Parse("127.0.0.1"), new CountCallTetriNETCallback());
+                IClient client = CreateClient(null, new AddressMock("127.0.0.1"), new CountCallTetriNETCallback());
 
                 Assert.Fail("ArgumentNullException on name not raised");
             }
@@ -174,7 +173,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IClient client = CreateClient("Client1", IPAddress.Parse("127.0.0.1"), null);
+                IClient client = CreateClient("Client1", new AddressMock("127.0.0.1"), null);
 
                 Assert.Fail("ArgumentNullException on callback not raised");
             }
@@ -191,7 +190,7 @@ namespace TetriNET2.Server.Tests
         public void TestConstructorSetProperties()
         {
             const string name = "Client1";
-            IPAddress address = IPAddress.Parse("127.0.0.1");
+            IAddress address = new AddressMock("127.0.0.1");
             ITetriNETClientCallback callback = new CountCallTetriNETCallback();
             const string team = "Team1";
 

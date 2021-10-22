@@ -66,10 +66,7 @@ namespace TetriNET2.Client
 
         public Client(IFactory factory)
         {
-            if (factory == null)
-                throw new ArgumentNullException("factory");
-
-            _factory = factory;
+            _factory = factory ?? throw new ArgumentNullException(nameof(factory));
             _actionQueue = factory.CreateActionQueue();
             _clients = new List<ClientData>();
             _gameClients = new List<ClientData>();
@@ -259,7 +256,7 @@ namespace TetriNET2.Client
 
         public void OnClientGameCreated(Guid clientId, GameData game)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Client {0} creates game {1}", clientId, game == null ? Guid.Empty : game.Id);
+            Log.Default.WriteLine(LogLevels.Info, "Client {0} creates game {1}", clientId, game?.Id ?? Guid.Empty);
 
             ResetTimeout();
 
@@ -271,7 +268,7 @@ namespace TetriNET2.Client
 
         public void OnServerGameCreated(GameData game)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Server creates game {0}", game == null ? Guid.Empty : game.Id);
+            Log.Default.WriteLine(LogLevels.Info, "Server creates game {0}", game?.Id ?? Guid.Empty);
 
             ResetTimeout();
 
@@ -337,13 +334,13 @@ namespace TetriNET2.Client
 
         public void OnGameCreated(GameCreateResults result, GameData game)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Game created {0} {1}", result, game == null ? Guid.Empty : game.Id);
+            Log.Default.WriteLine(LogLevels.Info, "Game created {0} {1}", result, game?.Id ?? Guid.Empty);
 
             ResetTimeout();
 
             if (result == GameCreateResults.Successfull)
             {
-                Log.Default.WriteLine(LogLevels.Info, "Game {0} created successfully", game == null ? Guid.Empty : game.Id);
+                Log.Default.WriteLine(LogLevels.Info, "Game {0} created successfully", game?.Id ?? Guid.Empty);
 
                 _games.Add(game);
             }
@@ -357,7 +354,7 @@ namespace TetriNET2.Client
 
         public void OnGameJoined(GameJoinResults result, GameData game, bool isGameMaster)
         {
-            Log.Default.WriteLine(LogLevels.Info, "Game jointed {0} {1} {2}", result, game == null ? Guid.Empty : game.Id, isGameMaster);
+            Log.Default.WriteLine(LogLevels.Info, "Game jointed {0} {1} {2}", result, game?.Id ?? Guid.Empty, isGameMaster);
 
             ResetTimeout();
 
@@ -385,7 +382,7 @@ namespace TetriNET2.Client
             }
             else
             {
-                Log.Default.WriteLine(LogLevels.Warning, "Failed to join game {0} {1}", game == null ? Guid.Empty : game.Id, result);
+                Log.Default.WriteLine(LogLevels.Warning, "Failed to join game {0} {1}", game?.Id ?? Guid.Empty, result);
             }
 
             GameJoined.Do(x => x(result, innerGame, isGameMaster));
@@ -666,16 +663,13 @@ namespace TetriNET2.Client
 
         public int Level { get; private set; }
 
-        public bool IsPlaying
-        {
-            get { return _state == States.Playing; }
-        }
+        public bool IsPlaying => _state == States.Playing;
 
-        public IReadOnlyCollection<ClientData> Clients { get { return _clients; } }
+        public IReadOnlyCollection<ClientData> Clients => _clients;
 
-        public IReadOnlyCollection<ClientData> GameClients { get { return _gameClients; } }
+        public IReadOnlyCollection<ClientData> GameClients => _gameClients;
 
-        public IReadOnlyCollection<GameData> Games { get { return _games; } }
+        public IReadOnlyCollection<GameData> Games => _games;
 
         public void SetVersion(int major, int minor)
         {
@@ -727,9 +721,9 @@ namespace TetriNET2.Client
         public bool Connect(string address, string name, string team)
         {
             if (address == null)
-                throw new ArgumentNullException("address");
+                throw new ArgumentNullException(nameof(address));
             if (name == null)
-                throw new ArgumentNullException("name");
+                throw new ArgumentNullException(nameof(name));
 
             if (Version == null)
             {
@@ -960,6 +954,7 @@ namespace TetriNET2.Client
 
         private void InternalDisconnect()
         {
+            Log.Default.WriteLine(LogLevels.Info, "Disconnected");
             if (_proxy != null)
             {
                 _proxy.ConnectionLost -= OnConnectionLost;

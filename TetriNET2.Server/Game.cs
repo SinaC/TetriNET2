@@ -17,7 +17,6 @@ namespace TetriNET2.Server
 
         private readonly IPieceProvider _pieceProvider;
         private readonly List<IClient> _clients = new List<IClient>();
-        private readonly object _lockObject = new object();
         private readonly IActionQueue _actionQueue;
         private readonly Dictionary<string, GameStatisticsByPlayer> _gameStatistics; // By player (cannot be stored in IClient because IClient is lost when disconnected during a game)
         private readonly List<WinEntry> _winList;
@@ -30,24 +29,18 @@ namespace TetriNET2.Server
 
         public Game(IActionQueue actionQueue, IPieceProvider pieceProvider, string name, int maxPlayers, int maxSpectators, GameRules rule, GameOptions options, string password = null)
         {
-            if (actionQueue == null)
-                throw new ArgumentNullException("actionQueue");
-            if (pieceProvider == null)
-                throw new ArgumentNullException("pieceProvider");
-            if (name == null)
-                throw new ArgumentNullException("name");
             if (maxPlayers <= 0)
-                throw new ArgumentOutOfRangeException("maxPlayers", "maxPlayers must be strictly positive");
+                throw new ArgumentOutOfRangeException(nameof(maxPlayers), "maxPlayers must be strictly positive");
             if (maxSpectators <= 0)
-                throw new ArgumentOutOfRangeException("maxSpectators", "maxSpectators must be strictly positive");
+                throw new ArgumentOutOfRangeException(nameof(maxSpectators), "maxSpectators must be strictly positive");
             if (options == null)
-                throw new ArgumentNullException("options");
+                throw new ArgumentNullException(nameof(options));
 
             Id = Guid.NewGuid();
-            _actionQueue = actionQueue;
-            _pieceProvider = pieceProvider;
+            _actionQueue = actionQueue ?? throw new ArgumentNullException(nameof(actionQueue));
+            _pieceProvider = pieceProvider ?? throw new ArgumentNullException(nameof(pieceProvider));
             _pieceProvider.Occurancies = () => options.PieceOccurancies;
-            Name = name;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
             CreationTime = DateTime.Now;
             MaxPlayers = maxPlayers;
             MaxSpectators = maxSpectators;
@@ -66,24 +59,21 @@ namespace TetriNET2.Server
 
         #region IGame
 
-        public Guid Id { get; private set; }
+        public Guid Id { get; }
 
-        public string Name { get; private set; }
+        public string Name { get; }
 
-        public DateTime CreationTime { get; private set; }
+        public DateTime CreationTime { get; }
 
-        public string Password { get; private set; }
+        public string Password { get; }
 
         public GameStates State { get; private set; }
 
-        public int MaxPlayers { get; private set; }
+        public int MaxPlayers { get; }
 
-        public int MaxSpectators { get; private set; }
+        public int MaxSpectators { get; }
 
-        public int ClientCount
-        {
-            get { return _clients.Count; }
-        }
+        public int ClientCount => _clients.Count;
 
         public int PlayerCount
         {
@@ -95,21 +85,15 @@ namespace TetriNET2.Server
             get { return _clients.Count(x => x.IsSpectator); }
         }
 
-        public object LockObject
-        {
-            get { return _lockObject; }
-        }
+        public object LockObject { get; } = new object();
 
         public DateTime GameStartTime { get; private set; }
 
         public GameOptions Options { get; private set; }
 
-        public GameRules Rule { get; private set; }
+        public GameRules Rule { get; }
 
-        public IReadOnlyCollection<IClient> Clients
-        {
-            get { return _clients; }
-        }
+        public IReadOnlyCollection<IClient> Clients => _clients;
 
         public IReadOnlyCollection<IClient> Players
         {
@@ -202,7 +186,7 @@ namespace TetriNET2.Server
         public bool Join(IClient client, bool asSpectator)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             if (State == GameStates.Created || State == GameStates.Stopping)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot join, game {0} is not started(or stopping)", Name);
@@ -287,7 +271,7 @@ namespace TetriNET2.Server
         public bool Leave(IClient client)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
 
             if (client.Game != this)
             {
@@ -378,9 +362,9 @@ namespace TetriNET2.Server
         public bool VoteKick(IClient client, IClient target, string reason)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             if (target == null)
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot vote kick, {0} is not in game {1}", client.Name, Name);
@@ -428,7 +412,7 @@ namespace TetriNET2.Server
         public bool VoteKickAnswer(IClient client, bool accepted)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             if (!client.IsPlayer)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot handle vote kick answer, {0} is not flagged as player", client.Name);
@@ -494,7 +478,7 @@ namespace TetriNET2.Server
         public bool PlacePiece(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             if (State != GameStates.GameStarted)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot place piece, game {0} is not started", Name);
@@ -518,7 +502,7 @@ namespace TetriNET2.Server
         public bool ModifyGrid(IClient client, byte[] grid)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             if (State != GameStates.GameStarted)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot modify grid, game {0} is not started", Name);
@@ -542,9 +526,9 @@ namespace TetriNET2.Server
         public bool UseSpecial(IClient client, IClient target, Specials special)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             if (target == null)
-                throw new ArgumentNullException("target");
+                throw new ArgumentNullException(nameof(target));
             if (State != GameStates.GameStarted)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot use special, game {0} is not started", Name);
@@ -578,7 +562,7 @@ namespace TetriNET2.Server
         public bool ClearLines(IClient client, int count)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             if (State != GameStates.GameStarted)
             {
                 Log.Default.WriteLine(LogLevels.Warning, "Cannot send lines, game {0} is not started", Name);
@@ -610,7 +594,7 @@ namespace TetriNET2.Server
         public bool GameLost(IClient client)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot lose game, client {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
@@ -629,7 +613,7 @@ namespace TetriNET2.Server
         public bool FinishContinuousSpecial(IClient client, Specials special)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot finish continuous special, client {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
@@ -643,7 +627,7 @@ namespace TetriNET2.Server
         public bool EarnAchievement(IClient client, int achievementId, string achievementTitle)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
             if (client.Game != this)
             {
                 Log.Default.WriteLine(LogLevels.Error, "Cannot earn achievement grid, client {0} is not in this game {1} but in game {2}", client.Name, Name, client.Game == null ? "???" : client.Game.Name);
@@ -1005,7 +989,7 @@ namespace TetriNET2.Server
 
         private void PlacePieceAction(IClient client, int pieceIndex, int highestIndex, Pieces piece, int orientation, int posX, int posY, byte[] grid)
         {
-            Log.Default.WriteLine(LogLevels.Debug, "Game {0}: PlacePieceAction[{1}]{2}:{3} {4} {5} at {6},{7} {8}", Name, client.Name, pieceIndex, highestIndex, piece, orientation, posX, posY, grid == null ? -1 : grid.Count(x => x > 0));
+            Log.Default.WriteLine(LogLevels.Debug, "Game {0}: PlacePieceAction[{1}]{2}:{3} {4} {5} at {6},{7} {8}", Name, client.Name, pieceIndex, highestIndex, piece, orientation, posX, posY, grid?.Count(x => x > 0) ?? -1);
 
             //if (index != player.PieceIndex)
             //    Log.Default.WriteLine(LogLevels.Error, "!!!! piece index different for player {0} local {1} remote {2}", player.Name, player.PieceIndex, index);
@@ -1038,7 +1022,7 @@ namespace TetriNET2.Server
 
             if (sendNextPieces)
             {
-                Log.Default.WriteLine(LogLevels.Debug, "Send next piece {0} {1} {2}", highestIndex, pieceIndex, nextPiecesToSend.Any() ? nextPiecesToSend.Select(x => x.ToString()).Aggregate((n, i) => n + "," + i) : String.Empty);
+                Log.Default.WriteLine(LogLevels.Debug, "Send next piece {0} {1} {2}", highestIndex, pieceIndex, nextPiecesToSend.Any() ? nextPiecesToSend.Select(x => x.ToString()).Aggregate((n, i) => n + "," + i) : string.Empty);
                 // Send next pieces
                 client.OnPiecePlaced(highestIndex, nextPiecesToSend);
             }
@@ -1193,10 +1177,8 @@ namespace TetriNET2.Server
         {
             if (disposing)
             {
-                if (_suddenDeathTimer != null)
-                    _suddenDeathTimer.Dispose();
-                if (_voteKickTimer != null)
-                    _voteKickTimer.Dispose();
+                _suddenDeathTimer?.Dispose();
+                _voteKickTimer?.Dispose();
             }
         }
 

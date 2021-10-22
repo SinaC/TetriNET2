@@ -16,13 +16,14 @@ namespace TetriNET2.Client.ConsoleApp
         {
             Console.WriteLine("Commands:");
             Console.WriteLine("x: Stop client");
-            Console.WriteLine("z: Connect");
-            Console.WriteLine("d: Disconnect");
+            Console.WriteLine("o: Connect");
+            Console.WriteLine("z: Disconnect");
             Console.WriteLine("g: Get game list");
             Console.WriteLine("c: Get client list");
             Console.WriteLine("l: Get game client list");
             Console.WriteLine("j: Create and join game as player");
             Console.WriteLine("r: Join random game");
+            Console.WriteLine("w: Leave game");
             Console.WriteLine("s: Start game");
             Console.WriteLine("t: Stop game");
         }
@@ -36,7 +37,7 @@ namespace TetriNET2.Client.ConsoleApp
 
             public IProxy CreateProxy(ITetriNETClientCallback callback, string address)
             {
-                return new WCFProxy(callback, address);
+                return new WCFProxy.WCFProxy(callback, address);
             }
 
             public IInventory CreateInventory(int size)
@@ -55,7 +56,7 @@ namespace TetriNET2.Client.ConsoleApp
             string clientName = "Console" + Guid.NewGuid().ToString().Substring(0, 5);
 
             Log.Default.Logger = new NLogger();
-            Log.Default.Initialize(@"D:\TEMP\LOG\", String.Format("TETRINET2_CLIENT_{0}.LOG", clientName));
+            Log.Default.Initialize(@"D:\TEMP\LOG\", $"TETRINET2_CLIENT_{clientName}.LOG");
 
             IFactory factory = new Factory();
 
@@ -104,6 +105,9 @@ namespace TetriNET2.Client.ConsoleApp
                             break;
                         case ConsoleKey.R:
                             _client.JoinRandomGame(false);
+                            break;
+                        case ConsoleKey.W:
+                            _client.LeaveGame();
                             break;
                         case ConsoleKey.S:
                             _client.StartGame();

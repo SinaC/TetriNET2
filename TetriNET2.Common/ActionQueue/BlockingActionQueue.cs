@@ -13,7 +13,7 @@ namespace TetriNET2.Common.ActionQueue
         private CancellationTokenSource _cancellationTokenSource;
         private Task _gameActionTask;
 
-        public int ActionCount { get { return _gameActionBlockingCollection.Count; } }
+        public int ActionCount => _gameActionBlockingCollection.Count;
 
         public void Start(CancellationTokenSource cancellationTokenSource)
         {
@@ -35,8 +35,7 @@ namespace TetriNET2.Common.ActionQueue
         {
             while (_gameActionBlockingCollection.Count > 0)
             {
-                Action item;
-                _gameActionBlockingCollection.TryTake(out item);
+                _gameActionBlockingCollection.TryTake(out _);
             }
         }
 
@@ -55,8 +54,7 @@ namespace TetriNET2.Common.ActionQueue
                     }
                     try
                     {
-                        Action action;
-                        bool taken = _gameActionBlockingCollection.TryTake(out action, 10, _cancellationTokenSource.Token);
+                        bool taken = _gameActionBlockingCollection.TryTake(out var action, 10, _cancellationTokenSource.Token);
                         if (taken)
                         {
                             try

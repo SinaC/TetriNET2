@@ -18,7 +18,7 @@ namespace TetriNET2.Server.Tests.Mocking
             GameManager = gameManager;
         }
 
-        public IPAddress Address { private get; set; }
+        public IAddress Address { private get; set; }
 
         public ITetriNETClientCallback ClientCallback { private get; set; }
 
@@ -26,49 +26,49 @@ namespace TetriNET2.Server.Tests.Mocking
 
         #region IHost
 
-        public event HostClientConnectEventHandler HostClientConnect;
-        public event HostClientDisconnectEventHandler HostClientDisconnect;
-        public event HostClientHeartbeatEventHandler HostClientHeartbeat;
-        public event HostClientSendPrivateMessageEventHandler HostClientSendPrivateMessage;
-        public event HostClientSendBroadcastMessageEventHandler HostClientSendBroadcastMessage;
-        public event HostClientChangeTeamEventHandler HostClientChangeTeam;
-        public event HostClientJoinGameEventHandler HostClientJoinGame;
-        public event HostClientJoinRandomGameEventHandler HostClientJoinRandomGame;
-        public event HostClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
-        public event HostClientGetGameListEventHandler HostClientGetGameList;
-        public event HostClientGetClientListEventHandler HostClientGetClientList;
-        public event HostClientStartGameEventHandler HostClientStartGame;
-        public event HostClientStopGameEventHandler HostClientStopGame;
-        public event HostClientPauseGameEventHandler HostClientPauseGame;
-        public event HostClientResumeGameEventHandler HostClientResumeGame;
-        public event HostClientChangeOptionsEventHandler HostClientChangeOptions;
-        public event HostClientVoteKickEventHandler HostClientVoteKick;
-        public event HostClientVoteKickResponseEventHandler HostClientVoteKickAnswer;
-        public event HostClientResetWinListEventHandler HostClientResetWinList;
-        public event HostClientLeaveGameEventHandler HostClientLeaveGame;
-        public event HostClientGetGameClientListEventHandler HostClientGetGameClientList;
-        public event HostClientPlacePieceEventHandler HostClientPlacePiece;
-        public event HostClientModifyGridEventHandler HostClientModifyGrid;
-        public event HostClientUseSpecialEventHandler HostClientUseSpecial;
-        public event HostClientClearLinesEventHandler HostClientClearLines;
-        public event HostClientGameLostEventHandler HostClientGameLost;
-        public event HostClientFinishContinuousSpecialEventHandler HostClientFinishContinuousSpecial;
-        public event HostClientEarnAchievementEventHandler HostClientEarnAchievement;
-        public event HostAdminConnectEventHandler HostAdminConnect;
-        public event HostAdminDisconnectEventHandler HostAdminDisconnect;
-        public event HostAdminSendPrivateAdminMessageEventHandler HostAdminSendPrivateAdminMessage;
-        public event HostAdminSendPrivateMessageEventHandler HostAdminSendPrivateMessage;
-        public event HostAdminSendBroadcastMessageEventHandler HostAdminSendBroadcastMessage;
-        public event HostAdminGetAdminListEventHandler HostAdminGetAdminList;
-        public event HostAdminGetClientListEventHandler HostAdminGetClientList;
-        public event HostAdminGetClientListInGameEventHandler HostAdminGetClientListInGame;
-        public event HostAdminGetGameListEventHandler HostAdminGetGameList;
-        public event HostAdminGetBannedListEventHandler HostAdminGetBannedList;
-        public event HostAdminCreateGameEventHandler HostAdminCreateGame;
-        public event HostAdminDeleteGameEventHandler HostAdminDeleteGame;
-        public event HostAdminKickEventHandler HostAdminKick;
-        public event HostAdminBanEventHandler HostAdminBan;
-        public event HostAdminRestartServerEventHandler HostAdminRestartServer;
+        public event ClientConnectEventHandler HostClientConnect;
+        public event ClientDisconnectEventHandler HostClientDisconnect;
+        public event ClientHeartbeatEventHandler HostClientHeartbeat;
+        public event ClientSendPrivateMessageEventHandler HostClientSendPrivateMessage;
+        public event ClientSendBroadcastMessageEventHandler HostClientSendBroadcastMessage;
+        public event ClientChangeTeamEventHandler HostClientChangeTeam;
+        public event ClientJoinGameEventHandler HostClientJoinGame;
+        public event ClientJoinRandomGameEventHandler HostClientJoinRandomGame;
+        public event ClientCreateAndJoinGameEventHandler HostClientCreateAndJoinGame;
+        public event ClientGetGameListEventHandler HostClientGetGameList;
+        public event ClientGetClientListEventHandler HostClientGetClientList;
+        public event ClientStartGameEventHandler HostClientStartGame;
+        public event ClientStopGameEventHandler HostClientStopGame;
+        public event ClientPauseGameEventHandler HostClientPauseGame;
+        public event ClientResumeGameEventHandler HostClientResumeGame;
+        public event ClientChangeOptionsEventHandler HostClientChangeOptions;
+        public event ClientVoteKickEventHandler HostClientVoteKick;
+        public event ClientVoteKickResponseEventHandler HostClientVoteKickAnswer;
+        public event ClientResetWinListEventHandler HostClientResetWinList;
+        public event ClientLeaveGameEventHandler HostClientLeaveGame;
+        public event ClientGetGameClientListEventHandler HostClientGetGameClientList;
+        public event ClientPlacePieceEventHandler HostClientPlacePiece;
+        public event ClientModifyGridEventHandler HostClientModifyGrid;
+        public event ClientUseSpecialEventHandler HostClientUseSpecial;
+        public event ClientClearLinesEventHandler HostClientClearLines;
+        public event ClientGameLostEventHandler HostClientGameLost;
+        public event ClientFinishContinuousSpecialEventHandler HostClientFinishContinuousSpecial;
+        public event ClientEarnAchievementEventHandler HostClientEarnAchievement;
+        public event AdminConnectEventHandler HostAdminConnect;
+        public event AdminDisconnectEventHandler HostAdminDisconnect;
+        public event AdminSendPrivateAdminMessageEventHandler HostAdminSendPrivateAdminMessage;
+        public event AdminSendPrivateMessageEventHandler HostAdminSendPrivateMessage;
+        public event AdminSendBroadcastMessageEventHandler HostAdminSendBroadcastMessage;
+        public event AdminGetAdminListEventHandler HostAdminGetAdminList;
+        public event AdminGetClientListEventHandler HostAdminGetClientList;
+        public event AdminGetClientListInGameEventHandler HostAdminGetClientListInGame;
+        public event AdminGetGameListEventHandler HostAdminGetGameList;
+        public event AdminGetBannedListEventHandler HostAdminGetBannedList;
+        public event AdminCreateGameEventHandler HostAdminCreateGame;
+        public event AdminDeleteGameEventHandler HostAdminDeleteGame;
+        public event AdminKickEventHandler HostAdminKick;
+        public event AdminBanEventHandler HostAdminBan;
+        public event AdminRestartServerEventHandler HostAdminRestartServer;
 
         public IBanManager BanManager { get; private set; }
         public IClientManager ClientManager { get; private set; }

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Runtime.CompilerServices;
 using System.ServiceModel;
 using TetriNET2.Common.Contracts;
@@ -15,19 +14,12 @@ namespace TetriNET2.Server
     {
         private bool _disconnected;
 
-        public Client(string name, IPAddress address, ITetriNETClientCallback callback, string team = null)
+        public Client(string name, IAddress address, ITetriNETClientCallback callback, string team = null)
         {
-            if (name == null)
-                throw new ArgumentNullException("name");
-            if (address == null)
-                throw new ArgumentNullException("address");
-            if (callback == null)
-                throw new ArgumentNullException("callback");
-
             Id = Guid.NewGuid();
-            Name = name;
-            Address = address;
-            Callback = callback;
+            Name = name ?? throw new ArgumentNullException(nameof(name));
+            Address = address ?? throw new ArgumentNullException(nameof(address));
+            Callback = callback ?? throw new ArgumentNullException(nameof(callback));
             ConnectTime = DateTime.Now;
 
             State = ClientStates.Connected;
@@ -67,11 +59,11 @@ namespace TetriNET2.Server
 
         public event ClientConnectionLostEventHandler ConnectionLost;
 
-        public Guid Id { get; private set; }
-        public string Name { get; private set; }
-        public IPAddress Address { get; private set; }
-        public ITetriNETClientCallback Callback { get; private set; }
-        public DateTime ConnectTime { get; private set; }
+        public Guid Id { get; }
+        public string Name { get; }
+        public IAddress Address { get; }
+        public ITetriNETClientCallback Callback { get; }
+        public DateTime ConnectTime { get; }
 
         public ClientStates State { get; set; }
         public ClientRoles Roles { get; set; }
@@ -84,20 +76,11 @@ namespace TetriNET2.Server
         public IGame Game { get; set; }
         public bool? LastVoteKickAnswer { get; set; }
 
-        public bool IsGameMaster
-        {
-            get { return (Roles & ClientRoles.GameMaster) == ClientRoles.GameMaster; }
-        }
+        public bool IsGameMaster => (Roles & ClientRoles.GameMaster) == ClientRoles.GameMaster;
 
-        public bool IsPlayer
-        {
-            get { return (Roles & ClientRoles.Player) == ClientRoles.Player; }
-        }
+        public bool IsPlayer => (Roles & ClientRoles.Player) == ClientRoles.Player;
 
-        public bool IsSpectator
-        {
-            get { return (Roles & ClientRoles.Spectator) == ClientRoles.Spectator; }
-        }
+        public bool IsSpectator => (Roles & ClientRoles.Spectator) == ClientRoles.Spectator;
 
         public DateTime LastActionToClient { get; private set; }
         public DateTime LastActionFromClient { get; private set; }

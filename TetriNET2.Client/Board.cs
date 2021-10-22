@@ -9,9 +9,9 @@ namespace TetriNET2.Client
 {
     public class Board : IBoard
     {
-        public int Width { get; private set; }
-        public int Height { get; private set; }
-        public byte[] Cells { get; private set; }
+        public int Width { get; }
+        public int Height { get; }
+        public byte[] Cells { get; }
 
         public Board(int width, int height)
         {
@@ -55,10 +55,7 @@ namespace TetriNET2.Client
             return true;
         }
 
-        public int TotalCells
-        {
-            get { return Width * Height; }
-        }
+        public int TotalCells => Width * Height;
 
         public byte this[int x, int y]
         {
@@ -107,15 +104,9 @@ namespace TetriNET2.Client
             }
         }
 
-        public int PieceSpawnX
-        {
-            get { return 1 + (Width / 2); }
-        }
+        public int PieceSpawnX => 1 + (Width / 2);
 
-        public int PieceSpawnY
-        {
-            get { return Height; }
-        }
+        public int PieceSpawnY => Height;
 
         public bool CheckNoConflict(IPiece piece, bool checkTop = false)
         {
@@ -130,8 +121,7 @@ namespace TetriNET2.Client
             for (int i = 1; i <= piece.TotalCells; i++)
             {
                 // Get piece position in board
-                int x, y;
-                piece.GetCellAbsolutePosition(i, out x, out y);
+                piece.GetCellAbsolutePosition(i, out var x, out var y);
                 // Check out of board
                 if (x < 1)
                     return false;
@@ -288,8 +278,7 @@ namespace TetriNET2.Client
             for (int i = 1; i <= piece.TotalCells; i++)
             {
                 // Get piece position in board
-                int x, y;
-                piece.GetCellAbsolutePosition(i, out x, out y);
+                piece.GetCellAbsolutePosition(i, out var x, out var y);
                 // Check out of board
                 if (x < 1)
                     return;
@@ -560,19 +549,18 @@ namespace TetriNET2.Client
         public void BlockBomb()
         {
             // Get bombs
-            List<int> bombIndexes = Cells.Select((cell, index) => new
-            {
-                cell,
-                index
-            })
+            var bombIndexes = Cells.Select((cell, index) => new
+                {
+                    cell,
+                    index
+                })
                 .Where(x => CellHelper.GetSpecial(x.cell) == Specials.BlockBomb)
-                .Select(x => x.index).ToList();
+                .Select(x => x.index).ToArray();
             // Compute scattered parts new locations
             List<Tuple<int, int, byte>> scattered = new List<Tuple<int, int, byte>>(); // Keep scattered parts new location (old location, new location, piece value)
             foreach (int index in bombIndexes)
             {
-                int x, y;
-                GetCellXY0Based(index, out x, out y);
+                GetCellXY0Based(index, out var x, out var y);
                 if (x > 0 && y > 0)
                 {
                     this[x, y] = CellHelper.EmptyCell; // clear bomb

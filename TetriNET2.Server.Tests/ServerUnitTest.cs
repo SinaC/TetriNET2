@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TetriNET2.Common.Contracts;
@@ -28,7 +27,7 @@ namespace TetriNET2.Server.Tests
         protected abstract IServer CreateServer(bool passwordCheckSucceedIfNotFound = true);
         protected abstract HostMock CreateHost();
         protected abstract IGame CreateGame(string name);
-        protected abstract ClientFake CreateClientFake(IHost host, string name, Versioning version, IPAddress address = null, string team = null);
+        protected abstract ClientFake CreateClientFake(IHost host, string name, Versioning version, IAddress address = null, string team = null);
         protected abstract AdminFake CreateAdminFake(IHost host, string name, Versioning version);
 
         [TestInitialize]
@@ -451,9 +450,10 @@ namespace TetriNET2.Server.Tests
             server.SetVersion(1, 1);
             server.AddHost(host);
             server.Start();
-            BanManager.Ban("client1", IPAddress.Parse("127.0.0.2"), "test");
+            var address = new AddressMock("127.0.0.2");
+            BanManager.Ban("client1", address, "test");
 
-            ClientFake clientFake1 = CreateClientFake(host, "client1", server.Version, IPAddress.Parse("127.0.0.2"));
+            ClientFake clientFake1 = CreateClientFake(host, "client1", server.Version, new AddressMock("127.0.0.2"));
             clientFake1.ClientConnect();
 
             Assert.AreEqual(1, clientFake1.GetCallCount("OnConnected"));
@@ -470,14 +470,27 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public class ServerUnitTest : AbstractServerUnitTest
     {
+        private class MySettings : ISettings
+        {
+            public int MaxAdmins => 10;
+            public int MaxClients => 10;
+            public int MaxGames => 10;
+            public string BanFilename { get; }
+
+            public MySettings(string banFilename)
+            {
+                BanFilename = banFilename;
+            }
+        }
+
         private class Factory : IFactory
         {
-            public IClient CreateClient(string name, string team, IPAddress address, ITetriNETClientCallback callback)
+            public IClient CreateClient(string name, string team, IAddress address, ITetriNETClientCallback callback)
             {
                 return new Client(name, address, callback, team);
             }
 
-            public IAdmin CreateAdmin(string name, IPAddress address, ITetriNETAdminCallback callback)
+            public IAdmin CreateAdmin(string name, IAddress address, ITetriNETAdminCallback callback)
             {
                 return new Admin(name, address, callback);
             }
@@ -494,10 +507,11 @@ namespace TetriNET2.Server.Tests
                 {
                     CheckSucceedIfNotFound = passwordCheckSucceedIfNotFound
                 };
-            BanManager = new BanManager(BanFilename);
-            ClientManager = new ClientManager(10);
-            AdminManager = new AdminManager(10);
-            GameManager = new GameManager(10);
+            var settings = new MySettings(BanFilename);
+            BanManager = new BanManager(settings);
+            ClientManager = new ClientManager(settings);
+            AdminManager = new AdminManager(settings);
+            GameManager = new GameManager(settings);
             return new Server(new Factory(), PasswordManager, BanManager, ClientManager, AdminManager, GameManager);
         }
 
@@ -506,9 +520,9 @@ namespace TetriNET2.Server.Tests
             return new HostMock(BanManager, ClientManager, AdminManager, GameManager);
         }
 
-        protected override ClientFake CreateClientFake(IHost host, string name, Versioning version, IPAddress address = null, string team = null)
+        protected override ClientFake CreateClientFake(IHost host, string name, Versioning version, IAddress address = null, string team = null)
         {
-            ClientFake client = new ClientFake(name, team, version, address ?? IPAddress.Any)
+            ClientFake client = new ClientFake(name, team, version, address ?? AddressMock.Any)
             {
                 Host = host
             };
@@ -517,7 +531,7 @@ namespace TetriNET2.Server.Tests
 
         protected override AdminFake CreateAdminFake(IHost host, string name, Versioning version)
         {
-            AdminFake admin = new AdminFake(name, version, IPAddress.Any)
+            AdminFake admin = new AdminFake(name, version, AddressMock.Any)
             {
                 Host = host
             };
@@ -539,9 +553,10 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestNullFactory()
         {
+            var settings = new MySettings(BanFilename);
             try
             {
-                IServer server = new Server(null, new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameManager(10));
+                IServer server = new Server(null, new PasswordManager(), new BanManager(settings), new ClientManager(settings), new AdminManager(settings), new GameManager(settings));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -557,9 +572,10 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestNullPasswordManager()
         {
+            var settings = new MySettings(BanFilename);
             try
             {
-                IServer server = new Server(new Factory(), null, new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameManager(10));
+                IServer server = new Server(new Factory(), null, new BanManager(settings), new ClientManager(settings), new AdminManager(settings), new GameManager(settings));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -575,9 +591,10 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestNullBanManager()
         {
+            var settings = new MySettings(BanFilename);
             try
             {
-                IServer server = new Server(new Factory(), new PasswordManager(), null, new ClientManager(10), new AdminManager(10), new GameManager(10));
+                IServer server = new Server(new Factory(), new PasswordManager(), null, new ClientManager(settings), new AdminManager(settings), new GameManager(settings));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -593,9 +610,10 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestNullClientManager()
         {
+            var settings = new MySettings(BanFilename);
             try
             {
-                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), null, new AdminManager(10), new GameManager(10));
+                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(settings), null, new AdminManager(settings), new GameManager(settings));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -611,9 +629,10 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestNullAdminManager()
         {
+            var settings = new MySettings(BanFilename);
             try
             {
-                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), null, new GameManager(10));
+                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(settings), new ClientManager(settings), null, new GameManager(settings));
 
                 Assert.Fail("Exception not thrown");
             }
@@ -629,9 +648,10 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestNullGameManager()
         {
+            var settings = new MySettings(BanFilename);
             try
             {
-                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), null);
+                IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(settings), new ClientManager(settings), new AdminManager(settings), null);
 
                 Assert.Fail("Exception not thrown");
             }
@@ -647,7 +667,8 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestConstructorSetProperties()
         {
-            IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(BanFilename), new ClientManager(10), new AdminManager(10), new GameManager(10));
+            var settings = new MySettings(BanFilename);
+            IServer server = new Server(new Factory(), new PasswordManager(), new BanManager(settings), new ClientManager(settings), new AdminManager(settings), new GameManager(settings));
 
             Assert.AreEqual(ServerStates.Waiting, server.State);
         }

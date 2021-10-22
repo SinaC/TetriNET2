@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Net;
 using TetriNET2.Common.ActionQueue;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
@@ -24,12 +23,13 @@ namespace TetriNET2.Server.ConsoleApp
             Log.Default.Logger = new NLogger();
             Log.Default.Initialize(@"D:\TEMP\LOG\", "TETRINET2_SERVER.LOG");
 
+            ISettings settings = new Settings();
             IFactory factory = new Factory();
             IPasswordManager passwordManager = new PasswordManager();
-            IBanManager banManager = new BanManager(@"D:\TEMP\ban.lst");
-            IClientManager clientManager = new ClientManager(50);
-            IAdminManager adminManager = new AdminManager(5);
-            IGameManager gameManager = new GameManager(10);
+            IBanManager banManager = new BanManager(settings);
+            IClientManager clientManager = new ClientManager(settings);
+            IAdminManager adminManager = new AdminManager(settings);
+            IGameManager gameManager = new GameManager(settings);
 
             IHost wcfHost = new WCFHost.WCFHost(banManager, clientManager, adminManager, gameManager)
                 {
@@ -101,12 +101,12 @@ namespace TetriNET2.Server.ConsoleApp
 
     public class Factory : IFactory
     {
-        public IClient CreateClient(string name, string team, IPAddress address, ITetriNETClientCallback callback)
+        public IClient CreateClient(string name, string team, IAddress address, ITetriNETClientCallback callback)
         {
             return new Client(name, address, callback, team);
         }
 
-        public IAdmin CreateAdmin(string name, IPAddress address, ITetriNETAdminCallback callback)
+        public IAdmin CreateAdmin(string name, IAddress address, ITetriNETAdminCallback callback)
         {
             return new Admin(name, address, callback);
         }

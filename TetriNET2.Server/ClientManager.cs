@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.Logger;
 using TetriNET2.Server.Interfaces;
@@ -11,33 +10,26 @@ namespace TetriNET2.Server
     public sealed class ClientManager : IClientManager
     {
         private readonly Dictionary<ITetriNETClientCallback, IClient> _clients = new Dictionary<ITetriNETClientCallback, IClient>();
-        private readonly object _lockObject = new object();
 
-        public ClientManager(int maxClients)
+        public ClientManager(ISettings settings)
         {
+            if (settings == null)
+                throw new ArgumentNullException(nameof(settings));
+            int maxClients = settings.MaxClients;
             if (maxClients <= 0)
-                throw new ArgumentOutOfRangeException("maxClients", "maxClients must be strictly positive");
+                throw new ArgumentOutOfRangeException(nameof(maxClients), "maxClients must be strictly positive");
             MaxClients = maxClients;
         }
 
         #region IClientManager
 
-        public int MaxClients { get; private set; }
+        public int MaxClients { get; }
 
-        public int ClientCount
-        {
-            get { return _clients.Count; }
-        }
+        public int ClientCount => _clients.Count;
 
-        public object LockObject
-        {
-            get { return _lockObject; }
-        }
+        public object LockObject { get; } = new object();
 
-        public IReadOnlyCollection<IClient> Clients
-        {
-            get { return _clients.Values.ToList(); }
-        }
+        public IReadOnlyCollection<IClient> Clients => _clients.Values.ToList();
 
         public IClient this[Guid guid]
         {
@@ -65,13 +57,12 @@ namespace TetriNET2.Server
         {
             get
             {
-                IClient client;
-                _clients.TryGetValue(callback, out client);
+                _clients.TryGetValue(callback, out var client);
                 return client;
             }
         }
 
-        public IClient this[IPAddress address]
+        public IClient this[IAddress address]
         {
             get
             {
@@ -85,7 +76,7 @@ namespace TetriNET2.Server
         public bool Add(IClient client)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
 
             if (ClientCount >= MaxClients)
             {
@@ -115,7 +106,7 @@ namespace TetriNET2.Server
         public bool Remove(IClient client)
         {
             if (client == null)
-                throw new ArgumentNullException("client");
+                throw new ArgumentNullException(nameof(client));
 
             bool removed = _clients.Remove(client.Callback);
             return removed;

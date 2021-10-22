@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.DataContracts;
+using TetriNET2.Server.Interfaces;
 using TetriNET2.Server.Interfaces.IHost;
 using TetriNET2.Server.Tests.Mocking;
 
@@ -17,11 +17,11 @@ namespace TetriNET2.Server.Tests.ClientSide
         public readonly string Name;
         public readonly string Team;
         public readonly Versioning Versioning;
-        public readonly IPAddress Address;
+        public readonly IAddress Address;
 
         private readonly Timer _timer;
 
-        public ClientFake(string name, string team, Versioning version, IPAddress address)
+        public ClientFake(string name, string team, Versioning version, IAddress address)
         {
             Name = name;
             Team = team;
@@ -37,8 +37,7 @@ namespace TetriNET2.Server.Tests.ClientSide
 
         private void SetCallbackAndAddress()
         {
-            HostMock hostMock = Host as HostMock;
-            if (hostMock != null)
+            if (Host is HostMock hostMock)
             {
                 hostMock.ClientCallback = this;
                 hostMock.Address = Address;
@@ -419,8 +418,7 @@ namespace TetriNET2.Server.Tests.ClientSide
         {
             if (disposing)
             {
-                if (_timer != null)
-                    _timer.Dispose();
+                _timer?.Dispose();
             }
         }
 
@@ -466,15 +464,13 @@ namespace TetriNET2.Server.Tests.ClientSide
 
         public int GetCallCount(string callbackName)
         {
-            CallInfo value;
-            _callInfos.TryGetValue(callbackName, out value);
+            _callInfos.TryGetValue(callbackName, out var value);
             return (value ?? CallInfo.NullObject).Count;
         }
 
         public List<object> GetCallParameters(string callbackName, int callId)
         {
-            CallInfo value;
-            if (!_callInfos.TryGetValue(callbackName, out value))
+            if (!_callInfos.TryGetValue(callbackName, out var value))
                 return null;
             if (callId >= value.Count)
                 return null;

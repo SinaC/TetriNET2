@@ -14,7 +14,7 @@ namespace TetriNET2.Server.Interfaces
         //
         Guid Id { get; }
         string Name { get; }
-        IPAddress Address { get; }
+        IAddress Address { get; }
         ITetriNETClientCallback Callback { get; }
         DateTime ConnectTime { get; }
 

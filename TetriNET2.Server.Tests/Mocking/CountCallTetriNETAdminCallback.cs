@@ -12,7 +12,7 @@ namespace TetriNET2.Server.Tests.Mocking
 
         private void UpdateCallCount([CallerMemberName]string callbackName = null)
         {
-            if (String.IsNullOrWhiteSpace(callbackName))
+            if (string.IsNullOrWhiteSpace(callbackName))
                 return;
 
             if (!_callCount.ContainsKey(callbackName))
@@ -23,8 +23,7 @@ namespace TetriNET2.Server.Tests.Mocking
 
         public int GetCallCount(string callbackName)
         {
-            int value;
-            _callCount.TryGetValue(callbackName, out value);
+            _callCount.TryGetValue(callbackName, out var value);
             return value;
         }
 

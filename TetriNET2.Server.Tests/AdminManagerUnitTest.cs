@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Net;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using TetriNET2.Common.Contracts;
 using TetriNET2.Common.Logger;
@@ -12,7 +11,20 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public abstract class AbstractAdminManagerUnitTest
     {
-        protected abstract IAdminManager CreateAdminManager(int maxAdmins);
+        public class Settings : ISettings
+        {
+            public int MaxAdmins { get; }
+            public int MaxClients { get; }
+            public int MaxGames { get; }
+            public string BanFilename { get; }
+
+            public Settings(int maxAdmins)
+            {
+                MaxAdmins = maxAdmins;
+            }
+        }
+
+        protected abstract IAdminManager CreateAdminManager(ISettings settings);
         protected abstract IAdmin CreateAdmin(string name, ITetriNETAdminCallback callback, string address = null);
 
         [TestInitialize]
@@ -29,7 +41,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestAddNullAdmin()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
 
             try
             {
@@ -43,7 +55,7 @@ namespace TetriNET2.Server.Tests
             }
 
             Assert.AreEqual(0, adminManager.AdminCount);
-            Assert.AreEqual(0, adminManager.Admins.Count());
+            Assert.AreEqual(0, adminManager.Admins.Count);
         }
 
         [TestCategory("Server")]
@@ -52,7 +64,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestAddNoMaxAdmins()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
 
             bool inserted1 = adminManager.Add(CreateAdmin("admin1", new CountCallTetriNETAdminCallback()));
             bool inserted2 = adminManager.Add(CreateAdmin("admin2", new CountCallTetriNETAdminCallback()));
@@ -60,7 +72,7 @@ namespace TetriNET2.Server.Tests
             Assert.IsTrue(inserted1);
             Assert.IsTrue(inserted2);
             Assert.AreEqual(2, adminManager.AdminCount);
-            Assert.AreEqual(2, adminManager.Admins.Count());
+            Assert.AreEqual(2, adminManager.Admins.Count);
             Assert.IsTrue(adminManager.Admins.Any(x => x.Name == "admin1") && adminManager.Admins.Any(x => x.Name == "admin2"));
         }
 
@@ -70,7 +82,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestAddWithMaxAdmins()
         {
-            IAdminManager adminManager = CreateAdminManager(1);
+            IAdminManager adminManager = CreateAdminManager(new Settings(1));
             adminManager.Add(CreateAdmin("admin1", new CountCallTetriNETAdminCallback()));
 
             bool inserted = adminManager.Add(CreateAdmin("admin2", new CountCallTetriNETAdminCallback()));
@@ -87,14 +99,14 @@ namespace TetriNET2.Server.Tests
         public void TestAddSameAdmin()
         {
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(admin1);
 
             bool inserted = adminManager.Add(admin1);
 
             Assert.IsFalse(inserted);
             Assert.AreEqual(1, adminManager.AdminCount);
-            Assert.AreEqual(1, adminManager.Admins.Count());
+            Assert.AreEqual(1, adminManager.Admins.Count);
         }
 
         [TestCategory("Server")]
@@ -103,14 +115,14 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestAddSameName()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(CreateAdmin("admin1", new CountCallTetriNETAdminCallback()));
 
             bool inserted = adminManager.Add(CreateAdmin("admin1", new CountCallTetriNETAdminCallback()));
 
             Assert.IsFalse(inserted);
             Assert.AreEqual(1, adminManager.AdminCount);
-            Assert.AreEqual(1, adminManager.Admins.Count());
+            Assert.AreEqual(1, adminManager.Admins.Count);
         }
 
         [TestCategory("Server")]
@@ -119,7 +131,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestAddSameCallback()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             ITetriNETAdminCallback callback = new CountCallTetriNETAdminCallback();
             adminManager.Add(CreateAdmin("admin1", callback));
 
@@ -127,7 +139,7 @@ namespace TetriNET2.Server.Tests
 
             Assert.IsFalse(inserted);
             Assert.AreEqual(1, adminManager.AdminCount);
-            Assert.AreEqual(1, adminManager.Admins.Count());
+            Assert.AreEqual(1, adminManager.Admins.Count);
         }
 
         #endregion
@@ -140,7 +152,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestRemoveExistingAdmin()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             IAdmin admin = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             adminManager.Add(admin);
 
@@ -148,7 +160,7 @@ namespace TetriNET2.Server.Tests
 
             Assert.IsTrue(removed);
             Assert.AreEqual(0, adminManager.AdminCount);
-            Assert.AreEqual(0, adminManager.Admins.Count());
+            Assert.AreEqual(0, adminManager.Admins.Count);
         }
 
         [TestCategory("Server")]
@@ -157,7 +169,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestRemoveNonExistingAdmin()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback());
             adminManager.Add(admin1);
@@ -166,7 +178,7 @@ namespace TetriNET2.Server.Tests
 
             Assert.IsFalse(removed);
             Assert.AreEqual(1, adminManager.AdminCount);
-            Assert.AreEqual(1, adminManager.Admins.Count());
+            Assert.AreEqual(1, adminManager.Admins.Count);
         }
 
         [TestCategory("Server")]
@@ -175,7 +187,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestRemoveNullAdmin()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(CreateAdmin("admin1", new CountCallTetriNETAdminCallback()));
 
             try
@@ -189,7 +201,7 @@ namespace TetriNET2.Server.Tests
             }
 
             Assert.AreEqual(1, adminManager.AdminCount);
-            Assert.AreEqual(1, adminManager.Admins.Count());
+            Assert.AreEqual(1, adminManager.Admins.Count);
         }
 
         #endregion
@@ -202,7 +214,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestClearNoAdmins()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
 
             adminManager.Clear();
 
@@ -215,7 +227,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestClearSomeAdmins()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(CreateAdmin("admin1", new CountCallTetriNETAdminCallback()));
             adminManager.Add(CreateAdmin("admin2", new CountCallTetriNETAdminCallback()));
             adminManager.Add(CreateAdmin("admin3", new CountCallTetriNETAdminCallback()));
@@ -235,7 +247,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestContainsExistingAdmin()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             IAdmin admin = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             adminManager.Add(admin);
 
@@ -252,7 +264,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestContainsNonExistingAdmin()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             IAdmin admin = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             adminManager.Add(admin);
 
@@ -276,7 +288,7 @@ namespace TetriNET2.Server.Tests
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback());
             IAdmin admin3 = CreateAdmin("admin3", new CountCallTetriNETAdminCallback());
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(admin1);
             adminManager.Add(admin2);
             adminManager.Add(admin3);
@@ -296,7 +308,7 @@ namespace TetriNET2.Server.Tests
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback());
             IAdmin admin3 = CreateAdmin("admin3", new CountCallTetriNETAdminCallback());
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(admin1);
             adminManager.Add(admin2);
             adminManager.Add(admin3);
@@ -315,7 +327,7 @@ namespace TetriNET2.Server.Tests
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback());
             IAdmin admin3 = CreateAdmin("admin3", new CountCallTetriNETAdminCallback());
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(admin1);
             adminManager.Add(admin2);
             adminManager.Add(admin3);
@@ -335,7 +347,7 @@ namespace TetriNET2.Server.Tests
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback());
             IAdmin admin3 = CreateAdmin("admin3", new CountCallTetriNETAdminCallback());
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(admin1);
             adminManager.Add(admin2);
             adminManager.Add(admin3);
@@ -354,7 +366,7 @@ namespace TetriNET2.Server.Tests
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback());
             IAdmin admin3 = CreateAdmin("admin3", new CountCallTetriNETAdminCallback());
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(admin1);
             adminManager.Add(admin2);
             adminManager.Add(admin3);
@@ -374,7 +386,7 @@ namespace TetriNET2.Server.Tests
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback());
             IAdmin admin3 = CreateAdmin("admin3", new CountCallTetriNETAdminCallback());
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(admin1);
             adminManager.Add(admin2);
             adminManager.Add(admin3);
@@ -393,7 +405,7 @@ namespace TetriNET2.Server.Tests
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback(), "127.0.0.1");
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback(), "127.0.0.2");
             IAdmin admin3 = CreateAdmin("admin3", new CountCallTetriNETAdminCallback(), "127.0.0.3");
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(admin1);
             adminManager.Add(admin2);
             adminManager.Add(admin3);
@@ -413,12 +425,12 @@ namespace TetriNET2.Server.Tests
             IAdmin admin1 = CreateAdmin("admin1", new CountCallTetriNETAdminCallback());
             IAdmin admin2 = CreateAdmin("admin2", new CountCallTetriNETAdminCallback());
             IAdmin admin3 = CreateAdmin("admin3", new CountCallTetriNETAdminCallback());
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
             adminManager.Add(admin1);
             adminManager.Add(admin2);
             adminManager.Add(admin3);
 
-            IAdmin searched = adminManager[IPAddress.None];
+            IAdmin searched = adminManager[AddressMock.Any];
 
             Assert.IsNull(searched);
         }
@@ -429,14 +441,14 @@ namespace TetriNET2.Server.Tests
     [TestClass]
     public class AdminManagerUnitTest : AbstractAdminManagerUnitTest
     {
-        protected override IAdminManager CreateAdminManager(int maxAdmins)
+        protected override IAdminManager CreateAdminManager(ISettings settings)
         {
-            return new AdminManager(maxAdmins);
+            return new AdminManager(settings);
         }
 
         protected override IAdmin CreateAdmin(string name, ITetriNETAdminCallback callback, string address = null)
         {
-            return new Admin(name, address == null ? IPAddress.Any : IPAddress.Parse(address), callback);
+            return new Admin(name, new AddressMock(address), callback);
         }
 
         #region Constructor
@@ -449,7 +461,7 @@ namespace TetriNET2.Server.Tests
         {
             try
             {
-                IAdminManager adminManager = CreateAdminManager(0);
+                IAdminManager adminManager = CreateAdminManager(new Settings(0));
                 Assert.Fail("ArgumentOutOfRange exception not raised");
             }
             catch (ArgumentOutOfRangeException ex)
@@ -466,7 +478,7 @@ namespace TetriNET2.Server.Tests
         {
             const int maxAdmins = 10;
 
-            IAdminManager adminManager = CreateAdminManager(maxAdmins);
+            IAdminManager adminManager = CreateAdminManager(new Settings(maxAdmins));
 
             Assert.AreEqual(maxAdmins, adminManager.MaxAdmins);
         }
@@ -477,7 +489,7 @@ namespace TetriNET2.Server.Tests
         [TestMethod]
         public void TestConstructorLockObjectNotNull()
         {
-            IAdminManager adminManager = CreateAdminManager(10);
+            IAdminManager adminManager = CreateAdminManager(new Settings(10));
 
             Assert.IsNotNull(adminManager.LockObject);
         }

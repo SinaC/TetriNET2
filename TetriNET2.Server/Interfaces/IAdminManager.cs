@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Net;
 using TetriNET2.Common.Contracts;
 
 namespace TetriNET2.Server.Interfaces
@@ -16,7 +15,7 @@ namespace TetriNET2.Server.Interfaces
         IAdmin this[Guid guid] { get; }
         IAdmin this[string name] { get; }
         IAdmin this[ITetriNETAdminCallback callback] { get; }
-        IAdmin this[IPAddress address] { get; }
+        IAdmin this[IAddress address] { get; }
 
         bool Add(IAdmin admin);
         bool Remove(IAdmin admin);
